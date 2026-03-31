@@ -1,0 +1,6 @@
+chip_name,source_file,status,template_id,canonical_part_number,manufacturer,device_class,report_key_parameter_count,final_key_parameter_count,summary
+UPF5337,202307UPF5337 datasheet V1.1.pdf,complete,rf-fem-2.4g,UPF5337,Shanghai UPMicro (昂璞微),Wi-Fi FEM,18,1,UPF5337 是一款高度集成的 2.4GHz Wi-Fi 6 (802.11ax) 前端模块 (FEM)，内部封装了功率放大器 (PA)、带旁路模式的低噪声放大器 (LNA) 以及天线开关 (SPDT)。对于实习生来说，阅读该器件的关键在于理解 Wi-Fi 6 对线性度的极高要求：不要只看最大输出功率，而要看在特定 DEVM（例如 -43dB）下的线性输出功率（20dBm）。设计重点应放在底部焊盘的接地散热以及控制逻辑电平的匹配上。
+UPF5755,202307UPF5755 datasheet V1.2.pdf,complete,rf-fem-5ghz,UPF5755,Shanghai UPMicro (昂璞微电子),Wi-Fi Front End Module (FEM),17,12,UPF5755 是一款针对 5GHz Wi-Fi 6 (802.11ax) 应用的高度集成射频前端模块 (FEM)，集成了功率放大器 (PA)、低噪声放大器 (LNA) 以及收发切换开关 (SPDT)。该器件的核心优势在于其 160MHz 带宽下的线性输出能力（17dBm @ -43dB EVM），适合高性能无线终端设计。实习生需重点掌握其逻辑控制真值表、线性功率与 EVM 的对应关系，以及底部散热焊盘的接地要求。
+RF7459A,case2-RF7459A_Product_Data_Sheet.pdf,complete,cellular-3g4g5g,RF7459A,RFMD (Qorvo),Multi-mode/Multi-band Power Amplifier Module (PAM),16,7,"[object Object],[object Object]"
+S55643-51Q,S55643-51Q.pdf,complete,power,S55643-51Q,SmarterMicro (慧智微),NR MMMB Power Amplifier Module,15,2,[object Object]
+W25Q128FV,W25Q128FVSIG.pdf,complete,serial-flash,W25Q128FV,Winbond,Serial Flash Memory,17,15,[object Object]

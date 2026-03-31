@@ -1,0 +1,44 @@
+{
+  "name": "ai-hardware-assistant",
+  "version": "0.1.0",
+  "private": true,
+  "scripts": {
+    "dev": "WATCHPACK_POLLING=true next dev --hostname 127.0.0.1 --port 3111",
+    "build": "next build",
+    "start": "next start --hostname 127.0.0.1 --port 3111",
+    "users:create": "node scripts/admin-users.mjs create",
+    "users:import": "node scripts/admin-users.mjs import",
+    "audit:summary": "node scripts/audit-summary.mjs",
+    "lyapi:pdf-smoke": "node scripts/lyapi-pdf-smoke.mjs",
+    "benchmark:model": "vite-node --root . scripts/model-benchmark.ts",
+    "datasheet:batch": "vite-node --root . scripts/datasheet-batch-export.ts",
+    "taxonomy:digikey": ".venv/bin/python scripts/digikey_taxonomy/fetch_digikey_taxonomy.py",
+    "taxonomy:digikey:fixtures": ".venv/bin/python scripts/digikey_taxonomy/fetch_digikey_taxonomy.py --input-dir scripts/digikey_taxonomy/fixtures",
+    "taxonomy:digikey:refresh-live": ".venv/bin/python scripts/digikey_taxonomy/fetch_digikey_taxonomy.py --refresh-live --write-fixtures",
+    "mouser:rf-front-end": ".venv/bin/python scripts/mouser_rf_front_end/scrape_rf_front_end.py",
+    "typecheck": "tsc --noEmit",
+    "test": "vitest run",
+    "test:watch": "vitest"
+  },
+  "dependencies": {
+    "@napi-rs/canvas": "^0.1.97",
+    "@opendataloader/pdf": "^2.2.0",
+    "bcryptjs": "^3.0.3",
+    "better-sqlite3": "^12.8.0",
+    "next": "^15.3.1",
+    "pdfjs-dist": "^5.5.207",
+    "react": "^19.1.0",
+    "react-dom": "^19.1.0"
+  },
+  "devDependencies": {
+    "@testing-library/jest-dom": "^6.6.3",
+    "@testing-library/react": "^16.3.0",
+    "@types/better-sqlite3": "^7.6.13",
+    "@types/node": "^24.0.3",
+    "@types/react": "^19.1.8",
+    "@types/react-dom": "^19.1.6",
+    "jsdom": "^26.1.0",
+    "typescript": "^5.8.3",
+    "vitest": "^3.2.4"
+  }
+}

@@ -1,0 +1,220 @@
+{
+  "taskMeta": {
+    "taskName": "W25Q128FV 批量分析",
+    "chipName": "W25Q128FV",
+    "sourceFile": "W25Q128FVSIG.pdf",
+    "pageCount": 99
+  },
+  "identity": {
+    "canonicalPartNumber": "W25Q128FV",
+    "manufacturer": "Winbond",
+    "deviceClass": "Serial Flash Memory",
+    "parameterTemplateId": "serial-flash",
+    "focusChecklist": [
+      "先看首页、feature list 和电气特性表。"
+    ],
+    "publicContext": [],
+    "confidence": 0.9
+  },
+  "executiveSummary": [
+    {
+      "id": "exec_1",
+      "label": "器件概要",
+      "value": "W25Q128FV (128M-bit) 是一款高性能串行 NOR Flash 存储器，支持标准的 SPI、Dual SPI、Quad SPI 和最新的 QPI 接口模式。",
+      "title": "项目经理速读",
+      "body": "该器件旨在解决系统空间、引脚数量和功耗受限的存储方案需求。其核心竞争力在于 104MHz 的时钟频率（Quad 模式下等效 416MHz 吞吐量），非常适合代码阴影（Code Shadowing）和直接在 Flash 上执行代码（XIP）。",
+      "sourceType": "datasheet",
+      "citations": [
+        {
+          "page": 5,
+          "context": "The W25Q128FV (128M-bit) Serial Flash memory provides a storage solution for systems with limited space, pins and power."
+        }
+      ]
+    }
+  ],
+  "reportSections": [
+    {
+      "id": "device_identity",
+      "title": "器件身份确认",
+      "body": "W25Q128FV 是 Winbond 的 SpiFlash 旗舰系列，属于 128M-bit (16M-byte) 容量的串行 NOR Flash。它是工业界最通用的串行存储器之一。",
+      "sourceType": "datasheet",
+      "citations": [
+        {
+          "id": "citation-1",
+          "sourceType": "datasheet",
+          "page": 1,
+          "quote": "",
+          "url": "",
+          "title": "",
+          "snippet": ""
+        }
+      ]
+    },
+    {
+      "id": "what_this_part_is_for",
+      "title": "用途与核心价值",
+      "body": "该器件主要用于嵌入式系统的代码存储。其 QPI 模式极大提高了读取速度，使其能够作为低成本的 XIP 方案，替代价格昂贵的并行 Flash 或大容量内部 Flash。其 4KB 的擦除粒度也非常适合存储配置参数、日志数据等小颗粒信息。",
+      "sourceType": "review",
+      "citations": []
+    },
+    {
+      "id": "how_to_read_this_datasheet",
+      "title": "实习生阅读指南",
+      "body": "1. **重点看 Feature List (P5)**: 了解它的极限时钟和接口模式。\n2. **仔细读 Status Registers (P16-20)**: 这是控制芯片行为的核心（如 QE 位、写保护位）。\n3. **扫一眼 Instruction Set Table (P25-28)**: 知道它支持哪些骚操作（比如 Read Unique ID）。\n4. **最后核对 AC Characteristics (P84-86)**: 检查你的 SPI 驱动时序是否在 tPP, tSE 范围内。",
+      "sourceType": "review",
+      "citations": []
+    },
+    {
+      "id": "key_parameters",
+      "title": "关键选型指标",
+      "body": "核心参数包括：128Mb 容量、104MHz SPI 时钟、2.7V-3.6V 宽压范围。物理架构上，它分为 256 个 Block (64KB)，每个 Block 分为 16 个 Sector (4KB)。",
+      "sourceType": "datasheet",
+      "citations": [
+        {
+          "id": "citation-1",
+          "sourceType": "datasheet",
+          "page": 80,
+          "quote": "",
+          "url": "",
+          "title": "",
+          "snippet": ""
+        }
+      ]
+    },
+    {
+      "id": "section_by_section_reading_order",
+      "title": "章节建议阅读顺序",
+      "body": "1. **General Description**: 快速了解定位。\n2. **Package & Pin Configurations**: 确保引脚接法正确（注意引脚 7 复用）。\n3. **Functional Description**: 重点看 SPI/QPI Operations 和 Write Protection。\n4. **Status Registers**: 掌握软件交互逻辑。\n5. **Electrical Characteristics**: 用于 PCB 电源设计和信号完整性检查。",
+      "sourceType": "review",
+      "citations": []
+    },
+    {
+      "id": "critical_graphs_and_tables",
+      "title": "关键图表提示",
+      "body": "图 2 (P11) 的 Block Diagram 展示了层级结构，必须理解。表 9.4 (P82) 的 DC 特性表定义了最大静态功耗，表 9.6 (P84) 的 AC 特性表定义了指令执行的真实等待时间。",
+      "sourceType": "datasheet",
+      "citations": [
+        {
+          "id": "citation-1",
+          "sourceType": "datasheet",
+          "page": 84,
+          "quote": "",
+          "url": "",
+          "title": "",
+          "snippet": ""
+        }
+      ]
+    },
+    {
+      "id": "risks_and_gotchas",
+      "title": "避坑指南",
+      "body": "千万注意：Quad 模式（QE 位）是写入状态寄存器的**非易失性位**。一旦在生产中配置错误，可能导致后续指令集完全不兼容。另外，在写状态寄存器前必须发 Write Enable (06h) 指令，这步漏掉是新手最常犯的错。",
+      "sourceType": "review",
+      "citations": []
+    },
+    {
+      "id": "intern_action_list",
+      "title": "实习生下一步任务",
+      "body": "1. 在原理图上确认引脚 3 (/WP) 和引脚 7 (/HOLD) 的上拉状态。\n2. 确认软件驱动中上电自检逻辑是否包含读取 JEDEC ID (9Fh) 以验证通信。\n3. 计算系统初始化耗时：考虑 tVSL 和 tPUW 带来的启动延迟。\n4. 编写 QE 位使能子程序，并验证 QE=1 后 IO2/IO3 的波形。",
+      "sourceType": "review",
+      "citations": []
+    },
+    {
+      "id": "open_questions",
+      "title": "遗留待确认问题",
+      "body": "手册对 'Typical' 和 'Guaranteed' 区分很细（见 AC 表 Footnotes），在进行高可靠性长寿命设备设计时，需以 'Max' 时间计算看门狗超时周期。",
+      "sourceType": "review",
+      "citations": []
+    },
+    {
+      "id": "glossary_for_juniors",
+      "title": "术语简表",
+      "body": "NOR Flash: 可随机读取、擦除粒度小的闪存；SPI: 串行外设接口；QPI: 指令/地址/数据均为 4 线的 SPI；Sector Erase: 以 4KB 为单位的擦除操作；OTP: 一次性可编程区域。",
+      "sourceType": "review",
+      "citations": []
+    }
+  ],
+  "parameterRows": [
+    {
+      "name": "Technology / Memory Type",
+      "value": "Serial Flash (NOR)",
+      "status": "confirmed",
+      "evidence": null
+    },
+    {
+      "name": "Memory Size / Density",
+      "value": "128M-bit (16M-byte)",
+      "status": "confirmed",
+      "evidence": null
+    },
+    {
+      "name": "Interface / I/O Mode",
+      "value": "SPI, Dual SPI, Quad SPI, QPI",
+      "status": "confirmed",
+      "evidence": null
+    },
+    {
+      "name": "Max Clock Frequency",
+      "value": "104MHz",
+      "status": "confirmed",
+      "evidence": null
+    },
+    {
+      "name": "Supply Voltage",
+      "value": "2.7V to 3.6V",
+      "status": "confirmed",
+      "evidence": null
+    },
+    {
+      "name": "Active / Power-Down Current",
+      "value": "4mA (typ) / 1μA (typ)",
+      "status": "confirmed",
+      "evidence": null
+    },
+    {
+      "name": "Page / Sector / Block Architecture",
+      "value": "256B / 4KB / 64KB",
+      "status": "confirmed",
+      "evidence": null
+    },
+    {
+      "name": "Program / Erase Time",
+      "value": "0.7ms (typ) / 45ms (typ)",
+      "status": "confirmed",
+      "evidence": null
+    },
+    {
+      "name": "Operating Temperature",
+      "value": "-40°C to +85°C",
+      "status": "confirmed",
+      "evidence": null
+    },
+    {
+      "name": "引脚复用配置",
+      "value": "/HOLD 与 /RESET 复用",
+      "status": "confirmed",
+      "evidence": null
+    },
+    {
+      "name": "上电时序延迟",
+      "value": "tPUW 写入禁止期",
+      "status": "confirmed",
+      "evidence": null
+    }
+  ],
+  "publicNotes": [],
+  "followUpTranscript": [],
+  "sourceAttribution": {
+    "mode": "llm_first",
+    "llmProvider": "gemini",
+    "searchProvider": null
+  },
+  "events": [
+    {
+      "id": "event-1774890671323-wapud6",
+      "createdAt": "2026-03-30T17:11:11.323Z",
+      "type": "analysis_created",
+      "summary": "初始分析已生成，可继续做证据验证和人工确认。"
+    }
+  ]
+}

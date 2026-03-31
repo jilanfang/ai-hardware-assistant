@@ -1,0 +1,157 @@
+{
+  "taskMeta": {
+    "taskName": "UPF5337 批量分析",
+    "chipName": "UPF5337",
+    "sourceFile": "202307UPF5337 datasheet V1.1.pdf",
+    "pageCount": 9
+  },
+  "identity": {
+    "canonicalPartNumber": "UPF5337",
+    "manufacturer": "Shanghai UPMicro Microelectronics Co., Ltd.",
+    "deviceClass": "Wi-Fi Front End Module (FEM)",
+    "parameterTemplateId": "wifi",
+    "focusChecklist": [
+      "先看首页、feature list 和电气特性表。"
+    ],
+    "publicContext": [],
+    "confidence": 0.9
+  },
+  "executiveSummary": "UPF5337 是一款专为 2.4GHz 802.11ax (Wi-Fi 6) 设计的高性能射频前端模块 (FEM)，集成了功率放大器 (PA)、带旁路模式的低噪声放大器 (LNA)、收发开关 (SPDT) 以及功率检波器。该器件主要解决 Wi-Fi 6 系统在 2.4GHz 频段下的线性功率输出与接收灵敏度问题，特别是在高阶调制（如 MCS11）下的 EVM 性能表现优异。",
+  "reportSections": [
+    {
+      "id": "device_identity",
+      "title": "器件身份确认",
+      "body": "UPF5337 是一款 2.4GHz Wi-Fi 6 FEM。在射频链路中位于收发器与天线之间，承担功率放大、弱信号放大及开关切换任务。",
+      "sourceType": "datasheet",
+      "citations": []
+    },
+    {
+      "id": "what_this_part_is_for",
+      "title": "器件用途",
+      "body": "主要用于 802.11ax 网络设备（机顶盒、路由器）和 PC 系统。其目的是通过集成 PA/LNA 来减少 PCB 面积并提升 2.4GHz 信号的射频覆盖范围与吞吐量。",
+      "sourceType": "datasheet",
+      "citations": []
+    },
+    {
+      "id": "how_to_read_this_datasheet",
+      "title": "阅读建议",
+      "body": "1. 重点关注首页的 Feature List 中的 POUT 与 DEVM 关系。2. 必须仔细阅读 Page 6 的 Truth Table 确定控制逻辑。3. 结合 Page 3/4 的 TX/RX 表格参数，核对测试条件（如 MCS11）。",
+      "sourceType": "review",
+      "citations": []
+    },
+    {
+      "id": "key_parameters",
+      "title": "核心工程参数",
+      "body": "对于 Wi-Fi 6 应用，最重要的参数是 20dBm @ -43dB DEVM。此外，LNA 的 2.0dB 噪声系数是提升系统灵敏度的关键点。",
+      "sourceType": "datasheet",
+      "citations": []
+    },
+    {
+      "id": "section_by_section_reading_order",
+      "title": "建议阅读顺序",
+      "body": "1. Feature List (P1) 确认性能极限。2. Block Diagram (P1) 理解信号路径。3. Truth Table (P6) 确定控制引脚。4. RF Spec 表格 (P3-P4) 查看具体模式下的指标。5. Application Circuit (P7) 参考外围匹配。",
+      "sourceType": "review",
+      "citations": []
+    },
+    {
+      "id": "critical_graphs_and_tables",
+      "title": "关键表格说明",
+      "body": "Table 1 (Pin Description) 与 Figure 1 配合理解电源引脚分配（VCC1/VCC2/VCC0），防止布线错误。RF Transmit Mode 表格定义了不同调制下的功率，这是选型的最终依据。",
+      "sourceType": "datasheet",
+      "citations": []
+    },
+    {
+      "id": "risks_and_gotchas",
+      "title": "设计陷阱",
+      "body": "1. 不要忽略 ESD 等级（Class 1C），生产过程中需注意防护。2. Max RF input (+5dBm) 比较保守，避免直接连接大功率测试信号。3. 必须关注 VCC 供电电压，电压下降会直接影响线性功率。",
+      "sourceType": "review",
+      "citations": []
+    },
+    {
+      "id": "intern_action_list",
+      "title": "实习生下一步动作",
+      "body": "1. 根据 Page 7 的电路图，确认主芯片 GPIO 是否能驱动 1.8V~3.6V 的控制引脚。2. 在 PCB Layout 时，务必将散热焊盘连接到地平面。3. 如果需要做功率闭环校准，需向供应商索取 PDET 典型曲线数据。",
+      "sourceType": "review",
+      "citations": []
+    },
+    {
+      "id": "open_questions",
+      "title": "待澄清问题",
+      "body": "PDET 检波斜率、谐波抑制在全温范围内的漂移情况、以及在大电流 TX 模式下的散热温升预估。",
+      "sourceType": "review",
+      "citations": []
+    },
+    {
+      "id": "glossary_for_juniors",
+      "title": "术语解释",
+      "body": "DEVM: 动态误差矢量幅度，衡量调制质量。HE40: 高效率 40MHz 带宽。MCS11: Wi-Fi 6 的最高级调制方案 (1024-QAM)。Bypass: LNA 旁路模式，用于接收超强信号防止饱和。",
+      "sourceType": "review",
+      "citations": []
+    }
+  ],
+  "parameterRows": [
+    {
+      "name": "RF Type",
+      "value": "802.11ax / ac / n / b / g",
+      "status": "needs_review",
+      "evidence": null
+    },
+    {
+      "name": "Frequency Coverage",
+      "value": "2.4 GHz to 2.5 GHz",
+      "status": "needs_review",
+      "evidence": null
+    },
+    {
+      "name": "RX Gain / Noise Figure / Bypass Loss",
+      "value": "12 dB (Gain) / 2.0 dB (NF) / -6.0 dB (Bypass Loss)",
+      "status": "needs_review",
+      "evidence": null
+    },
+    {
+      "name": "Control Mode / Truth Table",
+      "value": "PAEN, Ctrl0, Ctrl1 (3-pin control)",
+      "status": "needs_review",
+      "evidence": null
+    },
+    {
+      "name": "Supply Voltage",
+      "value": "4.5 V to 5.5 V (Nominal 5.0V)",
+      "status": "needs_review",
+      "evidence": null
+    },
+    {
+      "name": "Package / Case",
+      "value": "16-pad QFN, 3mm x 3mm x 0.7mm",
+      "status": "needs_review",
+      "evidence": null
+    },
+    {
+      "name": "TX Linear Output Power",
+      "value": "20.0 dBm @ -43dB DEVM",
+      "status": "needs_review",
+      "evidence": null
+    },
+    {
+      "name": "EVM / ACLR Condition",
+      "value": "HE40 MCS11 (-43dB DEVM), VHT40 MCS9 (-35dB DEVM)",
+      "status": "needs_review",
+      "evidence": null
+    }
+  ],
+  "publicNotes": [],
+  "followUpTranscript": [],
+  "sourceAttribution": {
+    "mode": "llm_first",
+    "llmProvider": "gemini",
+    "searchProvider": null
+  },
+  "events": [
+    {
+      "id": "event-1774890334539-rwqzb0",
+      "createdAt": "2026-03-30T17:05:34.539Z",
+      "type": "analysis_created",
+      "summary": "初始分析已生成，可继续做证据验证和人工确认。"
+    }
+  ]
+}

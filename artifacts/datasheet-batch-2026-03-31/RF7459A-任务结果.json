@@ -1,0 +1,175 @@
+{
+  "taskMeta": {
+    "taskName": "RF7459A 批量分析",
+    "chipName": "RF7459A",
+    "sourceFile": "case2-RF7459A_Product_Data_Sheet.pdf",
+    "pageCount": 37
+  },
+  "identity": {
+    "canonicalPartNumber": "RF7459A",
+    "manufacturer": "RFMD (Qorvo)",
+    "deviceClass": "Multi-mode/Multi-band Power Amplifier Module (PAM)",
+    "parameterTemplateId": "cellular-3g4g5g",
+    "focusChecklist": [
+      "先看首页、feature list 和电气特性表。"
+    ],
+    "publicContext": [],
+    "confidence": 0.9
+  },
+  "executiveSummary": [
+    {
+      "id": "exec_1",
+      "label": "器件定位",
+      "value": "多模多频段 2G/3G/4G 线性功率放大器模块 (PAM)",
+      "title": "核心身份",
+      "body": "RF7459A 是一款高度集成的射频前端模块，覆盖了从 GSM 到 LTE 的主流频段。它不是一个单纯的放大器，而是一个包含多路增益链、开关切换和 MIPI RFFE 控制逻辑的复杂系统。",
+      "sourceType": "datasheet",
+      "citations": [
+        "page 1"
+      ]
+    },
+    {
+      "id": "exec_2",
+      "label": "核心技术特征",
+      "value": "支持 APT 供电模式与 MIPI RFFE 接口",
+      "title": "工程关键",
+      "body": "该器件专为配合 DC-DC 转换器（平均功率跟踪 APT）设计，通过 MIPI 接口动态调整偏置状态，以在不同输出功率水平下优化电流消耗。",
+      "sourceType": "datasheet",
+      "citations": [
+        "page 1",
+        "page 24"
+      ]
+    }
+  ],
+  "reportSections": [
+    {
+      "id": "device_identity",
+      "title": "器件身份确认",
+      "body": "该器件是 RFMD 生产的高集成度多模多频段功率放大器模块 (MMMB PAM)，旨在解决移动设备在复杂频段（2G/3G/4G）下的发射链路放大问题。它不仅包含放大器，还集成了复杂的开关矩阵和基于 MIPI 的控制逻辑。",
+      "sourceType": "datasheet",
+      "citations": []
+    },
+    {
+      "id": "what_this_part_is_for",
+      "title": "用途场景",
+      "body": "主要用于 4G 智能手机、平板电脑和数据卡。它特别强调了对 APT（平均功率跟踪）的支持，这意味着它非常适合与具备 APT 功能的射频收发器和电源管理芯片配合，以延长电池寿命。",
+      "sourceType": "datasheet",
+      "citations": []
+    },
+    {
+      "id": "how_to_read_this_datasheet",
+      "title": "阅读方法指导",
+      "body": "阅读此类 PAM 手册，实习生应遵循：1. 频段支持列表；2. 寄存器逻辑（确定 IO 端口如何映射）；3. 电气参数（注意线性度 vs 调制条件）；4. 供电策略（APT 降额曲线）。不要只盯着首页的最大功率数字，要看线性条件下的功率保证值。",
+      "sourceType": "review",
+      "citations": []
+    },
+    {
+      "id": "key_parameters",
+      "title": "关键参数深度解读",
+      "body": "重点关注各频段下的 Pout_max（满足 ACLR 要求的线性功率）。注意该器件在 High Power Mode (HPM) 和 Low Power Mode (LPM) 下的表现差异极大，设计时必须根据系统调度合理切换模式以节省电流。MIPI 寄存器的 Bias 调整值决定了静态电流，需针对不同模组批次进行校准。",
+      "sourceType": "review",
+      "citations": []
+    },
+    {
+      "id": "section_by_section_reading_order",
+      "title": "章节建议阅读顺序",
+      "body": "1. Features (P1) 确认频段；2. Functional Block Diagram (P1) 了解架构；3. Register 0 Table (P28) 确定硬件接线；4. Electrical Characteristics (P6-P21) 查看具体频段指标；5. Timing Diagram (P25) 编写驱动；6. Layout Guide (P37) 进行 PCB 设计。",
+      "sourceType": "review",
+      "citations": []
+    },
+    {
+      "id": "critical_graphs_and_tables",
+      "title": "关键图表及避坑",
+      "body": "务必查看 Page 28 的 Register 0 表。这是设计原理图的依据，决定了你的收发器输出应该接到 PAM 的哪个 Pin 上。此外，Page 9 的 Note 表明在低电压下必须手动减小 Target Power，否则 ACLR 会恶化。",
+      "sourceType": "datasheet",
+      "citations": []
+    },
+    {
+      "id": "risks_and_gotchas",
+      "title": "工程风险预警",
+      "body": "1. VCC 动态供电必须配合 APT 表，否则效率优势无法体现；2. 热设计是此类大电流 PAM 的死穴，散热地焊盘的过孔数量必须按手册 4:1 要求执行；3. MIPI 总线电容负载不能过大，否则波形畸变会导致配置失败。",
+      "sourceType": "review",
+      "citations": []
+    },
+    {
+      "id": "intern_action_list",
+      "title": "实习生下一步行动计划",
+      "body": "1. 对照原理图中的频段分配，查阅 Page 28 确定 MIPI 控制代码是否正确映射到相应引脚；2. 检查 VCC 供电电源是否选用了支持 APT 的 Buck 芯片；3. 核对 PCB Layout 建议，确保底层散热焊盘有足够的散热孔连接到主地层；4. 向供应商索取 TBD 匹配电感的建议值。",
+      "sourceType": "review",
+      "citations": []
+    },
+    {
+      "id": "open_questions",
+      "title": "待澄清项清单",
+      "body": "1. 具体的输出匹配网络（Matching Values）在不同双工器负载下的调整建议；2. 不同温度下的功率降额特性曲线；3. MIPI RFFE 的扩展协议版本兼容性确认。",
+      "sourceType": "review",
+      "citations": []
+    },
+    {
+      "id": "glossary_for_juniors",
+      "title": "新人术语表",
+      "body": "PAM: 功放模块；APT: 平均功率跟踪（通过调压省电）；MIPI RFFE: 射频前端控制接口；ACLR: 邻频道泄漏比（衡量对别人的干扰）；EVM: 误差向量幅度（衡量信号自己的质量）；HPM/LPM: 高/低功率模式。",
+      "sourceType": "review",
+      "citations": []
+    }
+  ],
+  "parameterRows": [
+    {
+      "name": "支持频段",
+      "value": "LTE/UMTS B1, 2, 3, 4, 5, 8, 9, 10, 18, 19, 20, 25, 26, 33, 34, 35, 36, 37, 39; Quad-band EDGE",
+      "status": "needs_review",
+      "evidence": null
+    },
+    {
+      "name": "最大线性输出功率",
+      "value": "+27.25 to +28.25 dBm (LTE/3G HPM)",
+      "status": "needs_review",
+      "evidence": null
+    },
+    {
+      "name": "ACLR / EVM Condition",
+      "value": "ACLR1 E-UTRA -34dBc (Max), EVM 2.5% @ 10MHz QPSK 12RB",
+      "status": "needs_review",
+      "evidence": null
+    },
+    {
+      "name": "RFFE 总线",
+      "value": "2-Wire MIPI RFFE Interface",
+      "status": "needs_review",
+      "evidence": null
+    },
+    {
+      "name": "Current Consumption",
+      "value": "430mA - 530mA (LTE HPM @ Max Pout)",
+      "status": "needs_review",
+      "evidence": null
+    },
+    {
+      "name": "VCC / Supply",
+      "value": "VBATT: 3.0V - 4.5V; VCC: 0.5V - 4.5V (APT Support)",
+      "status": "needs_review",
+      "evidence": null
+    },
+    {
+      "name": "封装",
+      "value": "42-pin, 7.0mm x 5.0mm x 0.915mm",
+      "status": "needs_review",
+      "evidence": null
+    }
+  ],
+  "publicNotes": [],
+  "followUpTranscript": [],
+  "sourceAttribution": {
+    "mode": "llm_first",
+    "llmProvider": "gemini",
+    "searchProvider": null
+  },
+  "events": [
+    {
+      "id": "event-1774887271730-wqztfs",
+      "createdAt": "2026-03-30T16:14:31.730Z",
+      "type": "analysis_created",
+      "summary": "初始分析已生成，可继续做证据验证和人工确认。"
+    }
+  ]
+}

@@ -1,0 +1,157 @@
+{
+  "taskMeta": {
+    "taskName": "UPF5755 批量分析",
+    "chipName": "UPF5755",
+    "sourceFile": "202307UPF5755 datasheet V1.2.pdf",
+    "pageCount": 7
+  },
+  "identity": {
+    "canonicalPartNumber": "UPF5755",
+    "manufacturer": "UPMicro (昂璞微)",
+    "deviceClass": "5GHz Wi-Fi 6 Front-End Module (FEM)",
+    "parameterTemplateId": "cellular-3g4g5g",
+    "focusChecklist": [
+      "先看首页、feature list 和电气特性表。"
+    ],
+    "publicContext": [],
+    "confidence": 0.9
+  },
+  "executiveSummary": "UPF5755 是一款针对 Wi-Fi 6 (802.11ax) 设计的高性能 5GHz 射频前端模块 (FEM)。它集成了功率放大器 (PA)、低噪声放大器 (LNA) 以及开关 (SPDT)，旨在解决 160MHz 高带宽下的线性度难题。对于实习生，重点在于理解 11ax 协议对 EVM 的严苛要求与输出功率之间的折中关系，以及该芯片在大功率发射时的电流代价。",
+  "reportSections": [
+    {
+      "id": "device_identity",
+      "title": "器件身份确认",
+      "body": "UPF5755 是一颗昂璞微 (UPMicro) 出品的 5GHz 高功率 WiFi 前端模块 (FEM)，支持最新的 802.11ax 协议，集成了 PA、LNA 和 T/R 开关。",
+      "sourceType": "datasheet",
+      "citations": []
+    },
+    {
+      "id": "what_this_part_is_for",
+      "title": "器件用途",
+      "body": "主要用于 802.11ax 网络设备、PC 卡及无线视频传输系统。它解决了在 5GHz 频段下，保持 Wi-Fi 6 高调制模式 (MCS11) 所需的极低 EVM 输出的问题。",
+      "sourceType": "datasheet",
+      "citations": []
+    },
+    {
+      "id": "how_to_read_this_datasheet",
+      "title": "阅读指南",
+      "body": "作为射频前端，切勿只看首页的 Pout 数字。应重点阅读 Page 3 的 RF Specifications，区分线性功率 (-43dB DEVM) 和 Mask 功率。同时要核对 Page 4 的 Truth Table，确认逻辑控制是否与你的主控平台匹配。",
+      "sourceType": "review",
+      "citations": []
+    },
+    {
+      "id": "key_parameters",
+      "title": "核心工程参数",
+      "body": "该器件在 5V 供电下，提供约 31dB 的发射增益和 14dB 的接收增益。其关键在于 HE160 模式下的 17dBm 线性功率，这是 Wi-Fi 6 吞吐量的保障。",
+      "sourceType": "datasheet",
+      "citations": []
+    },
+    {
+      "id": "section_by_section_reading_order",
+      "title": "推荐阅读顺序",
+      "body": "1. 首页 Feature List (确认功率档位)；2. Page 4 Table 2 (确认控制逻辑)；3. Page 3 RF Specs (查看不同模式下的线性指标)；4. Page 2 Absolute Maximum (确认耐压极限)；5. Page 6 Package Dimensions (检查物理封装尺寸)。",
+      "sourceType": "review",
+      "citations": []
+    },
+    {
+      "id": "critical_graphs_and_tables",
+      "title": "关键图表分析",
+      "body": "Table 2 (Truth Table) 定义了 Standby、TX、RX gain 和 RX bypass 四种工作模式，必须准确实现。RF Specifications 表格中的 Noise Figure (2.5dB) 和 Isolation (30dB) 是评估接收链灵敏度和发射泄露的关键指标。",
+      "sourceType": "datasheet",
+      "citations": []
+    },
+    {
+      "id": "risks_and_gotchas",
+      "title": "避坑指南",
+      "body": "注意 VCC0/1/2 必须同时供电。LNA 的 bypass 模式虽然增益为负 (-8dB)，但其 IP1dB 高达 19dBm，这是处理强信号、防止接收饱和的关键，不要忽略此功能的控制编程。",
+      "sourceType": "review",
+      "citations": []
+    },
+    {
+      "id": "intern_action_list",
+      "title": "实习生下一步行动",
+      "body": "1. 检查主控芯片的 GPIO 电平是否为 1.8V 或 3.3V，确保在 VCTLH 范围内；2. 在 PCB Layout 中为引脚 10, 11 (VCC) 预留足够宽的走线，以承载 500mA 电流；3. 确认原理图中 PDET (Pin 12) 的连接方式，是否需要反馈至 Transceiver 的功率检测口。",
+      "sourceType": "review",
+      "citations": []
+    },
+    {
+      "id": "open_questions",
+      "title": "待确认问题",
+      "body": "目前手册未提供典型性能曲线图 (S-parameters, Pout vs Gain curves)，建议向供应商申请完整的硬件设计指南以评估宽温范围内的增益平坦度。",
+      "sourceType": "review",
+      "citations": []
+    },
+    {
+      "id": "glossary_for_juniors",
+      "title": "术语表",
+      "body": "DEVM: Data Error Vector Magnitude, 衡量 802.11ax 信号质量的关键指标；HE160: High Efficiency 160MHz bandwidth；MCS11: 1024-QAM 调制等级，要求极高的信噪比。",
+      "sourceType": "review",
+      "citations": []
+    }
+  ],
+  "parameterRows": [
+    {
+      "name": "支持频段",
+      "value": "5.15GHz - 5.85GHz",
+      "status": "needs_review",
+      "evidence": null
+    },
+    {
+      "name": "Bandwidth Capability",
+      "value": "160MHz (HE160)",
+      "status": "needs_review",
+      "evidence": null
+    },
+    {
+      "name": "最大线性输出功率",
+      "value": "17dBm (HE160) / 21dBm (VHT80)",
+      "status": "needs_review",
+      "evidence": null
+    },
+    {
+      "name": "ACLR / EVM Condition",
+      "value": "-43dB DEVM (MCS11) / -35dB DEVM (MCS9)",
+      "status": "needs_review",
+      "evidence": null
+    },
+    {
+      "name": "RFFE 总线",
+      "value": "Discrete 3-line Control (PAEN, Ctrl0, Ctrl1)",
+      "status": "needs_review",
+      "evidence": null
+    },
+    {
+      "name": "Current Consumption",
+      "value": "490mA (Max TX) / 25mA (RX)",
+      "status": "needs_review",
+      "evidence": null
+    },
+    {
+      "name": "VCC / Supply",
+      "value": "4.75V - 5.25V (5.0V Typ.)",
+      "status": "needs_review",
+      "evidence": null
+    },
+    {
+      "name": "封装",
+      "value": "LGA 16-pin, 3mm x 3mm x 0.55mm",
+      "status": "needs_review",
+      "evidence": null
+    }
+  ],
+  "publicNotes": [],
+  "followUpTranscript": [],
+  "sourceAttribution": {
+    "mode": "llm_first",
+    "llmProvider": "gemini",
+    "searchProvider": null
+  },
+  "events": [
+    {
+      "id": "event-1774890402805-az7ift",
+      "createdAt": "2026-03-30T17:06:42.805Z",
+      "type": "analysis_created",
+      "summary": "初始分析已生成，可继续做证据验证和人工确认。"
+    }
+  ]
+}

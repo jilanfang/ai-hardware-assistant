@@ -1,0 +1,2 @@
+chip_name,source_file,status,template_id,canonical_part_number,manufacturer,device_class,report_key_parameter_count,final_key_parameter_count,summary
+UPF5755,202307UPF5755 datasheet V1.2.pdf,complete,wifi,UPF5755,Shanghai UPMicro Microelectronics (昂璞微),Wi-Fi Front-End Module (FEM),18,8,UPF5755 是一颗高度集成的 5GHz 射频前端，专为 Wi-Fi 6 路由器和移动终端设计。它集成了功率放大器 (PA)、带 Bypass 功能的低噪声放大器 (LNA)、发射/接收开关 (SPDT) 以及功率检波器 (PDET)。作为资深工程师，我建议你重点关注它在 HE160 模式下的线性度表现，这是 Wi-Fi 6 吞吐量的关键。

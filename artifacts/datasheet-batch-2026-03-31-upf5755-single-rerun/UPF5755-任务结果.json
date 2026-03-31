@@ -1,0 +1,148 @@
+{
+  "taskMeta": {
+    "taskName": "UPF5755 批量分析",
+    "chipName": "UPF5755",
+    "sourceFile": "202307UPF5755 datasheet V1.2.pdf",
+    "pageCount": 7
+  },
+  "identity": {
+    "canonicalPartNumber": "UPF5755",
+    "manufacturer": "Shanghai UPMicro Microelectronics (昂璞微)",
+    "deviceClass": "Wi-Fi Front-End Module (FEM)",
+    "parameterTemplateId": "wifi",
+    "focusChecklist": [
+      "先看首页、feature list 和电气特性表。"
+    ],
+    "publicContext": [],
+    "confidence": 0.9
+  },
+  "executiveSummary": [
+    {
+      "id": "exec_1",
+      "label": "器件定位",
+      "value": "5GHz Wi-Fi 6 (802.11ax) 前端模块 (FEM)",
+      "title": "项目核心价值",
+      "body": "UPF5755 是一颗高度集成的 5GHz 射频前端，专为 Wi-Fi 6 路由器和移动终端设计。它集成了功率放大器 (PA)、带 Bypass 功能的低噪声放大器 (LNA)、发射/接收开关 (SPDT) 以及功率检波器 (PDET)。作为资深工程师，我建议你重点关注它在 HE160 模式下的线性度表现，这是 Wi-Fi 6 吞吐量的关键。",
+      "sourceType": "datasheet",
+      "citations": [
+        "page 1"
+      ]
+    }
+  ],
+  "reportSections": [
+    {
+      "id": "device_identity",
+      "title": "1. 确认身份：这到底是什么？",
+      "body": "UPF5755 是一颗国产 5GHz Wi-Fi 6 FEM。通俗说，它就是 Wi-Fi 芯片组（SoC）与天线之间的‘扩音器’和‘助听器’。它把 SoC 发出的微弱信号放大推向天线（TX），并把天线收到的微弱信号放大传回 SoC（RX）。",
+      "sourceType": "review",
+      "citations": []
+    },
+    {
+      "id": "what_this_part_is_for",
+      "title": "2. 解决什么问题？",
+      "body": "它解决了 Wi-Fi 信号‘传不远’（通过 PA 提升发射功率）和‘听不清’（通过 LNA 提升接收灵敏度）的问题。特别优化了 Wi-Fi 6 的 1024QAM 调制，确保在高吞吐量下信号不失真。",
+      "sourceType": "review",
+      "citations": []
+    },
+    {
+      "id": "how_to_read_this_datasheet",
+      "title": "3. 避坑阅读法",
+      "body": "不要只看首页那个‘22dBm’的最大功率。对于 Wi-Fi 6 开发者，你唯一的重点是第 3 页 Transmit Mode 表格中的 17dBm（-43dB DEVM 条件）。如果你的系统需要 HE160 模式，你只能按 17dBm 来评估覆盖范围。",
+      "sourceType": "review",
+      "citations": []
+    },
+    {
+      "id": "key_parameters",
+      "title": "4. 实习生必背参数",
+      "body": "1. 频段：5.15-5.85GHz（无 6GHz 支持）；2. 线性功率：17dBm @ MCS11/HE160；3. 接收增益/NF：14dB/2.5dB；4. 供电：5.0V。这四个数字决定了你原理图的基本选型逻辑。",
+      "sourceType": "review",
+      "citations": []
+    },
+    {
+      "id": "critical_graphs_and_tables",
+      "title": "5. 关键图表：控制真值表",
+      "body": "看第 4 页的 Table 2。注意 PAEN、Ctrl0、Ctrl1 是如何组合出 TX 和 RX 模式的。特别注意 Standby 模式 (0,0,0) 的功耗，这在便携设备设计中非常关键。",
+      "sourceType": "datasheet",
+      "citations": []
+    },
+    {
+      "id": "risks_and_gotchas",
+      "title": "6. 落地风险：别死在 Layout 上",
+      "body": "射频芯片最怕两件事：地不干净、散热不行。由于是 LGA 封装且电流高达 490mA，底部 Ground Paddle 下方必须打密集的散热过孔直达主地层。此外，VCC1 和 VCC2 引脚的去耦电容如果放远了，PA 的 EVM 会炸掉。",
+      "sourceType": "review",
+      "citations": []
+    },
+    {
+      "id": "intern_action_list",
+      "title": "7. 实习生下一步任务",
+      "body": "1. 在原理图中根据引脚定义连接到 SoC 的 GPIO；2. 核对 SoC 输出的逻辑电平是否在 1.6V~3.6V 之间；3. 检查应用电路图（Page 5）中的所有隔直电容和去耦电容规格；4. 向 Layout 同学强调底部散热焊盘的过孔设计。",
+      "sourceType": "review",
+      "citations": []
+    }
+  ],
+  "parameterRows": [
+    {
+      "name": "RF Type",
+      "value": "802.11ax (Wi-Fi 6), 兼容 802.11a/n/ac",
+      "status": "needs_review",
+      "evidence": null
+    },
+    {
+      "name": "Frequency Coverage",
+      "value": "5.15GHz - 5.85GHz",
+      "status": "needs_review",
+      "evidence": null
+    },
+    {
+      "name": "RX Gain / Noise Figure / Bypass Loss",
+      "value": "Gain: 14dB, NF: 2.5dB, Bypass Loss: 8dB",
+      "status": "needs_review",
+      "evidence": null
+    },
+    {
+      "name": "Control Mode / Truth Table",
+      "value": "PAEN, Ctrl0, Ctrl1 三线控制; 支持 Standby, TX, RX Gain, RX Bypass 模式",
+      "status": "needs_review",
+      "evidence": null
+    },
+    {
+      "name": "Supply Voltage",
+      "value": "4.75V - 5.25V (Typ: 5.0V)",
+      "status": "needs_review",
+      "evidence": null
+    },
+    {
+      "name": "Package / Case",
+      "value": "LGA 16-pin, 3mm x 3mm x 0.55mm",
+      "status": "needs_review",
+      "evidence": null
+    },
+    {
+      "name": "TX Linear Output Power",
+      "value": "17.0 dBm (HE160, MCS11)",
+      "status": "needs_review",
+      "evidence": null
+    },
+    {
+      "name": "EVM / ACLR Condition",
+      "value": "-43dB DEVM (MCS11, HE160); -35dB DEVM (MCS9, VHT80)",
+      "status": "needs_review",
+      "evidence": null
+    }
+  ],
+  "publicNotes": [],
+  "followUpTranscript": [],
+  "sourceAttribution": {
+    "mode": "llm_first",
+    "llmProvider": "gemini",
+    "searchProvider": null
+  },
+  "events": [
+    {
+      "id": "event-1774891694767-pfl5i2",
+      "createdAt": "2026-03-30T17:28:14.767Z",
+      "type": "analysis_created",
+      "summary": "初始分析已生成，可继续做证据验证和人工确认。"
+    }
+  ]
+}

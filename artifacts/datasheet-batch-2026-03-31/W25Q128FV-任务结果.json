@@ -1,0 +1,223 @@
+{
+  "taskMeta": {
+    "taskName": "W25Q128FV 批量分析",
+    "chipName": "W25Q128FV",
+    "sourceFile": "W25Q128FVSIG.pdf",
+    "pageCount": 99
+  },
+  "identity": {
+    "canonicalPartNumber": "W25Q128FV",
+    "manufacturer": "Winbond",
+    "deviceClass": "Serial Flash Memory",
+    "parameterTemplateId": "serial-flash",
+    "focusChecklist": [
+      "先看首页、feature list 和电气特性表。"
+    ],
+    "publicContext": [],
+    "confidence": 0.95
+  },
+  "executiveSummary": [
+    {
+      "id": "exec_1",
+      "label": "器件定位",
+      "value": "高性能 128M-bit Serial Flash 存储器",
+      "title": "大容量、多接口 SPI 存储方案",
+      "body": "W25Q128FV 是 Winbond SpiFlash 系列中的主力型号，提供 16MB 存储空间。其核心优势在于支持 Standard/Dual/Quad SPI 以及 QPI 接口，最高等效带宽可达 416MHz，足以支撑代码影子运行 (Shadowing) 和原地执行 (XIP) 应用。",
+      "sourceType": "datasheet",
+      "citations": [
+        {
+          "page": 6,
+          "context": "The W25Q128FV (128M-bit) Serial Flash memory provides a storage solution for systems with limited space, pins and power."
+        }
+      ]
+    }
+  ],
+  "reportSections": [
+    {
+      "id": "device_identity",
+      "title": "器件身份确认",
+      "body": "Winbond W25Q128FV 是一款支持 Wide Range 电压、极高性能的 128M-bit Serial Flash。它不仅是简单的 SPI Flash，还集成了对 QPI (Quad Peripheral Interface) 的支持，通常用于高性能 MCU 的代码执行存储或作为 SoC 的启动镜像存放地。",
+      "sourceType": "datasheet",
+      "citations": [
+        {
+          "id": "citation-1",
+          "sourceType": "datasheet",
+          "page": 1,
+          "quote": "",
+          "url": "",
+          "title": "",
+          "snippet": ""
+        }
+      ]
+    },
+    {
+      "id": "what_this_part_is_for",
+      "title": "器件用途与解决问题",
+      "body": "解决嵌入式系统中存储密度与引脚数量之间的矛盾。128M-bit 足够存放复杂的操作系统内核或音频数据，而接口上仅需 4-6 根引脚即可达到并行 Flash 的读取速度，极大地简化了 PCB 布线。",
+      "sourceType": "datasheet",
+      "citations": [
+        {
+          "id": "citation-1",
+          "sourceType": "datasheet",
+          "page": 6,
+          "quote": "",
+          "url": "",
+          "title": "",
+          "snippet": ""
+        }
+      ]
+    },
+    {
+      "id": "how_to_read_this_datasheet",
+      "title": "资深工程师阅读建议",
+      "body": "1. 先看首页确认电压范围是否匹配 (2.7V-3.6V)。\n2. 重点查阅 Block Diagram (第 12 页)，理解页、扇区、块的层级，这对编写驱动和文件系统分配非常关键。\n3. 跳转至 AC Characteristics (第 84-86 页)，确认系统时钟频率和擦写时间是否满足产品实时性要求。\n4. 必须精读 Status Registers (第 16-20 页)，这是所有高级特性（如写保护、Quad 使能）的控制中枢。",
+      "sourceType": "review",
+      "citations": []
+    },
+    {
+      "id": "section_by_section_reading_order",
+      "title": "工程执行级阅读顺序",
+      "body": "1. **第 6 节 (Functional Description)**: 弄懂 SPI vs QPI 的切换机制。\n2. **第 8 节 (Instructions)**: 查表确认 Read/Program/Erase 的 Opcode。初学者最容易在指令集里迷路，只看最基础的 03h (Read), 02h (Page Program), 20h (Sector Erase)。\n3. **第 9.3 节 (Power-up Timing)**: 硬件工程师必须要看，决定了上电复位电路的设计和软件延时。\n4. **第 11 节 (Ordering Information)**: 确定买回来的具体物料后缀，看看有没有带 QE 位默认开启的型号。",
+      "sourceType": "review",
+      "citations": []
+    },
+    {
+      "id": "risks_and_gotchas",
+      "title": "避坑指南",
+      "body": "1. **QE 位是持久性的**: 一旦通过指令置位，除非再次通过指令清零，否则该位在上电后依然生效。这会导致原有硬件 /WP 控制电路失效。\n2. **擦除暂停 (Suspend)**: 指令 75h 可以暂停擦除，但这并不意味着可以立即读取所有区域，只能读取未受影响的块。新手常忽略这一点导致读取数据冲突。\n3. **Dummy Clocks**: 使用 Fast Read 指令时，必须严格按照 Table 要求配置 Dummy Cycles，否则时钟频率越高，读取数据出错概率越大。",
+      "sourceType": "review",
+      "citations": []
+    },
+    {
+      "id": "intern_action_list",
+      "title": "实习生深读清单",
+      "body": "1. 找一份 W25Q128FV 的参考代码，对比指令表中的 Page Program (02h) 时序图。 \n2. 思考：为什么 8 引脚封装启用 Quad SPI 后，硬件工程师不再建议连接 /WP 引脚？ \n3. 在 PCB Layout 时，SPI 时钟线、数据线应该如何等长走线以满足 104MHz 的要求？ \n4. 查询芯片的 Unique ID 读取指令 (4Bh)，思考如何在量产中利用这个 ID 做产品防伪或云端绑定。",
+      "sourceType": "review",
+      "citations": []
+    },
+    {
+      "id": "glossary_for_juniors",
+      "title": "新人术语表",
+      "body": "1. **Sector Erase (4KB)**: 最小的物理擦除单元，存储器更新一个字节前，必须先擦除包含它的整个扇区。\n2. **Page Program (256B)**: 最小的写入单元，一次最多写入 256 字节。\n3. **XIP (Execute In Place)**: 处理器直接从 Flash 读取并运行代码，不需要先拷贝到 RAM。\n4. **OTP (One Time Programmable)**: 安全寄存器区，一旦锁定就不能再修改，适合存放序列号或密钥。",
+      "sourceType": "datasheet",
+      "citations": [
+        {
+          "id": "citation-1",
+          "sourceType": "datasheet",
+          "page": 6,
+          "quote": "",
+          "url": "",
+          "title": "",
+          "snippet": ""
+        }
+      ]
+    }
+  ],
+  "parameterRows": [
+    {
+      "name": "Technology / Memory Type",
+      "value": "NOR Serial Flash",
+      "status": "confirmed",
+      "evidence": null
+    },
+    {
+      "name": "Memory Size / Density",
+      "value": "128M-bit (16M-byte)",
+      "status": "confirmed",
+      "evidence": null
+    },
+    {
+      "name": "Organization",
+      "value": "65,536 pages of 256-bytes",
+      "status": "confirmed",
+      "evidence": null
+    },
+    {
+      "name": "Interface / I/O Mode",
+      "value": "Standard/Dual/Quad SPI & QPI",
+      "status": "confirmed",
+      "evidence": null
+    },
+    {
+      "name": "Max Clock Frequency",
+      "value": "104MHz",
+      "status": "confirmed",
+      "evidence": null
+    },
+    {
+      "name": "Supply Voltage",
+      "value": "2.7V to 3.6V",
+      "status": "confirmed",
+      "evidence": null
+    },
+    {
+      "name": "Active / Power-Down Current",
+      "value": "4mA (Read) / <1µA (typ. Power-down)",
+      "status": "confirmed",
+      "evidence": null
+    },
+    {
+      "name": "Program / Erase Time",
+      "value": "Page: 0.7ms, Sector(4KB): 45ms, Block(64KB): 150ms (typ)",
+      "status": "confirmed",
+      "evidence": null
+    },
+    {
+      "name": "接口模式选择",
+      "value": "QE 位的控制",
+      "status": "confirmed",
+      "evidence": null
+    },
+    {
+      "name": "擦除粒度管理",
+      "value": "4KB/32KB/64KB 多级擦除",
+      "status": "confirmed",
+      "evidence": null
+    },
+    {
+      "name": "上电时序要求",
+      "value": "tVSL 延迟",
+      "status": "confirmed",
+      "evidence": null
+    },
+    {
+      "name": "硬件控制冲突",
+      "value": "QE=1 时功能引脚失效",
+      "status": "confirmed",
+      "evidence": null
+    },
+    {
+      "name": "型号性能差异",
+      "value": "IG vs IQ/IF 擦除速度差异",
+      "status": "confirmed",
+      "evidence": null
+    },
+    {
+      "name": "寿命指标",
+      "value": "100,000 次擦写寿命，20 年数据保持",
+      "status": "confirmed",
+      "evidence": null
+    },
+    {
+      "name": "擦除能力",
+      "value": "支持 4KB, 32KB, 64KB 擦除及整片擦除",
+      "status": "confirmed",
+      "evidence": null
+    }
+  ],
+  "publicNotes": [],
+  "followUpTranscript": [],
+  "sourceAttribution": {
+    "mode": "llm_first",
+    "llmProvider": "gemini",
+    "searchProvider": null
+  },
+  "events": [
+    {
+      "id": "event-1774887455026-ecjg2f",
+      "createdAt": "2026-03-30T16:17:35.027Z",
+      "type": "analysis_created",
+      "summary": "初始分析已生成，可继续做证据验证和人工确认。"
+    }
+  ]
+}

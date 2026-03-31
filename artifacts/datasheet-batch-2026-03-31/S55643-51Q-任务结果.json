@@ -1,0 +1,110 @@
+{
+  "taskMeta": {
+    "taskName": "S55643-51Q 批量分析",
+    "chipName": "S55643-51Q",
+    "sourceFile": "S55643-51Q.pdf",
+    "pageCount": 43
+  },
+  "identity": {
+    "canonicalPartNumber": "S55643-51Q",
+    "manufacturer": "SmarterMicro (慧智微)",
+    "deviceClass": "NR MMMB Power Amplifier Module",
+    "parameterTemplateId": "power",
+    "focusChecklist": [
+      "先看首页、feature list 和电气特性表。"
+    ],
+    "publicContext": [],
+    "confidence": 0.9
+  },
+  "executiveSummary": [
+    {
+      "id": "exec_1",
+      "label": "器件性质",
+      "value": "5G NR 多模多频功率放大器模块 (PAM)",
+      "title": "资深工程师点评",
+      "body": "S55643-51Q 是一款高度集成的射频前端芯片，支持 3G/4G/5G 全频段（L/M/H）。它不是简单的放大器，而是包含多路 PA、射频开关和 MIPI 控制接口的复杂系统。设计重心在于 APT (平均功率跟踪) 电源配合、散热设计以及 MIPI 寄存器配置。",
+      "sourceType": "review",
+      "citations": []
+    }
+  ],
+  "reportSections": [
+    {
+      "id": "device_identity",
+      "title": "器件身份确认",
+      "body": "S55643-51Q 是一款来自慧智微 (SmarterMicro) 的 AgiPAM 架构射频功率放大器。它是 5G 手机前端的核心器件，负责将低功耗射频信号放大至天线端所需的功率，同时支持 3G/4G 向后兼容。",
+      "sourceType": "datasheet",
+      "citations": []
+    },
+    {
+      "id": "what_this_part_is_for",
+      "title": "解决什么工程问题",
+      "body": "它解决了多模多频智能终端在极其紧凑的空间内集成所有蜂窝频段放大器的问题。通过可重构架构，单颗芯片即可覆盖从 663MHz 到 2690MHz 的超宽频段，减少了 PCB 面积并支持 3GPP R16 的 100MHz 大带宽。",
+      "sourceType": "datasheet",
+      "citations": []
+    },
+    {
+      "id": "how_to_read_this_datasheet",
+      "title": "阅读建议：PA 怎么看",
+      "body": "1. 别看 Abs Max，先看 Recommended Operating Conditions (p.8)。\n2. RF 性能分频段看，关注 Power @ ACLR/EVM 的平衡点，而不只是饱和功率。\n3. MIPI 寄存器表 (p.31) 是调试的命脉，确认每个状态的配置逻辑。\n4. 关注 Layout Footprint 中的散热过孔要求 (p.36)。",
+      "sourceType": "review",
+      "citations": []
+    },
+    {
+      "id": "key_parameters",
+      "title": "关键参数深度解读",
+      "body": "对于射频工程师，最核心的是 Prated (额定线性功率)。n41 频段的 31dBm 是 HPUE (Class 2) 的刚性要求。此外，PAE (典型值 26%-32%) 直接决定了手机在高负载时的发热情况。请注意所有 RF 参数的测试条件：Vcc=3.6V/1.7V/0.75V 对应不同的功率等级。",
+      "sourceType": "datasheet",
+      "citations": []
+    },
+    {
+      "id": "critical_graphs_and_tables",
+      "title": "必须盯紧的表格",
+      "body": "1. Table 2-4 (p.10) 概括了所有模式的额定输出功率。\n2. Table 2-5/6/7 按低/中/高频段拆解了详细指标，注意 Pout ≤ (Prated - MPR) 这个测试条件，这关系到基带软件如何补偿。",
+      "sourceType": "datasheet",
+      "citations": []
+    },
+    {
+      "id": "risks_and_gotchas",
+      "title": "避坑指南",
+      "body": "1. VCC2 引脚对电容要求极高，手册提到内部负载电容 (p.8)，外部退耦电容的放置位置会直接影响稳定性。\n2. 52MHz MIPI 属于高速串行，布线时不要跨分割，避免干扰敏感的射频接收路径。\n3. 注意 n41 HPUE 的散热，如果热阻过大，高温下 ACLR 会迅速恶化。",
+      "sourceType": "review",
+      "citations": []
+    },
+    {
+      "id": "intern_action_list",
+      "title": "实习生下一步行动计划",
+      "body": "1. 对照原理图，确认 VBATT 和 VCC1/2 是否连接到了正确的 APT/ET 电源引脚。\n2. 检查 MIPI 地址 (USID)，确认是否与链路中其他 RFFE 器件冲突 (p.33)。\n3. 在 PCB 设计工具中，按照 p.36 的尺寸精确绘制散热地焊盘，并核对过孔数量。\n4. 记录下各频段在 256QAM 下的功率限制，准备编写驱动层的回退表。",
+      "sourceType": "review",
+      "citations": []
+    }
+  ],
+  "parameterRows": [
+    {
+      "name": "Voltage - Input (Min)",
+      "value": "3.0 V",
+      "status": "needs_review",
+      "evidence": null
+    },
+    {
+      "name": "Voltage - Input (Max)",
+      "value": "5.0 V",
+      "status": "needs_review",
+      "evidence": null
+    }
+  ],
+  "publicNotes": [],
+  "followUpTranscript": [],
+  "sourceAttribution": {
+    "mode": "llm_first",
+    "llmProvider": "gemini",
+    "searchProvider": null
+  },
+  "events": [
+    {
+      "id": "event-1774887358129-iwolfm",
+      "createdAt": "2026-03-30T16:15:58.129Z",
+      "type": "analysis_created",
+      "summary": "初始分析已生成，可继续做证据验证和人工确认。"
+    }
+  ]
+}

@@ -1,0 +1,323 @@
+[
+  {
+    "provider": "lyapi",
+    "baseUrl": "https://lyapi.com",
+    "model": "gemini-3-flash-preview",
+    "mode": "gemini",
+    "ok": true,
+    "status": 200,
+    "elapsedMs": 24869,
+    "textPreview": "作为一名资深电子工程师，我根据您提供的 **UPF5755** 官方数据手册（V1.2版本），并结合行业公开讨论、市场定位以及同类射频前端（FEM）芯片的用户反馈，为您整理了一份详尽的芯片分析报告。\n\n---\n\n# UPF5755 5GHz WiFi 6 (802.11ax) 射频前端模块分析报告\n\n## 1. 芯片概述与市场定位\nUPF5755 是由上海昂璞微电子（UPMicro）开发的一款高度集成的 5GHz 射频前端模块（FEM）。它专为 **Wi-Fi 6 (802.11ax)** 标准设计，涵盖了 5.15GHz 至 5.85GHz 的工作频率。\n\n*   **集成度：** 该芯片在一个 3mm x 3mm 的紧凑封装内集成了功率放大器（PA）、带旁路功能的低噪声放大器（LNA）、单刀双掷天线开关（SPDT）以及功率检测器（PDET）。\n*   **市场定位：** 主要面向消费级无线通信设备，如 802.11ax 路由器、PC/笔记本网卡（PCMCIA/mini-cards）、无线视频传输系统等。它是典型的高性价比“国产替代”方案，常用于对成本和布板空间有严格要求的项目中。\n\n## 2. 核心技术指标分析\n根据数据手册第 3 页的 RF 参数，我们可以得出以下关键结论：\n\n### A. 发射性能 (Transmit Mode)\n*   **线性输出功率（这是衡量 FEM 性能的核心）：**\n    *   **HE160 (MCS11)：** 17.0dBm @ -43dB DEVM。这表明它能良好支持 Wi-Fi 6 的 160MHz 频宽及高阶调制，满足超高速率需求。\n    *   **VHT80 (MCS9)：** 21.0dBm @ -35dB DEVM。\n    *   这属于**中功率**量级。相比于一些高端大功率 FEM（如某些 23dBm+ 的方案），UPF5755 更注重在功耗与性能之间的平衡。\n*   **增益：** 典型值 31dB。高增益意味着对 SoC 端输出驱动的要求较低。\n*   **电流消耗：** POUT 在 26dBm（饱和边缘）时电流约 490mA，典型工作电流在 260mA-300mA 左右，热设计压力中等。\n\n### B. 接收性能 (Receive Mode)\n*   **增益：** 典型值 14dB。\n*   **噪声系数 (NF)：** 2.5dB。这是一个标准水准，能有效补偿链路损耗，提升接收灵敏度。\n*   **旁路模式 (Bypass)：** 提供 -8dB 增益。在靠近路由器（强信号）时，开启旁路模式可防止后端接收机饱和，扩大动态范围。\n\n## 3. 设计与应用要点 (Design Insights)\n\n### A. 逻辑控制与接口\n*   **控制电压：** 支持 1.6V 至 3.6V ",
+    "textLength": 2770,
+    "usage": {
+      "promptTokenCount": 3777,
+      "toolUsePromptTokenCount": 0,
+      "candidatesTokenCount": 1681,
+      "totalTokenCount": 5458,
+      "thoughtsTokenCount": 0,
+      "cachedContentTokenCount": 0,
+      "promptTokensDetails": null,
+      "toolUsePromptTokensDetails": null
+    },
+    "rawPreview": "                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                        "
+  },
+  {
+    "provider": "lyapi",
+    "baseUrl": "https://lyapi.com",
+    "model": "gemini-3.1-pro-preview",
+    "mode": "gemini",
+    "ok": true,
+    "status": 200,
+    "elapsedMs": 55592,
+    "textPreview": "这是一份基于您提供的UPF5755 Datasheet（V1.2版本）以及结合业界主流WiFi 6射频前端模块（FEM）应用特性的资深电子工程师分析报告。\n\n本报告严格依据文档参数，从架构、射频性能、电气特性、应用设计及市场定位等维度进行全面剖析。\n\n---\n\n# UPF5755 (昂璞微 UPMicro) 芯片评估报告\n\n## 一、 芯片概述与市场定位\n**UPF5755** 是一款高度集成的 5.15 GHz 至 5.85 GHz 频段 **802.11ax (WiFi 6) 射频前端模块 (FEM)**。\n*   **内部集成：** 5GHz 功率放大器 (PA)、带旁路模式的低噪声放大器 (LNA)、单刀双掷开关 (SPDT) 以及功率检测器 (Power Detector)。\n*   **目标应用：** 个人电脑网卡、PCMCIA/Mini-cards、无线视频传输系统及各类WiFi 6网络设备。\n*   **芯片定位：** 从5V供电和17dBm @ MCS11的输出功率来看，该芯片定位为**中大功率、高集成度的消费级/企业级Wi-Fi 6路由及终端市场**，是对标台系（如立积电子 RichWave）和美系（如Qorvo, Skyworks）同级别5GHz FEM的国产替代方案。\n\n---\n\n## 二、 核心参数深度解析\n\n### 1. 发射端 (TX) 性能评估\n*   **线性输出功率 (POUT)：** \n    *   17.0dBm @ -43dB DEVM (HE160, MCS11)\n    *   21.0dBm @ -35dB DEVM (VHT80, MCS9)\n    *   22.0dBm @ Mask Compliance (802.11n, MCS0)\n    *   *工程师点评：* 满足主流WiFi 6 160MHz频宽的高阶调制（1024-QAM）需求。17dBm的线性功率在5V FEM中属于**中规中矩的主流水平**，足以覆盖典型的室内路由器和高端网卡需求。\n*   **小信号增益：** 31dB (典型值)。增益非常充足，对主控SoC的射频输出功率要求较低。\n*   **功耗表现：** 静态电流220mA，调制信号下典型值260mA，最大值490mA。\n    *   *工程师点评：* 峰值电流接近500mA，在设计多天线（如4x4 MIMO）系统时，峰值总电流将达到2A，对**系统供电网络的瞬态响应和电源滤波（LDO/DC-DC）**提出了较高要求。\n\n### 2. 接收端 (RX) 性能评估\n*   **增益与噪声：** 典型增益 14dB，噪声系数 (NF) 为 **2.5dB**。\n    *   *工程师点评：* 2.5dB的噪声系数在当前业界属于**合格但非顶尖**水平（一线大厂部分竞品能做到1.",
+    "textLength": 3528,
+    "usage": {
+      "promptTokenCount": 3777,
+      "toolUsePromptTokenCount": 0,
+      "candidatesTokenCount": 2244,
+      "totalTokenCount": 6021,
+      "thoughtsTokenCount": 0,
+      "cachedContentTokenCount": 0,
+      "promptTokensDetails": null,
+      "toolUsePromptTokensDetails": null
+    },
+    "rawPreview": "                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                        "
+  },
+  {
+    "provider": "lyapi",
+    "baseUrl": "https://lyapi.com",
+    "model": "gpt-4o",
+    "mode": "responses",
+    "ok": true,
+    "status": 200,
+    "elapsedMs": 14902,
+    "textPreview": "### UPF5755 Front End Module Analysis Report\n\n#### Product Overview\nThe UPF5755 is developed by Shanghai UPMicro Microelectronics Co., Ltd as a front-end module (FEM) for the 5.15 to 5.85 GHz frequency band, suitable for 802.11ax WiFi applications. This module integrates high-performance components, making it versatile for various personal computing systems, including PC cards and WLAN-equipped wireless video systems.\n\n#### Key Features\n- **Output Power**: Achieves different output levels depending on modulation schemes, like 17 dBm at -43 dB DEVM for HE160, MCS11.\n- **High Linearity**: Ensures signal fidelity in varying operating conditions.\n- **Integrated Components**: Incorporates a 5 GHz Power Amplifier (PA), Single Pole Double Throw (SPDT) switch, and Low Noise Amplifier (LNA) with bypass and power detector.\n- **Compact Design**: Fits a small footprint with dimensions of 3mm x 3mm x 0.55mm in a 16-pin LGA package.\n\n#### Electrical Specifications\n- **Supply Voltage**: Operates between 4.75 and 5.25 V.\n- **Switching Time**: 400 ns for TX to RX and RX bypass mode changes.\n- **Operating Temperature**: Ranges from -30 to 85°C, with a storage capacity between -40 to 125°C.\n- **Input",
+    "textLength": 3117,
+    "usage": {
+      "input_tokens": 2652,
+      "input_tokens_details": {
+        "cached_tokens": 0
+      },
+      "output_tokens": 716,
+      "output_tokens_details": {
+        "reasoning_tokens": 0
+      },
+      "total_tokens": 3368
+    },
+    "rawPreview": "                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                        "
+  },
+  {
+    "provider": "lyapi",
+    "baseUrl": "https://lyapi.com",
+    "model": "gpt-4.1",
+    "mode": "responses",
+    "ok": true,
+    "status": 200,
+    "elapsedMs": 23254,
+    "textPreview": "以下为UPF5755芯片的完整分析报告，基于官方数据手册内容、公开讨论和用户反馈，所有结论均真实可靠，未有臆测或编造。\n\n---\n\n## 一、产品概要\n\n**UPF5755**是上海优普微电子（UPMicro）开发的**802.11ax WiFi前端模块（FEM）**，适用于5.15~5.85 GHz频段。该模块集成高性能功率放大器（PA）、低噪声放大器（LNA，含旁路功能）、宽带SPDT开关与功率检测器，简化外围设计、不需大量外部元件，适合紧凑型便携设备使用。\n\n**典型应用**包括：\n- 802.11ax网络设备\n- PC卡、PCMCIA卡、Mini卡与半Mini卡\n- 无线视频传输系统\n\n---\n\n## 二、主要特性\n\n- **频率覆盖**：5.15~5.85GHz，支持802.11ax/ac/n WiFi制式\n- **输出功率**：\n  - HE160 (MCS11, -43dB DEVM)：17 dBm\n  - VHT80 (MCS9, -35dB DEVM)：21 dBm\n  - 802.11n HT20 MCS0：22 dBm（掩码合规）\n- **增益**：接收LNA模式 13~14.5dB，旁路模式约-8dB；发射模式29~32dB\n- **噪声系数（NF）**：2.5dB（RX LNA模式）\n- **封装**：LGA 3mm x 3mm x 0.55mm，16PIN，MSL3等级，底部焊盘接地\n- **低功耗设计**：LNA和PA支持控制引脚使能/禁用，RX支持旁路模式节能\n- **高线性度，高隔离度**：ANT-TX隔离30dB（RX模式）\n- **环境兼容**：LEAD-FREE无铅，符合ROHS/REACH环保要求\n- **静电保护**：HBM 1kV，CDM 2kV\n- **工作温度**：-30~85℃，存储温度-40~125℃\n\n---\n\n## 三、电气 & 射频指标\n\n### 1. 供电与控制\n- 工作电压：4.75~5.25V\n- 控制电压高：1.6~3.6V（逻辑“1”），低：0~0.3V（逻辑“0”）\n- 功耗：\n  - 发射模式（最大）：300mA/490mA（POUT=26dBm）\n  - RX模式：25mA（LNA使能，无输入），2mA（旁路）\n  \n### 2. 射频性能\n**接收端：**\n- 增益LNA使能：13~14.5dB\n- 增益旁路：-8dB\n- 噪声系数：2.5dB\n- 输入三阶交调点（IIP3）：10dBm（LNA），30dBm（旁路）\n- 1dB压缩点：1dBm（LNA），19dBm（旁路）\n- ANT-TX隔离：30dB\n\n**发射端：**\n- 输出功率：\n  - 17dBm@HE160/-43dBDEVM\n  - 21dBm@VHT80/-35dBDEVM\n  - 22dBm@802.11n H",
+    "textLength": 2621,
+    "usage": {
+      "input_tokens": 2652,
+      "input_tokens_details": {
+        "cached_tokens": 0
+      },
+      "output_tokens": 1712,
+      "output_tokens_details": {
+        "reasoning_tokens": 0
+      },
+      "total_tokens": 4364
+    },
+    "rawPreview": "                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                        "
+  },
+  {
+    "provider": "lyapi",
+    "baseUrl": "https://lyapi.com",
+    "model": "gpt-5-mini",
+    "mode": "responses",
+    "ok": true,
+    "status": 200,
+    "elapsedMs": 99623,
+    "textPreview": "下面给出基于您上传的 UPF5755 数据表（Datasheet V1.2）做出的“芯片报告”。说明：我仅根据您提供的 datasheet 内容与常规工程经验进行分析；当前会话不能访问互联网检索公开讨论或用户社区的原始帖子，因此在报告中我会明确标注哪些结论直接来自 datasheet、哪些为工程推断或需要通过测量/厂商确认的事项。报告分为要点摘要、详细技术解析（按功能块）、工程集成建议、测试/验证建议、风险与未决问题（需厂商/社区补充）以及结论与建议动作项。\n\n一、要点摘要（基于 datasheet 的事实）\n- 器件名称/用途：UPF5755，5.15–5.85 GHz 802.11ax WiFi 前端模块（FEM），内含 5 GHz PA、5 GHz LNA（带旁路）和宽带 SPDT，含功率检测器。\n- 封装/引脚：LGA 3.0×3.0×0.55 mm，16 引脚＋底部接地焊盘（底部焊盘必须接地），MSL3。\n- 工作电源：VCC 典型 5.0 V（允许范围 4.75–5.25 V）；datasheet 最大绝对值列出 Vcc 可达 6 V（注：仅为极限）。\n- 控制电平：逻辑“1” VCTLH 范围 1.6–3.6 V；逻辑“0” 0–0.3 V。PA_EN, Ctrl0, Ctrl1 用于模式切换，真值表见 datasheet。\n- 模式切换时间：TX↔RX 及 Rx↔Rx bypass 切换时间均标称 400 ns（50% 控制到 RF 到 90%/10%）。\n- 接口功率极限：最大 RF 输入功率（TX Port / ANT Port）均标称 10 dBm（TA=25℃），提示对接入输入功率受限。\n- ESD 能力：HBM 1 kV，CDM 2 kV（相对偏低，产品在生产/贴片/调试时需严格 ESD 管控）。\n- RF 性能（关键项，均来自 datasheet）：\n  - 接收：LNA 噪声系数 NF = 2.5 dB（典型）；LNA enable 时小信号增益 ~13–14 dB（datasheet 表格排版有些混淆，详见下文）；1 dB 压缩点 IP1dB：LNA enable ≈ 1 dBm，LNA bypass ≈ 19 dBm；IIP3：LNA enable ≈ 10 dBm，LNA bypass ≈ 30 dBm。ANT→TX 隔离 ≥ 30 dB（RX on）。\n  - 发射：功率增益（TX→ANT）约 29–32 dB；典型输出功率：HE160 MCS11（-43 dB EVM）时 17.0 dBm；VHT80 MCS9（-35 dB EVM）时 21.0 dBm；802.11n HT20 MCS0 满足 mask 时 22.0 dBm（datasheet 在不同位置稍有罗列差别，请以测试验证为准）。TX 模式下调制信号电流 I",
+    "textLength": 7014,
+    "usage": {
+      "input_tokens": 8510,
+      "input_tokens_details": {
+        "cached_tokens": 0
+      },
+      "output_tokens": 5997,
+      "output_tokens_details": {
+        "reasoning_tokens": 1344
+      },
+      "total_tokens": 14507
+    },
+    "rawPreview": "                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                        "
+  },
+  {
+    "provider": "lyapi",
+    "baseUrl": "https://lyapi.com",
+    "model": "gpt-5.2",
+    "mode": "responses",
+    "ok": false,
+    "status": 524,
+    "elapsedMs": 125295,
+    "textPreview": "",
+    "textLength": 0,
+    "usage": null,
+    "rawPreview": "<!DOCTYPE html>\n<!--[if lt IE 7]> <html class=\"no-js ie6 oldie\" lang=\"en-US\"> <![endif]-->\n<!--[if IE 7]>    <html class=\"no-js ie7 oldie\" lang=\"en-US\"> <![endif]-->\n<!--[if IE 8]>    <html class=\"no-js ie8 oldie\" lang=\"en-US\"> <![endif]-->\n<!--[if gt IE 8]><!--> <html class=\"no-js\" lang=\"en-US\"> <!--<![endif]-->\n<head>\n\n<title>lyapi.com | 524: A timeout occurred</title>\n<meta charset=\"UTF-8\" />\n<meta http-equiv=\"Content-Type\" content=\"text/html; charset=UTF-8\" />\n<meta http-equiv=\"X-UA-Compatible\" content=\"IE=Edge\" />\n<meta name=\"robots\" content=\"noindex, nofollow\" />\n<meta name=\"viewport\" content=\"width=device-width,initial-scale=1\" />\n<link rel=\"stylesheet\" id=\"cf_styles-css\" href=\"/cdn-cgi/styles/main.css\" />\n</head>\n<body>\n<div id=\"cf-wrapper\">\n    <div id=\"cf-error-details\" class=\"p-0\">\n        <header class=\"mx-auto pt-10 lg:pt-6 lg:px-8 w-240 lg:w-full mb-8\">\n            <h1 class=\"inline-block sm:block sm:mb-2 font-light text-60 lg:text-4xl text-black-dark leading-tight mr-2\">"
+  },
+  {
+    "provider": "lyapi",
+    "baseUrl": "https://lyapi.com",
+    "model": "gpt-5.4",
+    "mode": "responses",
+    "ok": false,
+    "status": 524,
+    "elapsedMs": 126123,
+    "textPreview": "",
+    "textLength": 0,
+    "usage": null,
+    "rawPreview": "<!DOCTYPE html>\n<!--[if lt IE 7]> <html class=\"no-js ie6 oldie\" lang=\"en-US\"> <![endif]-->\n<!--[if IE 7]>    <html class=\"no-js ie7 oldie\" lang=\"en-US\"> <![endif]-->\n<!--[if IE 8]>    <html class=\"no-js ie8 oldie\" lang=\"en-US\"> <![endif]-->\n<!--[if gt IE 8]><!--> <html class=\"no-js\" lang=\"en-US\"> <!--<![endif]-->\n<head>\n\n<title>lyapi.com | 524: A timeout occurred</title>\n<meta charset=\"UTF-8\" />\n<meta http-equiv=\"Content-Type\" content=\"text/html; charset=UTF-8\" />\n<meta http-equiv=\"X-UA-Compatible\" content=\"IE=Edge\" />\n<meta name=\"robots\" content=\"noindex, nofollow\" />\n<meta name=\"viewport\" content=\"width=device-width,initial-scale=1\" />\n<link rel=\"stylesheet\" id=\"cf_styles-css\" href=\"/cdn-cgi/styles/main.css\" />\n</head>\n<body>\n<div id=\"cf-wrapper\">\n    <div id=\"cf-error-details\" class=\"p-0\">\n        <header class=\"mx-auto pt-10 lg:pt-6 lg:px-8 w-240 lg:w-full mb-8\">\n            <h1 class=\"inline-block sm:block sm:mb-2 font-light text-60 lg:text-4xl text-black-dark leading-tight mr-2\">"
+  },
+  {
+    "provider": "lyapi",
+    "baseUrl": "https://lyapi.com",
+    "model": "grok-4-1-fast-non-reasoning",
+    "mode": "responses",
+    "ok": true,
+    "status": 200,
+    "elapsedMs": 39298,
+    "textPreview": "**UPF5755 芯片完整报告**\n\n### 1. 制造商与基本信息\n- **制造商**：上海UPMicro微电子有限公司 (Shanghai UPMicro Microelectronics Co., Ltd.)。\n- **网站**：www.upmicro.cn。\n- **产品名称**：UPF5755，5.15-5.85GHz 802.11ax WiFi 前端模块 (FEM)。\n- **数据手册版本**：V1.2 (2023.7.14 更新，修正引脚编号；之前 V1.1 2022.12 更新规格，V1.0 2022.04 初步版)。\n- **合规性**：无铅，符合 ROHS 和 REACH 标准。\n- **封装**：LGA 3mm x 3mm x 0.55mm，16 引脚配置，MSL3 级，底部接地焊盘必须连接地。\n- **应用**：802.11ax 网络和个人计算系统、PC 卡/PCMCIA 卡/mini-card/half mini-card、WLAN 无线视频系统。\n\n数据手册总 7 页，无典型时序图或详细评估板信息，仅有功能框图 (页1)、引脚图 (页4)、应用电路图 (页5)、封装/卷带规格 (页6-7)。\n\n### 2. 产品描述与功能概述\nUPF5755 是一款高性能 5GHz WiFi 前端模块，集成：\n- 5GHz 功率放大器 (PA)。\n- 宽带单刀双掷开关 (SPDT)。\n- 带旁路功能的低噪声放大器 (LNA)。\n- 功率检测器 (Power Detector)。\n\n器件全匹配，外部元件少，适合小型便携/移动应用。全频段提供高达 +30 dB 增益。LNA 支持使能/禁用以节省功耗，以及旁路模式增加接收动态范围。PA 可通过 PA_EN (引脚9) 关闭。\n\n**功能框图 (页1，顶视图)**：显示 Ctrl1/Ctrl0 控制 SPDT 开关，切换 TX/LNA 到 ANT；LNA 到 RX；PA 在 TX 路径；PDET 输出；多 VCC/GND。\n\n### 3. 引脚信息 (页4)\n16 引脚 LGA，标记 \"5755\"，底部接地焊盘。\n\n| 引脚 | 名称   | 描述             | 引脚 | 名称 | 描述             |\n|------|--------|------------------|------|------|------------------|\n| 1    | Ctrl1 | 控制电压1        | 9    | PAEN | PA 使能控制      |\n| 2    | Ctrl0 | 控制电压0        | 10   | VCC1 | 电源             |\n| 3    | GND   | 地               | 11   | VCC2",
+    "textLength": 6155,
+    "usage": {
+      "input_tokens": 72557,
+      "input_tokens_details": {
+        "cached_tokens": 49098
+      },
+      "output_tokens": 3698,
+      "output_tokens_details": {
+        "reasoning_tokens": 0
+      },
+      "total_tokens": 76255,
+      "num_sources_used": 0,
+      "num_server_side_tools_used": 14,
+      "cost_in_usd_ticks": 789957000,
+      "server_side_tool_usage_details": {
+        "web_search_calls": 0,
+        "x_search_calls": 0,
+        "code_interpreter_calls": 0,
+        "file_search_calls": 0,
+        "mcp_calls": 0,
+        "document_search_calls": 14
+      }
+    },
+    "rawPreview": "                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                        "
+  },
+  {
+    "provider": "vectorengine",
+    "baseUrl": "https://api.vectorengine.ai",
+    "model": "gemini-3-flash-preview",
+    "mode": "gemini",
+    "ok": true,
+    "status": 200,
+    "elapsedMs": 200497,
+    "textPreview": "你好。作为一名资深电子工程师，我针对你提供的 **UPF5755** 数据手册（Datasheet V1.2），结合行业公开信息、市场定位及用户反馈，为你整理了这份详尽的芯片分析报告。\n\n---\n\n# UPF5755 5GHz WiFi 6 (802.11ax) 前端模块 (FEM) 分析报告\n\n## 1. 产品概述与定位\n**UPF5755** 是由上海昂璞微电子（UPMicro）研发的一款高度集成的 5GHz 射频前端模块（FEM）。它专为 WiFi 6 (802.11ax) 标准设计，集成了功率放大器 (PA)、低噪声放大器 (LNA)、射频开关 (SPDT) 以及功率检测器 (PDET)。\n\n*   **核心频率：** 5.15GHz - 5.85GHz（覆盖 U-NII-1 到 U-NII-3 频段）。\n*   **工艺/封装：** 采用 LGA 封装，尺寸仅为 3mm x 3mm x 0.55mm，属于超薄紧凑型设计。\n*   **市场定位：** 主要针对高性能 WiFi 6 路由、PC 适配器（网卡）、移动终端及无线视频传输系统。\n\n## 2. 关键技术参数分析\n\n### 2.1 发射链路 (TX) 性能\n这是该芯片的核心竞争力所在，特别是在 WiFi 6 要求的线性度方面：\n*   **高线性度输出：**\n    *   在 **HE160 (WiFi 6), MCS11** 模式下，输出功率为 **17.0dBm**，此时 DEVM 低至 **-43dB**。这表明该芯片能很好地支持 WiFi 6 的高阶调制，确保高速率传输时的信号质量。\n    *   在 **VHT80 (WiFi 5), MCS9** 模式下，输出功率为 **21.0dBm @ -35dB DEVM**。\n*   **增益：** 典型发射增益为 **31dB**，增益平坦度控制在 ±1.0dB 以内，表现出良好的频段一致性。\n\n### 2.2 接收链路 (RX) 性能\n*   **噪声系数 (NF)：** 典型值为 **2.5dB**。在同类国产 FEM 中属于主流水平，能有效保证接收灵敏度。\n*   **增益：** LNA 增益为 **14dB**。\n*   **旁路模式 (Bypass)：** 支持 Bypass 模式（损耗约 8dB），这对于近距离大信号输入时的动态范围管理至关重要，防止接收机饱和。\n\n### 2.3 电气特性\n*   **工作电压：** 5.0V (VCC)，这是高性能 PA 保证输出功率和线性度的常规电压。\n*   **控制逻辑：** 采用简单的 GPIO 控制（PAEN, Ctrl0, Ctrl1），逻辑电平支持 1.6V 至 3.6V，兼容主流 SoC 的 I/O 电平。\n*   **切换速度：** TX/RX 切换时间为 **400ns",
+    "textLength": 2421,
+    "usage": {
+      "promptTokenCount": 3777,
+      "candidatesTokenCount": 1468,
+      "totalTokenCount": 6252,
+      "promptTokensDetails": [
+        {
+          "modality": "TEXT",
+          "tokenCount": 53
+        },
+        {
+          "modality": "IMAGE",
+          "tokenCount": 3724
+        }
+      ],
+      "thoughtsTokenCount": 1007
+    },
+    "rawPreview": "{\n  \"candidates\": [\n    {\n      \"content\": {\n        \"parts\": [\n          {\n            \"text\": \"你好。作为一名资深电子工程师，我针对你提供的 **UPF5755** 数据手册（Datasheet V1.2），结合行业公开信息、市场定位及用户反馈，为你整理了这份详尽的芯片分析报告。\\n\\n---\\n\\n# UPF5755 5GHz WiFi 6 (802.11ax) 前端模块 (FEM) 分析报告\\n\\n## 1. 产品概述与定位\\n**UPF5755** 是由上海昂璞微电子（UPMicro）研发的一款高度集成的 5GHz 射频前端模块（FEM）。它专为 WiFi 6 (802.11ax) 标准设计，集成了功率放大器 (PA)、低噪声放大器 (LNA)、射频开关 (SPDT) 以及功率检测器 (PDET)。\\n\\n*   **核心频率：** 5.15GHz - 5.85GHz（覆盖 U-NII-1 到 U-NII-3 频段）。\\n*   **工艺/封装：** 采用 LGA 封装，尺寸仅为 3mm x 3mm x 0.55mm，属于超薄紧凑型设计。\\n*   **市场定位：** 主要针对高性能 WiFi 6 路由、PC 适配器（网卡）、移动终端及无线视频传输系统。\\n\\n## 2. 关键技术参数分析\\n\\n### 2.1 发射链路 (TX) 性能\\n这是该芯片的核心竞争力所在，特别是在 WiFi 6 要求的线性度方面：\\n*   **高线性度输出：**\\n    *   在 **HE160 (WiFi 6), MCS11** 模式下，输出功率为 **17.0dBm**，此时 DEVM 低至 **-43dB**。这表明该芯片能很好地支持 WiFi 6 的高阶调制，确保高速率传输时的信号质量。\\n    *   在 **VHT80 (WiFi 5), MCS9** 模式下，输出功率为 **21.0dBm @ -35dB DEVM**。\\n*   **增益：** 典型发射增益为 **31dB**，增益平坦度控制在 ±1.0dB 以内，表现出良好的频段一致性。\\n\\n### 2.2 接收链路 (RX) 性能\\n*   **噪声系数 (NF)：** 典型值为 **2.5dB**。在同"
+  },
+  {
+    "provider": "vectorengine",
+    "baseUrl": "https://api.vectorengine.ai",
+    "model": "gemini-3.1-pro-preview",
+    "mode": "gemini",
+    "ok": true,
+    "status": 200,
+    "elapsedMs": 70793,
+    "textPreview": "这是一份基于您提供的UPF5755 Datasheet（V1.2版本），结合射频前端模组（FEM）行业标准、公开技术讨论及典型工程师应用反馈，为您整理的**资深电子工程师级别的芯片评估报告**。\n\n本报告严格遵循客观数据，无编造推测，旨在为硬件选型、射频设计及系统集成提供专业参考。\n\n---\n\n# 昂璞微 (UPMicro) UPF5755 芯片深度评估报告\n\n## 一、 芯片概述 (Executive Summary)\n**UPF5755** 是一款由上海昂璞微电子（UPMicro）设计的高集成度、高性能 **5.15 GHz - 5.85 GHz 射频前端模组 (FEM)**。该芯片专为 **802.11ax (Wi-Fi 6)** 标准设计，向下兼容 802.11ac/n。\n它在紧凑的 3mm x 3mm 封装内集成了 5GHz 功率放大器 (PA)、低噪声放大器 (LNA)、单刀双掷开关 (SPDT) 以及功率检测器 (Power Detector)。该芯片主要定位于消费级至企业级入门的 Wi-Fi 6 路由器、PCIE网卡、无线视频传输系统等应用。\n\n## 二、 核心架构与集成度分析\n从功能框图（Figure 1）和应用电路（Figure 3）可以看出，UPF5755 具有极高的集成度：\n1.  **全匹配设计 (Fully-matched)：** 芯片内部已完成 50Ω 射频阻抗匹配，外部应用电路（Application Circuit）极其精简，仅需少量旁路电容（Bypass Capacitors）和隔直电容，极大节省了 PCB 面积和 BOM 成本。\n2.  **发射链路 (TX)：** 包含高线性度 PA 和功率检测器（PDET）。PDET 能够输出与发射功率成比例的电压（0.25V - 0.7V），方便主控 SoC 进行闭环功率控制（TPC）。\n3.  **接收链路 (RX)：** 包含带旁路功能（Bypass）的 LNA。旁路功能在近距离大信号输入时至关重要，可防止接收机饱和失真。\n\n## 三、 关键射频性能评估 (RF Specifications Analysis)\n\n### 1. 发射性能 (TX Performance) - 供电 VCC=5.0V\n*   **Wi-Fi 6 线性功率：** 在最严苛的 802.11ax HE160 MCS11 (-43dB DEVM) 调制下，输出功率可达 **+17.0 dBm**。\n    *   *工程师点评：* 17dBm 的 Wi-Fi 6 线性功率在 5V 供电的 3x3mm FEM 中属于**行业主流中坚水平**。能够满足绝大多数家用 Wi-Fi 6 路由器和无线网卡的覆盖需求。\n*   **Wi-Fi 5/4 兼容性：** 802.11ac VHT80 MCS9 (-35dB ",
+    "textLength": 3742,
+    "usage": {
+      "promptTokenCount": 3777,
+      "candidatesTokenCount": 2230,
+      "totalTokenCount": 7939,
+      "promptTokensDetails": [
+        {
+          "modality": "IMAGE",
+          "tokenCount": 3724
+        },
+        {
+          "modality": "TEXT",
+          "tokenCount": 53
+        }
+      ],
+      "thoughtsTokenCount": 1932
+    },
+    "rawPreview": "{\n  \"candidates\": [\n    {\n      \"content\": {\n        \"parts\": [\n          {\n            \"text\": \"这是一份基于您提供的UPF5755 Datasheet（V1.2版本），结合射频前端模组（FEM）行业标准、公开技术讨论及典型工程师应用反馈，为您整理的**资深电子工程师级别的芯片评估报告**。\\n\\n本报告严格遵循客观数据，无编造推测，旨在为硬件选型、射频设计及系统集成提供专业参考。\\n\\n---\\n\\n# 昂璞微 (UPMicro) UPF5755 芯片深度评估报告\\n\\n## 一、 芯片概述 (Executive Summary)\\n**UPF5755** 是一款由上海昂璞微电子（UPMicro）设计的高集成度、高性能 **5.15 GHz - 5.85 GHz 射频前端模组 (FEM)**。该芯片专为 **802.11ax (Wi-Fi 6)** 标准设计，向下兼容 802.11ac/n。\\n它在紧凑的 3mm x 3mm 封装内集成了 5GHz 功率放大器 (PA)、低噪声放大器 (LNA)、单刀双掷开关 (SPDT) 以及功率检测器 (Power Detector)。该芯片主要定位于消费级至企业级入门的 Wi-Fi 6 路由器、PCIE网卡、无线视频传输系统等应用。\\n\\n## 二、 核心架构与集成度分析\\n从功能框图（Figure 1）和应用电路（Figure 3）可以看出，UPF5755 具有极高的集成度：\\n1.  **全匹配设计 (Fully-matched)：** 芯片内部已完成 50Ω 射频阻抗匹配，外部应用电路（Application Circuit）极其精简，仅需少量旁路电容（Bypass Capacitors）和隔直电容，极大节省了 PCB 面积和 BOM 成本。\\n2.  **发射链路 (TX)：** 包含高线性度 PA 和功率检测器（PDET）。PDET 能够输出与发射功率成比例的电压（0.25V - 0.7V），方便主控 SoC 进行闭环功率控制（TPC）。\\n3.  **接收链路 (RX)：** 包含带旁路功能（Bypass）的 LNA。旁路功能在近距离大信号输入时至关重要，可防止接收机饱和失真。\\n\\n## 三、 关键射频性能评估 (R"
+  },
+  {
+    "provider": "vectorengine",
+    "baseUrl": "https://api.vectorengine.ai",
+    "model": "gpt-4o",
+    "mode": "responses",
+    "ok": true,
+    "status": 200,
+    "elapsedMs": 61934,
+    "textPreview": "**UPF5755 芯片报告**\n\n---\n\n经过对 UPF5755 5GHz 802.11ax Wi-Fi前端模块（FEM）的详细分析，结合数据手册（Datasheet V1.2）以及公开文档的内容，已整理出以下完整技术报告：\n\n---\n\n### **1. 芯片综述**\n#### **主要功能**\nUPF5755 是一款高性能 5GHz Wi-Fi 前端模块（FEM），专为 802.11ax 无线标准设计，具有高线性性能和紧凑的尺寸，集成了以下关键组件：\n- **功率放大器（PA）**：单频段 5GHz 放大，支持高输出功率。\n- **低噪声放大器（LNA）**：具有旁路模式，能有效提升动态范围。\n- **双单刀开关（SPDT）**：支持收发信号切换。\n- **功率检测器**：测量发射功率。\n\n该芯片适合 802.11ax 网络和个人计算设备，包括 PCMCIA 卡、迷你卡、无线视频系统等小型设备。\n\n---\n\n### **2. 性能参数**\n#### **2.1 工作频率**\n- **频率范围**：5.15 - 5.85 GHz，符合 5GHz 无线频谱需求。\n\n#### **2.2 发射模式性能**\n- 功率增益：29 - 32 dB。\n- 输出功率（Pout）：\n  - **802.11ax HE160，MCS11，EVM 为 -43dB**: 17.0 dBm。\n  - **802.11ac VHT80，MCS9，EVM 为 -35dB**: 21.0 dBm。\n  - **802.11n HT20，MCS0（掩码符合标准）**：22.0 dBm。\n- 电流消耗：250 - 490 mA（具体视输出功率和工作模式而定）。\n- 谐波抑制：二次谐波为 -45 dBm/MHz，三次谐波为 -40 dBm/MHz。\n\n#### **2.3 接收模式性能**\n- 小信号增益：\n  - **LNA 启用模式**：14.0 - 14.5 dB。\n  - **LNA 旁路模式**：-8 dB。\n- 噪声系数（NF）：2.5 dB（LNA 启用）。\n- 输入三次交调截点（IIP3）：\n  - **LNA 启用模式**：10 dBm。\n  - **LNA 旁路模式**：30 dBm。\n- 电流消耗：\n  - **LNA 启用模式**：25 mA。\n  - **旁路模式**：2 mA。\n\n---\n\n### **3. 设计特点**\n#### **3.1 集成设计**\n- 高度集成了 5GHz PA、SPDT 开关和 LNA，在大部分应用中仅需少量外部组件。\n- 使用 3mm x 3mm x 0.55mm 的 LGA 16 引脚封装，适合对空间敏感的产品设计。\n\n#### **3.2 多种工作模式**\n该模块通过控制引脚（PAEN、Ctrl0、Ctrl1）支持以下 4 种模",
+    "textLength": 2772,
+    "usage": {
+      "total_tokens": 4333,
+      "input_tokens": 2652,
+      "input_tokens_details": {
+        "cached_tokens": 0
+      },
+      "output_tokens": 1681,
+      "output_tokens_details": {
+        "reasoning_tokens": 0
+      }
+    },
+    "rawPreview": "{\"id\":\"resp_008d9f9a359e906f0069caa7ded520819094d1363f98d1b4de\",\"object\":\"response\",\"model\":\"gpt-4o\",\"usage\":{\"total_tokens\":4333,\"input_tokens\":2652,\"input_tokens_details\":{\n      \"cached_tokens\": 0\n    },\"output_tokens\":1681,\"output_tokens_details\":{\n      \"reasoning_tokens\": 0\n    }},\"created_at\":1774888927,\"status\":\"completed\",\"background\":false,\"completed_at\":1774888986,\"content_filters\":null,\"error\":null,\"frequency_penalty\":0.0,\"incomplete_details\":null,\"instructions\":null,\"max_output_tokens\":null,\"max_tool_calls\":null,\"output\":[\n    {\n      \"id\": \"msg_008d9f9a359e906f0069caa7e2781481908177c551b0b2a59f\",\n      \"type\": \"message\",\n      \"status\": \"completed\",\n      \"content\": [\n        {\n          \"type\": \"output_text\",\n          \"annotations\": [],\n          \"logprobs\": [],\n          \"text\": \"**UPF5755 \\u82af\\u7247\\u62a5\\u544a**\\n\\n---\\n\\n\\u7ecf\\u8fc7\\u5bf9 UPF5755 5GHz 802.11ax Wi-Fi\\u524d\\u7aef\\u6a21\\u5757\\uff08FEM\\uff09\\u7684\\u8be6\\u7ec6\\u5206\\u6790\\uff0c\\u7ed3\\u5408\\u6570\\u636e"
+  },
+  {
+    "provider": "vectorengine",
+    "baseUrl": "https://api.vectorengine.ai",
+    "model": "gpt-4.1",
+    "mode": "responses",
+    "ok": true,
+    "status": 200,
+    "elapsedMs": 19640,
+    "textPreview": "### UPF5755 芯片完整报告  \n**（依据官方数据手册、公开资料及用户反馈，真实全面，无推测内容）**\n\n---\n\n#### 一、芯片概要  \nUPF5755为上海优谱微电子推出的5.15-5.85 GHz前端模块（FEM），针对Wi-Fi 6（802.11ax）高速无线通信优化。集成大功率功放（PA）、低噪声放大器（LNA）、单刀双掷射频开关（SPDT）及功率侦测器，采用紧凑LGA 16脚封装，尺寸仅3×3×0.55mm。主要应用于网络/个人计算系统、无线视频、PC卡等WLAN设备。\n\n---\n\n#### 二、主要特性  \n- **频段覆盖**：5.15~5.85 GHz（WiFi 6全覆盖）\n- **集成度高**：内含5GHz PA、SPDT、LNA（带bypass）、功率探测器\n- **输出功率**：\n  - **802.11ax HE160 MCS11**：17.0 dBm（-43dB EVM）\n  - **802.11ac VHT80 MCS9**：21.0 dBm（-35dB EVM）\n  - **802.11n HT20 MCS0**：22 dBm，符合频谱Mask\n- **增益**：\n  - Rx模式：13~14.5 dB（LNA），-8 dB（bypass）\n  - Tx模式：29~32 dB\n- **高线性、低噪声**：噪声系数2.5 dB，接收隔离30 dB  \n- **切换速度快**：Tx/Rx切换<400 ns  \n- **工作电源**：4.75~5.25V  \n- **封装**：LGA 16 pin，MSL3级别\n\n---\n\n#### 三、主要参数  \n**绝对最大值：**  \n- 电源电压：-0.3~6V  \n- 控制输入：-0.3~3.6V  \n- RF输入最大功率：10 dBm  \n- 工作温度：-30~85℃  \n- 存储温度：-40~125℃  \n- ESD耐受：HBM 1kV，CDM 2kV  \n\n**一般电气性能：**  \n- 电源电压：典型5.0V  \n- 控制输入高/低：1.6~3.6V / 0~0.3V  \n- 工作电流：Rx典型25mA，Tx最大490mA（输出26dBm时）\n\n**RF特性：**  \n- **接收：**\n  - 增益：13~14.5dB（LNA），-8dB（bypass）\n  - 噪声系数（NF）：2.5dB\n  - 输入三阶截点IIP3：10/30dBm（LNA/Bypass）\n  - 输入/输出回波损耗：9~11dB/6~8dB\n  - 隔离度30dB（ANT-TX RX开启）\n- **发射：**\n  - 增益：29~32dB\n  - 输出功率：最大22dBm\n  - 增益平坦度：±1dB (80MHz)\n  - 谐波：-45dBm（2f0），-40dBm（3f0@25dBm输",
+    "textLength": 2170,
+    "usage": {
+      "total_tokens": 4065,
+      "input_tokens": 2652,
+      "input_tokens_details": {
+        "cached_tokens": 0
+      },
+      "output_tokens": 1413,
+      "output_tokens_details": {
+        "reasoning_tokens": 0
+      }
+    },
+    "rawPreview": "{\"id\":\"resp_046ab49d66edf99a0069caa81c43b08195bdcc45556c084c55\",\"object\":\"response\",\"model\":\"gpt-4.1\",\"usage\":{\"total_tokens\":4065,\"input_tokens\":2652,\"input_tokens_details\":{\n      \"cached_tokens\": 0\n    },\"output_tokens\":1413,\"output_tokens_details\":{\n      \"reasoning_tokens\": 0\n    }},\"created_at\":1774888988,\"status\":\"completed\",\"background\":false,\"completed_at\":1774889006,\"content_filters\":[\n    {\n      \"blocked\": false,\n      \"source_type\": \"completion\",\n      \"content_filter_raw\": [],\n      \"content_filter_results\": {},\n      \"content_filter_offsets\": {\n        \"start_offset\": 0,\n        \"end_offset\": 2170,\n        \"check_offset\": 0\n      }\n    }\n  ],\"error\":null,\"frequency_penalty\":0.0,\"incomplete_details\":null,\"instructions\":null,\"max_output_tokens\":null,\"max_tool_calls\":null,\"output\":[\n    {\n      \"id\": \"msg_046ab49d66edf99a0069caa81ec71c8195bca5c2f5ee623a23\",\n      \"type\": \"message\",\n      \"status\": \"completed\",\n      \"content\": [\n        {\n          \"type\": \"output_text\",\n  "
+  },
+  {
+    "provider": "vectorengine",
+    "baseUrl": "https://api.vectorengine.ai",
+    "model": "gpt-5-mini",
+    "mode": "responses",
+    "ok": true,
+    "status": 200,
+    "elapsedMs": 108699,
+    "textPreview": "下面给出基于你上传的 UPF5755 datasheet（V1.2）并结合资深无线/射频工程经验整理的一份完整芯片评估 / 集成报告。说明：我当前只能根据你提供的 datasheet 内容和通用工程知识来分析；我无法进行在线检索或引用未提供的论坛/用户反馈内容。如果你能贴出具体的讨论链接、测量日志或用户反馈，我可以把那些信息并入本报告并做更具体结论。报告内容包括：关键规格摘要、性能分析、PCB/布局建议、热与电源分析、测试与验证计划、风险/注意事项、待进一步确认的问题与建议。尽量避免主观推测，凡非 datasheet 明确给出之处我会注明为工程推断或建议。\n\n一、器件概述（摘自 datasheet / 关键参数）\n- 器件：UPF5755，5.15–5.85 GHz Wi‑Fi 前端模块（FEM），集成 5GHz PA、LNA（可旁路）、SPDT 开关与功率检测器。\n- 封装：LGA 3.0 × 3.0 × 0.55 mm，16 引脚 + 底部热/地焊盘，MSL3。\n- 电源：VCC = 5.0 V（允许 4.75–5.25 V）。\n- 控制电平：逻辑高 VCTLH = 1.6–3.6 V；逻辑低 0–0.3 V。PAEN、Ctrl0、Ctrl1 用于模式控制，真值表在 datasheet 给出。\n- 工作温度：-30 to +85 °C（器件级）。\n- ESD：HBM 1 kV，CDM 2 kV（需要注意的是这是比较低的 ESD 等级，生产/搬运时严格 ESD 保护必要）。\n\n主要 RF 性能（datasheet 摘要）\n- 接收模式（LNA enabled / bypass）：\n  - 小信号增益：约 13–14.5 dB（LNA 开启）；旁路时 -8 dB（旁路意味着通过外部低噪放大器或直通？datasheet 给出 -8 dB 但需结合实际应用电路验证）。\n  - Noise Figure (NF)：2.5 dB（典型）。\n  - Input 1 dB 压缩点（IP1dB）：LNA enabled = +1 dBm；LNA bypass = +19 dBm（datasheet 给两个极端）。\n  - IIP3：LNA enabled = +10 dBm；LNA bypass = +30 dBm（典型）。\n  - 输入/输出回波：ANT |S11| ≈ 9–11 dB，RX |S22| ≈ 6–8 dB（注意这些不是非常深的匹配，需要 PCB 调整与天线匹配）。\n  - LNA 电流：典型 25 mA（开启时）或 2 mA（旁路时，datasheet 表格参见）。\n- 发送模式（PA enabled）：\n  - 增益：29–32 dB（TX -> ANT）。\n  - 输出功率（不同调制/标准）：\n    - HE160 MCS11, -43 dB DE",
+    "textLength": 6728,
+    "usage": {
+      "total_tokens": 14362,
+      "input_tokens": 8510,
+      "input_tokens_details": {
+        "cached_tokens": 7424
+      },
+      "output_tokens": 5852,
+      "output_tokens_details": {
+        "reasoning_tokens": 1344
+      }
+    },
+    "rawPreview": "{\"id\":\"resp_0b6e33ff6ce5b3990069caa8319de48190a62eb3b05ad967a0\",\"object\":\"response\",\"model\":\"gpt-5-mini\",\"usage\":{\"total_tokens\":14362,\"input_tokens\":8510,\"input_tokens_details\":{\n      \"cached_tokens\": 7424\n    },\"output_tokens\":5852,\"output_tokens_details\":{\n      \"reasoning_tokens\": 1344\n    }},\"created_at\":1774889010,\"status\":\"completed\",\"background\":false,\"completed_at\":1774889114,\"content_filters\":null,\"error\":null,\"frequency_penalty\":0.0,\"incomplete_details\":null,\"instructions\":null,\"max_output_tokens\":null,\"max_tool_calls\":null,\"output\":[\n    {\n      \"id\": \"rs_0b6e33ff6ce5b3990069caa8329ac48190bc92d88fb87fff9f\",\n      \"type\": \"reasoning\",\n      \"summary\": []\n    },\n    {\n      \"id\": \"msg_0b6e33ff6ce5b3990069caa854007481909588a96321de44cb\",\n      \"type\": \"message\",\n      \"status\": \"completed\",\n      \"content\": [\n        {\n          \"type\": \"output_text\",\n          \"annotations\": [],\n          \"logprobs\": [],\n          \"text\": \"\\u4e0b\\u9762\\u7ed9\\u51fa\\u57fa\\u4e8e\\u4f60\\u4e0a\\u4f"
+  },
+  {
+    "provider": "vectorengine",
+    "baseUrl": "https://api.vectorengine.ai",
+    "model": "gpt-5.4",
+    "mode": "responses",
+    "ok": true,
+    "status": 200,
+    "elapsedMs": 220011,
+    "textPreview": "下面给你一份**基于你上传的 UPF5755 datasheet 原文**所做的**完整芯片分析报告**。  \n我会严格遵守你的要求：\n\n- **只基于已提供 datasheet 内容**进行分析；\n- 对“公开搜索讨论、用户反馈”部分，**由于当前对话中并未提供任何外部搜索结果、论坛帖子、量产用户反馈、认证报告或测试记录**，因此我**不能伪造或假定这些信息存在**；\n- 所以报告中会明确区分：\n  1. **datasheet 明确给出的事实**\n  2. **由 datasheet 可直接推导的工程结论**\n  3. **datasheet 未覆盖、因此不能下结论的风险点**\n\n---\n\n# UPF5755 芯片完整报告  \n**器件名称：** UPF5755  \n**版本依据：** Datasheet V1.2  \n**厂商：** Shanghai UPMicro Microelectronics Co., Ltd.  \n**器件类型：** 5GHz Wi‑Fi Front End Module（FEM，前端模组）  \n**频段：** 5.15 GHz ~ 5.85 GHz  \n**主要面向：** 802.11ax / 802.11ac / 802.11n 5GHz WLAN 终端与模组\n\n---\n\n# 1. 执行摘要\n\nUPF5755 是一颗**集成 5GHz 功放 PA + 单刀双掷开关 SPDT + 低噪声放大器 LNA（带 bypass）+ 功率检测器 PDET** 的 Wi‑Fi 前端模组。  \n从 datasheet 看，它定位于：\n\n- **单天线 5GHz Wi‑Fi 前端**\n- 服务于 802.11ax / ac / n\n- 适合**路由器、网卡、无线视频、PC 卡、小型终端**\n\n其核心价值在于：\n\n- **高集成度**：PA/LNA/SPDT/PDET 集成在 3mm × 3mm LGA 封装内\n- **外部器件少**：datasheet 明确说 fully-matched，外围较简化\n- **发射能力够用**：  \n  - HE160 MCS11：17 dBm @ -43 dB DEVM  \n  - VHT80 MCS9：21 dBm @ -35 dB DEVM  \n  - HT20 MCS0：22 dBm mask compliant\n- **接收链路具备两种模式**：  \n  - LNA 增益模式  \n  - RX bypass 模式，用于提升大信号动态范围\n- **控制简单**：3 根数字控制线即可切换待机、TX、RX gain、RX bypass\n\n但从 datasheet 完整性和工程可用性角度看，也存在明显不足：\n\n1. **缺少大量关键曲线图**  \n   例如：增益/频率曲线、PAE/输出功率曲线、EVM v",
+    "textLength": 13033,
+    "usage": {
+      "total_tokens": 22570,
+      "input_tokens": 14711,
+      "input_tokens_details": {
+        "cached_tokens": 0
+      },
+      "output_tokens": 7859,
+      "output_tokens_details": {
+        "reasoning_tokens": 0
+      }
+    },
+    "rawPreview": "{\"id\":\"resp_0350083189748c060169caa8a81ac081958b84d350ed2c64ef\",\"object\":\"response\",\"model\":\"gpt-5.4\",\"usage\":{\"total_tokens\":22570,\"input_tokens\":14711,\"input_tokens_details\":{\"cached_tokens\":0},\"output_tokens\":7859,\"output_tokens_details\":{\"reasoning_tokens\":0}},\"created_at\":1774889190,\"status\":\"completed\",\"background\":false,\"completed_at\":1774889334,\"error\":null,\"frequency_penalty\":0.0,\"incomplete_details\":null,\"instructions\":null,\"max_output_tokens\":null,\"max_tool_calls\":null,\"output\":[{\"id\":\"msg_0350083189748c060169caa8e833688195a65a772a222ae0f1\",\"type\":\"message\",\"status\":\"completed\",\"content\":[{\"type\":\"output_text\",\"annotations\":[],\"logprobs\":[],\"text\":\"下面给你一份**基于你上传的 UPF5755 datasheet 原文**所做的**完整芯片分析报告**。  \\n我会严格遵守你的要求：\\n\\n- **只基于已提供 datasheet 内容**进行分析；\\n- 对“公开搜索讨论、用户反馈”部分，**由于当前对话中并未提供任何外部搜索结果、论坛帖子、量产用户反馈、认证报告或测试记录**，因此我**不能伪造或假定这些信息存在**；\\n- 所以报告中会明确区分：\\n  1. **datasheet 明确给出的事实**\\n  2. **由 datasheet 可直接推导的工程结论**\\n  3. **datasheet 未覆盖、因此不能下结论的风险点**\\n\\n---\\n\\n# UPF5755 芯片完整报告  \\"
+  }
+]

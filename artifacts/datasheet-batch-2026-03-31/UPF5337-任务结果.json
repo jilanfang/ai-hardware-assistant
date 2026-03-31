@@ -1,0 +1,101 @@
+{
+  "taskMeta": {
+    "taskName": "UPF5337 批量分析",
+    "chipName": "UPF5337",
+    "sourceFile": "202307UPF5337 datasheet V1.1.pdf",
+    "pageCount": 9
+  },
+  "identity": {
+    "canonicalPartNumber": "UPF5337",
+    "manufacturer": "Shanghai UPMicro (昂璞微)",
+    "deviceClass": "Wi-Fi FEM",
+    "parameterTemplateId": "rf-fem-2.4g",
+    "focusChecklist": [
+      "先看首页、feature list 和电气特性表。"
+    ],
+    "publicContext": [],
+    "confidence": 0.9
+  },
+  "executiveSummary": "UPF5337 是一款高度集成的 2.4GHz Wi-Fi 6 (802.11ax) 前端模块 (FEM)，内部封装了功率放大器 (PA)、带旁路模式的低噪声放大器 (LNA) 以及天线开关 (SPDT)。对于实习生来说，阅读该器件的关键在于理解 Wi-Fi 6 对线性度的极高要求：不要只看最大输出功率，而要看在特定 DEVM（例如 -43dB）下的线性输出功率（20dBm）。设计重点应放在底部焊盘的接地散热以及控制逻辑电平的匹配上。",
+  "reportSections": [
+    {
+      "id": "device_identity",
+      "title": "1. 明确身份：2.4GHz Wi-Fi 6 高性能前端",
+      "body": "UPF5337 是国产昂璞微出品的射频前端芯片，专门针对 802.11ax 协议优化。它集成了射频通路上的三大件：PA（放大）、LNA（接听增益）、Switch（收发切换）。其核心卖点是支持 Wi-Fi 6 所需的高线性度。",
+      "sourceType": "datasheet",
+      "citations": []
+    },
+    {
+      "id": "what_this_part_is_for",
+      "title": "2. 解决什么问题：收发双向增强",
+      "body": "在发射端，它将 Wi-Fi 芯片出来的微弱信号放大到约 20dBm 以增强覆盖；在接收端，它通过 LNA 提升灵敏度，弥补板路损耗和滤波器插损。其 SPDT 开关则负责单天线的快速收发切换。",
+      "sourceType": "review",
+      "citations": []
+    },
+    {
+      "id": "how_to_read_this_datasheet",
+      "title": "3. 阅读策略：先看“线性”，再看“控制”",
+      "body": "不要被首页的 25.5dBm 误导，那是旧标准的极限功率。对于现在的 Wi-Fi 6 设计，你应该直奔 Page 3 的 RF Specifications，重点看 HE40 MCS11 条件下的 Pout。随后查看 Page 6 的真值表，确认你的 MCU/SOC 的 GPIO 电平是否匹配。",
+      "sourceType": "review",
+      "citations": []
+    },
+    {
+      "id": "key_parameters",
+      "title": "4. 关键参数解析",
+      "body": "重点关注 TX Gain (32dB) 用于计算前级驱动能力，以及 RX Noise Figure (2.0dB) 用于评估接收机链路性能。电源电流（ICC）在发射时达到 250mA，必须确保电源平面（Power Plane）足够厚。",
+      "sourceType": "datasheet",
+      "citations": []
+    },
+    {
+      "id": "section_by_section_reading_order",
+      "title": "5. 推荐阅读顺序",
+      "body": "1. 首页 (Features) 快速确认协议支持；2. Page 3 (TX Specs) 确定额定发射功率；3. Page 6 (Truth Table) 搞清楚怎么控制收发模式；4. Page 5 (Pinout) 与 Page 7 (App Circuit) 准备原理图和 Layout。",
+      "sourceType": "review",
+      "citations": []
+    },
+    {
+      "id": "risks_and_gotchas",
+      "title": "6. 工程落地“坑点”",
+      "body": "第一，TX 输入功率绝对不能过大，否则会永久损坏芯片；第二，底部焊盘没焊好会导致芯片过热频偏甚至烧毁；第三，LNA 的 Bypass 模式是有损耗的（-6dB），不要误以为是增益。",
+      "sourceType": "review",
+      "citations": []
+    },
+    {
+      "id": "intern_action_list",
+      "title": "7. 实习生下一步任务",
+      "body": "1. 核对 SoC 输出电平是否在 1.8V-3.6V 范围内；2. 在 PCB 设计时，给 VCC 增加足够的 4.7uF 和 10pF 去耦电容；3. 确认板子上的 GND 过孔数量，确保 PA 散热无虞。",
+      "sourceType": "review",
+      "citations": []
+    },
+    {
+      "id": "glossary_for_juniors",
+      "title": "8. 术语小贴士",
+      "body": "DEVM (Dynamic Error Vector Magnitude)：衡量 Wi-Fi 信号质量的指标，越低表示信号越纯净。HE40：Wi-Fi 6 (High Efficiency) 的 40MHz 带宽模式。Mask Compliance：频谱模板合规，即信号不干扰邻频的最低要求。",
+      "sourceType": "review",
+      "citations": []
+    }
+  ],
+  "parameterRows": [
+    {
+      "name": "封装",
+      "value": "16-pad QFN, 3.0 x 3.0 x 0.7 mm",
+      "status": "needs_review",
+      "evidence": null
+    }
+  ],
+  "publicNotes": [],
+  "followUpTranscript": [],
+  "sourceAttribution": {
+    "mode": "llm_first",
+    "llmProvider": "gemini",
+    "searchProvider": null
+  },
+  "events": [
+    {
+      "id": "event-1774887125351-yg4odj",
+      "createdAt": "2026-03-30T16:12:05.351Z",
+      "type": "analysis_created",
+      "summary": "初始分析已生成，可继续做证据验证和人工确认。"
+    }
+  ]
+}

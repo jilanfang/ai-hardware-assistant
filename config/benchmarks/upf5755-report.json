@@ -1,0 +1,102 @@
+{
+  "id": "upf5755-report-benchmark",
+  "pdfPath": "/Users/jilanfang/Datasheet/202307UPF5755 datasheet V1.2.pdf",
+  "prompt": "你是一个资深电子工程师，刚刚上传的这份UPF5755，根据datasheet以及公开搜索的讨论还有用户反馈。给出一个完整的芯片报告，分析要求全面，真实，不得有编造推测等幻觉。",
+  "baseline": {
+    "provider": "lyapi",
+    "model": "gemini-3.1-pro-preview",
+    "score": 100
+  },
+  "requiredFacts": [
+    {
+      "id": "freq",
+      "points": 15,
+      "mode": "all",
+      "phrases": ["5.15", "5.85"]
+    },
+    {
+      "id": "wifi6",
+      "points": 15,
+      "mode": "any",
+      "phrases": ["802.11ax", "WiFi 6"]
+    },
+    {
+      "id": "power",
+      "points": 20,
+      "mode": "all",
+      "phrases": ["17 dBm", "21 dBm", "22 dBm"]
+    },
+    {
+      "id": "nf",
+      "points": 10,
+      "mode": "all",
+      "phrases": ["2.5 dB"]
+    }
+  ],
+  "hallucinationChecks": [
+    {
+      "id": "external-feedback-without-evidence",
+      "penalty": 25,
+      "patterns": ["公开讨论", "用户反馈", "论坛", "口碑"],
+      "allowIfAnyOf": ["不能访问互联网", "无法进行在线检索", "不能伪造", "未提供任何外部搜索结果"]
+    }
+  ],
+  "targets": [
+    {
+      "provider": "lyapi",
+      "model": "gpt-4o",
+      "baseUrl": "https://lyapi.com",
+      "mode": "responses",
+      "apiKeyEnv": "LYAPI_API_KEY"
+    },
+    {
+      "provider": "lyapi",
+      "model": "gpt-4.1",
+      "baseUrl": "https://lyapi.com",
+      "mode": "responses",
+      "apiKeyEnv": "LYAPI_API_KEY"
+    },
+    {
+      "provider": "lyapi",
+      "model": "gemini-3-flash-preview",
+      "baseUrl": "https://lyapi.com",
+      "mode": "gemini",
+      "apiKeyEnv": "LYAPI_API_KEY"
+    },
+    {
+      "provider": "lyapi",
+      "model": "gemini-3.1-pro-preview",
+      "baseUrl": "https://lyapi.com",
+      "mode": "gemini",
+      "apiKeyEnv": "LYAPI_API_KEY"
+    },
+    {
+      "provider": "vectorengine",
+      "model": "gpt-4.1",
+      "baseUrl": "https://api.vectorengine.ai",
+      "mode": "responses",
+      "apiKeyEnv": "VECTORENGINE_API_KEY"
+    },
+    {
+      "provider": "vectorengine",
+      "model": "gpt-4o",
+      "baseUrl": "https://api.vectorengine.ai",
+      "mode": "responses",
+      "apiKeyEnv": "VECTORENGINE_API_KEY"
+    },
+    {
+      "provider": "vectorengine",
+      "model": "gemini-3-flash-preview",
+      "baseUrl": "https://api.vectorengine.ai",
+      "mode": "gemini",
+      "apiKeyEnv": "VECTORENGINE_API_KEY"
+    },
+    {
+      "provider": "vectorengine",
+      "model": "gemini-3.1-pro-preview",
+      "baseUrl": "https://api.vectorengine.ai",
+      "mode": "gemini",
+      "apiKeyEnv": "VECTORENGINE_API_KEY"
+    }
+  ]
+}

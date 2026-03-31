@@ -1,0 +1,9 @@
+chip_name,source_file,template_id,parameter_name,parameter_value,status,extracted_by,confidence,confidence_reason,source_pages,source_quote
+UPF5755,202307UPF5755 datasheet V1.2.pdf,wifi,RF Type,"802.11ax (Wi-Fi 6), 兼容 802.11a/n/ac",needs_review,gemini_report_pass,review,当前阶段仅有完整报告中的模板字段推断，建议人工复核。,,
+UPF5755,202307UPF5755 datasheet V1.2.pdf,wifi,Frequency Coverage,5.15GHz - 5.85GHz,needs_review,gemini_report_pass,review,当前阶段仅有完整报告中的模板字段推断，建议人工复核。,,
+UPF5755,202307UPF5755 datasheet V1.2.pdf,wifi,RX Gain / Noise Figure / Bypass Loss,"Gain: 14dB, NF: 2.5dB, Bypass Loss: 8dB",needs_review,gemini_report_pass,review,当前阶段仅有完整报告中的模板字段推断，建议人工复核。,,
+UPF5755,202307UPF5755 datasheet V1.2.pdf,wifi,Control Mode / Truth Table,"PAEN, Ctrl0, Ctrl1 三线控制; 支持 Standby, TX, RX Gain, RX Bypass 模式",needs_review,gemini_report_pass,review,当前阶段仅有完整报告中的模板字段推断，建议人工复核。,,
+UPF5755,202307UPF5755 datasheet V1.2.pdf,wifi,Supply Voltage,4.75V - 5.25V (Typ: 5.0V),needs_review,gemini_report_pass,review,当前阶段仅有完整报告中的模板字段推断，建议人工复核。,,
+UPF5755,202307UPF5755 datasheet V1.2.pdf,wifi,Package / Case,"LGA 16-pin, 3mm x 3mm x 0.55mm",needs_review,gemini_report_pass,review,当前阶段仅有完整报告中的模板字段推断，建议人工复核。,,
+UPF5755,202307UPF5755 datasheet V1.2.pdf,wifi,TX Linear Output Power,"17.0 dBm (HE160, MCS11)",needs_review,gemini_report_pass,review,当前阶段仅有完整报告中的模板字段推断，建议人工复核。,,
+UPF5755,202307UPF5755 datasheet V1.2.pdf,wifi,EVM / ACLR Condition,"-43dB DEVM (MCS11, HE160); -35dB DEVM (MCS9, VHT80)",needs_review,gemini_report_pass,review,当前阶段仅有完整报告中的模板字段推断，建议人工复核。,,

@@ -1,0 +1,11 @@
+{
+  "version": "follow-up-v1-grounded",
+  "type": "object",
+  "required": [
+    "answer",
+    "claims",
+    "citations",
+    "usedSources",
+    "followUpWarnings"
+  ]
+}

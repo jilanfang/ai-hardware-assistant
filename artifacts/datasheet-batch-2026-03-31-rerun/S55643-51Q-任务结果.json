@@ -1,0 +1,191 @@
+{
+  "taskMeta": {
+    "taskName": "S55643-51Q 批量分析",
+    "chipName": "S55643-51Q",
+    "sourceFile": "S55643-51Q.pdf",
+    "pageCount": 43
+  },
+  "identity": {
+    "canonicalPartNumber": "S55643-51Q",
+    "manufacturer": "SmarterMicro",
+    "deviceClass": "Multi-mode Multi-band Power Amplifier Module (MMMB PAM)",
+    "parameterTemplateId": "cellular-3g4g5g",
+    "focusChecklist": [
+      "先看首页、feature list 和电气特性表。"
+    ],
+    "publicContext": [],
+    "confidence": 0.9
+  },
+  "executiveSummary": [
+    {
+      "id": 0,
+      "label": "器件定位",
+      "value": "高集成度 5G/4G/3G 多模多频段功率放大器模组 (MMMB PAM)",
+      "title": "S55643-51Q 核心定义",
+      "body": "这是一款采用可重构架构的射频前端核心器件，旨在解决现代移动端复杂的频段兼容性问题。它集成了低、中、高频段 (L/M/H) 的功率放大器路径、14 个 TX 输出端口和 2 个高频接收端口。",
+      "sourceType": "datasheet",
+      "citations": [
+        "p.1"
+      ]
+    },
+    {
+      "id": 1,
+      "label": "工程核心亮点",
+      "value": "支持 n41 HPUE (31dBm) 与 100MHz 大带宽",
+      "title": "关键能力分析",
+      "body": "支持 3GPP R16 标准下的 100MHz 带宽及载波聚合 (CA)，特别针对 n41 频段提供高功率模式 (HPUE)，最高线性功率可达 31dBm，这显著提升了 5G 信号的覆盖范围。",
+      "sourceType": "datasheet",
+      "citations": [
+        "p.1"
+      ]
+    }
+  ],
+  "reportSections": [
+    {
+      "id": "device_identity",
+      "title": "器件身份：它是谁？",
+      "body": "S55643-51Q 是一款由 SmarterMicro 生产的 MMMB PAM（多模多频段功率放大器模组）。它是移动终端射频发射链路的核心部件，负责将收发器输出的弱射频信号放大到能发射到基站的电平。",
+      "sourceType": "datasheet",
+      "citations": []
+    },
+    {
+      "id": "what_this_part_is_for",
+      "title": "设计初衷：它解决什么问题？",
+      "body": "现代智能手机支持 30 个以上的频段。如果不使用集成模组，PCB 面积将无法容纳所有 PA。该器件通过“可重构架构”在单芯片内集成了几乎全球通用的 LTE 和 NR 频段，极大简化了前端设计复杂度，并支持 5G 高功率需求。",
+      "sourceType": "review",
+      "citations": []
+    },
+    {
+      "id": "how_to_read_this_datasheet",
+      "title": "避坑指南：如何阅读这份射频规格书？",
+      "body": "1. **不要只看最大 dBm**：必须对照 Table 2-4 中的调制方式（如 QPSK vs 256QAM）。功率越高，EVM 越容易超标。\n2. **盯紧供电电压**：注意 VCC 在 PC2 模式下需要 4.5V~4.8V，若 PMIC 输出电压不足，将无法达到 31dBm。\n3. **核对 RFFE 地址**：在多芯片共存系统中，USID（引脚配置或默认值）必须唯一，阅读 Register Map 确认控制寄存器逻辑。",
+      "sourceType": "review",
+      "citations": []
+    },
+    {
+      "id": "key_parameters",
+      "title": "工程红线：关键参数清单",
+      "body": "工程师需重点关注频段覆盖范围（p.9 表格）、典型效率（PAE）、以及各模式下的最大线性功率。特别要注意 n41 HPUE 的指标，这是该器件的核心竞争力。",
+      "sourceType": "datasheet",
+      "citations": []
+    },
+    {
+      "id": "section_by_section_reading_order",
+      "title": "推荐阅读顺序",
+      "body": "1. **Description & Block Diagram (p.1/4)**: 确认输入输出端口数量和基本逻辑。\n2. **Supported Bands (p.9)**: 确认是否涵盖你项目所需的全部频段。\n3. **Rated Power (p.10)**: 确认在目标制式下的功率输出是否达标。\n4. **Electrical Specification (p.8)**: 记录 VCC 和电流峰值，准备电源方案。\n5. **Register Map (p.31)**: 确认控制逻辑以便软件调试。\n6. **Layout Footprint (p.36)**: 提前开始 PCB 占位和热仿真。",
+      "sourceType": "review",
+      "citations": []
+    },
+    {
+      "id": "critical_graphs_and_tables",
+      "title": "核心图表深度解析",
+      "body": "重点看 Table 2-5 到 2-17。不要只看 Typ（典型值），要看 Min/Max 保证值。例如 NR ACLR 的 Max 值 -33dBc 是你系统认证的底线。另外，注意测试条件中的 MPR（Maximum Power Reduction），它决定了在不同资源块 (RB) 分配下的实际输出能力。",
+      "sourceType": "datasheet",
+      "citations": []
+    },
+    {
+      "id": "risks_and_gotchas",
+      "title": "硬件落地风险与陷阱",
+      "body": "射频 PAM 最怕“热”。4.0x6.8mm 的体积内，功率密度极高。若过孔不足或地层太薄，芯片会迅速因过热触发热保护或性能剧烈恶化。此外，L/M/H 不同输入口在版图上应保持足够的净空，防止串扰导致的自激或灵敏度恶化。",
+      "sourceType": "review",
+      "citations": []
+    },
+    {
+      "id": "intern_action_list",
+      "title": "实习生下一步任务",
+      "body": "1. 将你项目需要的 Band 组合列表，并在规格书中勾选出对应的 TX Port 编号。\n2. 计算 n41 HPUE 模式下的最坏发热量 (Power_dissipation = P_in + P_dc - P_out)。\n3. 检查 RFFE 控制总线的 1.8V 域电流是否在主控驱动能力范围内。\n4. 在 CAD 工具中预绘制散热孔阵列，确认是否会干扰周围敏感信号走线。",
+      "sourceType": "review",
+      "citations": []
+    },
+    {
+      "id": "glossary_for_juniors",
+      "title": "术语表",
+      "body": "APT: 平均功率跟踪，通过调节 PA 供电电压来提高低功率下的效率。\\nHPUE: 高功率用户设备，5G 特有标准，允许手机在特定频段以更高功率发射以增强上行。\\nACLR: 相邻信道泄漏比，衡量信号对旁边频率干扰的程度。\\nEVM: 误差向量幅度，衡量调制信号质量好坏的指标，数值越小越好。",
+      "sourceType": "review",
+      "citations": []
+    }
+  ],
+  "parameterRows": [
+    {
+      "name": "支持频段",
+      "value": "NR: n1/2/3/5/7/8/12/13/14/20/25/26/28/30/34/38/39/40/41/66/71; LTE: B1/2/3/4/5/6/7/8/9/10/12/13/14/17/18/20/25/26/28/30/34/38/39/40/41/44/66/68/71",
+      "status": "needs_review",
+      "evidence": null
+    },
+    {
+      "name": "Bandwidth Capability",
+      "value": "NR/LTE up to 100MHz (Single carrier & Intra-band CA)",
+      "status": "needs_review",
+      "evidence": null
+    },
+    {
+      "name": "最大线性输出功率",
+      "value": "PC2 (n41): 31dBm; PC3 (Other bands): 29dBm",
+      "status": "needs_review",
+      "evidence": null
+    },
+    {
+      "name": "ACLR / EVM Condition",
+      "value": "NR ACLR: -33dBc (Max), EVM: 1.5%~5% (Modulation dependent)",
+      "status": "needs_review",
+      "evidence": null
+    },
+    {
+      "name": "RFFE 总线",
+      "value": "MIPI RFFE 2.1 Compliant, up to 52MHz",
+      "status": "needs_review",
+      "evidence": null
+    },
+    {
+      "name": "Current Consumption",
+      "value": "n41 HPUE: 930mA (Typ) @ 31dBm",
+      "status": "needs_review",
+      "evidence": null
+    },
+    {
+      "name": "VCC / Supply",
+      "value": "VBATT: 3.0V-5.0V; VCC (APT): 0.5V-4.8V",
+      "status": "needs_review",
+      "evidence": null
+    },
+    {
+      "name": "封装",
+      "value": "4.0mm x 6.8mm x 0.746mm, 42-pad LGA",
+      "status": "needs_review",
+      "evidence": null
+    },
+    {
+      "name": "支持频段",
+      "value": "NR: n1/2/3/5/7/8/12/13/14/20/25/26/28/30/34/38/39/40/41/66/71; LTE: B1/2/3/4/5/6/7/8/9/10/12/13/14/17/18/20/25/26/28/30/34/38/39/40/41/44/66/68/71",
+      "status": "needs_review",
+      "evidence": null
+    },
+    {
+      "name": "Bandwidth Capability",
+      "value": "NR/LTE up to 100MHz (Single carrier & Intra-band CA)",
+      "status": "needs_review",
+      "evidence": null
+    },
+    {
+      "name": "最大线性输出功率",
+      "value": "PC2 (n41): 31dBm; PC3 (Other bands): 29dBm",
+      "status": "needs_review",
+      "evidence": null
+    }
+  ],
+  "publicNotes": [],
+  "followUpTranscript": [],
+  "sourceAttribution": {
+    "mode": "llm_first",
+    "llmProvider": "gemini",
+    "searchProvider": null
+  },
+  "events": [
+    {
+      "id": "event-1774890584202-pra2wg",
+      "createdAt": "2026-03-30T17:09:44.202Z",
+      "type": "analysis_created",
+      "summary": "初始分析已生成，可继续做证据验证和人工确认。"
+    }
+  ]
+}
