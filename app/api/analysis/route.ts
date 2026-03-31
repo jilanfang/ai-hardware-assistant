@@ -15,6 +15,10 @@ import { validateUploadedFile } from "@/lib/upload-validation";
 
 export const runtime = "nodejs";
 
+const NO_STORE_HEADERS = {
+  "cache-control": "no-store"
+};
+
 async function readFileBuffer(file: File) {
   if (typeof file.arrayBuffer === "function") {
     return new Uint8Array(await file.arrayBuffer());
@@ -49,6 +53,8 @@ export async function GET(request: Request) {
     ...job,
     documentMeta,
     pdfUrl: `/api/analysis/file?jobId=${encodeURIComponent(jobId)}`
+  }, {
+    headers: NO_STORE_HEADERS
   });
 }
 

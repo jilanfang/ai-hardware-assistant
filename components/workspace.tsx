@@ -896,7 +896,9 @@ export function Workspace({
     let cancelled = false;
 
     async function hydrateFromJob() {
-      const response = await fetch(`/api/analysis?jobId=${encodeURIComponent(jobId ?? "")}`);
+        const response = await fetch(`/api/analysis?jobId=${encodeURIComponent(jobId ?? "")}`, {
+          cache: "no-store"
+        });
       const snapshot = (await response.json()) as AnalysisJobSnapshot;
 
       if (cancelled) {
@@ -1147,7 +1149,9 @@ export function Workspace({
   async function pollAnalysisJob(jobId: string, pdf: UploadedPdf, sessionId: number) {
     try {
       for (let attempt = 0; attempt < maxPollAttempts; attempt += 1) {
-        const response = await fetch(`/api/analysis?jobId=${encodeURIComponent(jobId)}`);
+        const response = await fetch(`/api/analysis?jobId=${encodeURIComponent(jobId)}`, {
+          cache: "no-store"
+        });
         if (!isActivePollingSession(sessionId)) {
           return;
         }
@@ -1656,7 +1660,9 @@ export function Workspace({
   }
 
   async function handleOpenRecentTask(jobId: string) {
-    const response = await fetch(`/api/analysis?jobId=${encodeURIComponent(jobId)}`);
+    const response = await fetch(`/api/analysis?jobId=${encodeURIComponent(jobId)}`, {
+      cache: "no-store"
+    });
     const snapshot = (await response.json()) as AnalysisJobSnapshot;
 
     if (!response.ok || !snapshot.jobId) {
