@@ -41,6 +41,7 @@
 - Export status translation is less error-prone when one shared `statusLabel` is added to the export view model, instead of having each builder translate enums independently.
 - The simplest observability improvement is to reuse one local runtime context inside `analyzePdfBuffer` and attach it to existing log events, instead of creating a second telemetry-only metadata shape.
 - The workspace timeline was still inferring pipeline mode from `analysis.pipelineMode` alone, while staged runtime truth often lives under `analysis.sourceAttribution.pipelineMode`, so delayed processing snapshots could regress from staged progress back to single-pipeline labels.
+- The biggest remaining gap between local development and a real single-server deploy was not architecture, but production guardrails: startup could still proceed with a dev session secret, missing storage paths, or missing provider credentials and only fail later at request time.
 
 ## Technical Decisions
 
@@ -66,6 +67,7 @@
 | Export all parameter rows across CSV, HTML, Word, PDF, and JSON, and express trust state explicitly instead of hiding review-needed fields | A filtered export is less honest than the live workspace and breaks the trust loop. |
 | Keep raw JSON `status` and add a shared `statusLabel` for display-oriented exports | This preserves machine compatibility while preventing per-format translation drift. |
 | Resolve workspace pipeline mode from `analysis.pipelineMode ?? analysis.sourceAttribution?.pipelineMode` | This keeps delayed and in-flight snapshots aligned with the persisted runtime attribution contract instead of rebuilding a stale single-pipeline timeline. |
+| Add a production preflight command and wire it into `npm run start` | This turns missing secrets, missing provider config, and unwritable storage paths into immediate startup failures instead of deferred runtime surprises on the server. |
 
 ## Issues / Blockers
 

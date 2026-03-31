@@ -5,7 +5,8 @@
   "scripts": {
     "dev": "WATCHPACK_POLLING=true next dev --hostname 127.0.0.1 --port 3111",
     "build": "next build",
-    "start": "next start --hostname 127.0.0.1 --port 3111",
+    "preflight:prod": "NODE_ENV=production node scripts/preflight.mjs",
+    "start": "npm run preflight:prod && next start --hostname 127.0.0.1 --port 3111",
     "users:create": "node scripts/admin-users.mjs create",
     "users:import": "node scripts/admin-users.mjs import",
     "audit:summary": "node scripts/audit-summary.mjs",

@@ -13,6 +13,9 @@ import {
   updateUserLastLogin,
   type AuthUserRecord
 } from "@/lib/auth-db";
+import { resolveSessionCookieName, resolveSessionSecret } from "@/lib/runtime-env";
+
+export { resolveSessionCookieName } from "@/lib/runtime-env";
 
 const SESSION_TTL_MS = 14 * 24 * 60 * 60 * 1000;
 
@@ -22,14 +25,6 @@ function now() {
 
 function nowIso() {
   return new Date(now()).toISOString();
-}
-
-export function resolveSessionCookieName() {
-  return process.env.SESSION_COOKIE_NAME?.trim() || "atlas_session";
-}
-
-function resolveSessionSecret() {
-  return process.env.SESSION_SECRET?.trim() || "dev-session-secret";
 }
 
 export async function hashPassword(password: string) {

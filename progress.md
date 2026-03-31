@@ -68,6 +68,8 @@
 - Export builders now preserve the full parameter set across CSV, HTML, Word, PDF, and JSON instead of hiding `needs_review` rows in CSV.
 - Export outputs now use one shared Chinese trust label set: `已确认 / 待确认 / 人工修正`, while JSON still preserves the original machine-readable `status` enum.
 - Delayed workspace tasks now preserve already-earned staged progress instead of falling back to the single-pipeline timeline after polling ages out.
+- Added production preflight hardening so real-server startup now checks required secrets, storage paths, provider config, and path writability before `next start`.
+- Production session handling no longer silently falls back to `dev-session-secret`; local development keeps the old fallback only outside production.
 
 ## Next Actions
 
@@ -162,6 +164,7 @@
 | `npm test -- tests/analysis.test.ts tests/workspace.test.tsx tests/exports.test.ts` | passed | Analysis, workspace, and export trust-loop behavior stayed green together with 78/78 tests passing. |
 | `npm test -- tests/workspace.test.tsx` | passed | Delayed staged jobs now keep the earned `已完成器件识别与模板选择` and `已生成首批关键参数` progress cues visible with 48/48 tests passing. |
 | `npm test -- tests/analysis.test.ts tests/workspace.test.tsx tests/exports.test.ts` | passed | The pipeline-mode fallback fix stayed green across backend, workspace, and export trust-loop coverage with 79/79 tests passing. |
+| `npm test -- tests/runtime-env.test.ts tests/preflight-script.test.ts tests/auth-routes.test.ts tests/auth-db.test.ts tests/providers.test.ts tests/admin-scripts.test.ts tests/middleware.test.ts` | passed | Production preflight, auth/session hardening, provider config resolution, scripts, and middleware stayed green together with 26/26 tests passing. |
 
 ## Reboot Check
 

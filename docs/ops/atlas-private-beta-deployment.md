@@ -7,6 +7,7 @@ This repository is deployed as a standalone internal-test app on a single Linux 
 - Subdomain: `atlas.pin2pin.ai`
 - App port: `127.0.0.1:3111`
 - Runtime: `next build` + `next start`
+- Startup preflight: `npm run preflight:prod`
 - Process manager: `systemd`
 - Reverse proxy: `Nginx`
 
@@ -47,6 +48,7 @@ Recommended ownership:
 
 Copy [`.env.example`](/Users/jilanfang/ai-hardware-assistant/.env.example) to the server and set:
 
+- `NODE_ENV=production`
 - `ANALYSIS_JOB_STORE_DIR=/var/lib/atlas/jobs`
 - `ATLAS_DB_PATH=/var/lib/atlas/atlas.db`
 - `SESSION_SECRET=<strong-random-secret>`
@@ -109,6 +111,7 @@ Type=simple
 User=atlas
 Group=atlas
 WorkingDirectory=/srv/atlas/app
+Environment=NODE_ENV=production
 EnvironmentFile=/srv/atlas/app/.env.production
 ExecStart=/usr/bin/npm run start
 Restart=always
@@ -129,9 +132,19 @@ sudo chown -R atlas:atlas /var/lib/atlas /var/log/atlas
 cd /srv/atlas/app
 npm ci
 npm run build
+npm run preflight:prod
 sudo systemctl daemon-reload
 sudo systemctl enable --now atlas
 ```
+
+The preflight command is intentionally strict in production. It fails fast when:
+
+- `SESSION_SECRET` is missing
+- `ATLAS_DB_PATH` is missing
+- `ANALYSIS_JOB_STORE_DIR` is missing
+- the primary `ANALYSIS_LLM_PROVIDER` / `ANALYSIS_LLM_MODEL` pair is missing
+- the configured provider key is missing
+- the configured SQLite/job-store paths are not writable
 
 ## Account Provisioning
 

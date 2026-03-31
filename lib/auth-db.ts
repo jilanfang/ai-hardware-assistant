@@ -3,6 +3,7 @@ import { mkdirSync, rmSync } from "node:fs";
 import { dirname, join } from "node:path";
 
 import Database from "better-sqlite3";
+import { resolveSessionSecret } from "@/lib/runtime-env";
 
 type UserStatus = "active" | "disabled";
 
@@ -246,7 +247,7 @@ export function findSessionByToken(tokenOrHash: string) {
     return mapSession(directRow);
   }
 
-  const sessionSecret = process.env.SESSION_SECRET?.trim() || "dev-session-secret";
+  const sessionSecret = resolveSessionSecret();
   const hashedToken = createHash("sha256").update(`${sessionSecret}:${tokenOrHash}`).digest("hex");
   const row = db
     .prepare("SELECT * FROM sessions WHERE session_token_hash = ?")

@@ -185,7 +185,7 @@ describe("Workspace", () => {
   });
 
   test("waits for logout to finish before redirecting to login", async () => {
-    let resolveLogout: ((value: { ok: true; json: () => Promise<{ ok: true }> }) => void) | null = null;
+    let resolveLogout!: (value: { ok: true; json: () => Promise<{ ok: true }> }) => void;
     const logoutPromise = new Promise<{ ok: true; json: () => Promise<{ ok: true }> }>((resolve) => {
       resolveLogout = resolve;
     });
@@ -210,7 +210,7 @@ describe("Workspace", () => {
     );
     expect(replaceStateMock).not.toHaveBeenCalledWith(null, "", "/login");
 
-    resolveLogout?.({
+    resolveLogout({
       ok: true,
       json: async () => ({ ok: true })
     });

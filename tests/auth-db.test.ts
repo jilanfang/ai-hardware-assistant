@@ -67,6 +67,7 @@ describe("auth database", () => {
     createAuditEvent({
       userId: user.id,
       eventType: "login_success",
+      eventTime: "2026-03-30T08:00:00.000Z",
       payload: { username: "tester" },
       ip: "127.0.0.1",
       userAgent: "vitest"
@@ -74,6 +75,7 @@ describe("auth database", () => {
     createAuditEvent({
       userId: user.id,
       eventType: "analysis_created",
+      eventTime: "2026-03-30T08:05:00.000Z",
       jobId: "job-1",
       targetType: "analysis_job",
       targetId: "job-1",

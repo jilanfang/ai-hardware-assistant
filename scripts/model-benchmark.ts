@@ -21,6 +21,23 @@ type BenchmarkScenarioFile = {
   targets: RelayTarget[];
 };
 
+type RawRun = {
+  provider: string;
+  model: string;
+  mode: "gemini" | "responses";
+  response: {
+    ok: boolean;
+    status: number;
+    elapsedMs: number;
+    textLength: number;
+  };
+  qualityInput: {
+    text: string;
+  };
+  rawPreview: string;
+  textPreview: string;
+};
+
 function loadDotEnvLocal() {
   const envPath = resolve(process.cwd(), ".env.local");
   if (!existsSync(envPath)) {
@@ -232,7 +249,7 @@ async function main() {
     hallucinationChecks: scenario.hallucinationChecks
   };
 
-  const rawRuns = [];
+  const rawRuns: RawRun[] = [];
   for (const target of scenario.targets) {
     const run =
       target.mode === "gemini"

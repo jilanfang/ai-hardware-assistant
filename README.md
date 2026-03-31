@@ -183,3 +183,18 @@ Atlas now supports two runtime modes:
   - enables fast parameters + full report + arbitration
 
 If you do not need fast/slow/cross-check behavior, keep the app on `single`.
+
+## Production Preflight
+
+Before starting the app on a real server, run:
+
+- `npm run preflight:prod`
+
+This checks the minimum production contract:
+
+- `SESSION_SECRET`
+- `ATLAS_DB_PATH`
+- `ANALYSIS_JOB_STORE_DIR`
+- primary `ANALYSIS_LLM_PROVIDER` and `ANALYSIS_LLM_MODEL`
+- the corresponding provider API key
+- writability of the configured SQLite and job-store paths

@@ -59,6 +59,7 @@ Phase 21: datasheet trust-loop hardening on top of relay-backed PDF direct routi
 - [x] Preserve full runtime attribution on staged completed results, strengthen runtime observability payloads, and stop rendering misleading unknown-path placeholders in the workspace.
 - [x] Tighten export behavior and result clarity around reviewed vs. unreviewed output, keeping full parameter rows and explicit trust labels in every export artifact.
 - [x] Preserve already-earned staged progress cues when a slow job degrades into the delayed waiting state.
+- [x] Close the main local-vs-server gap by adding production preflight checks and explicit deployment hardening for secrets, provider config, and writable storage paths.
 
 ## Archive
 - Historical plans and specs: `docs/archive/superpowers/`

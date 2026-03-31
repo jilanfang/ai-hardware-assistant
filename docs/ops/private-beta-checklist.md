@@ -20,6 +20,7 @@ Use this together with [docs/ops/atlas-private-beta-deployment.md](/Users/jilanf
 - [ ] code is deployed to `/srv/atlas/app`
 - [ ] `.env.production` is created from [`.env.example`](/Users/jilanfang/ai-hardware-assistant/.env.example)
 - [ ] required env vars are filled:
+  - `NODE_ENV`
   - `ANALYSIS_JOB_STORE_DIR`
   - `ATLAS_DB_PATH`
   - `SESSION_SECRET`
@@ -29,6 +30,7 @@ Use this together with [docs/ops/atlas-private-beta-deployment.md](/Users/jilanf
   - `ANALYSIS_LLM_MODEL`
 - [ ] `npm ci`
 - [ ] `npm run build`
+- [ ] `npm run preflight:prod`
 
 ## 3. Reverse Proxy Ready
 
@@ -42,6 +44,7 @@ Use this together with [docs/ops/atlas-private-beta-deployment.md](/Users/jilanf
 ## 4. App Process Ready
 
 - [ ] `atlas.service` is installed in `systemd`
+- [ ] `atlas.service` sets `NODE_ENV=production`
 - [ ] `systemctl daemon-reload`
 - [ ] `systemctl enable --now atlas`
 - [ ] `systemctl status atlas` shows the process healthy

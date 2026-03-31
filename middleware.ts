@@ -1,8 +1,5 @@
 import { NextResponse } from "next/server";
-
-function resolveSessionCookieName() {
-  return process.env.SESSION_COOKIE_NAME?.trim() || "atlas_session";
-}
+import { resolveSessionCookieName } from "@/lib/runtime-env";
 
 function hasSessionCookie(request: Request) {
   const cookieHeader = request.headers.get("cookie") ?? "";
