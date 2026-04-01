@@ -2516,9 +2516,35 @@ function normalizeReportOutput(raw: unknown, input: ReportSynthesisInput): Repor
     throw new Error("report completion is not an object");
   }
 
-  const standardReport = root.executiveSummary ? root : null;
+  const standardReport =
+    ("executiveSummary" in root &&
+      "deviceIdentity" in root &&
+      "keyParameters" in root)
+      ? root
+      : null;
   if (standardReport) {
-    return normalizeReport(standardReport as ReportOutput);
+    const deviceIdentity = asObject(standardReport.deviceIdentity) ?? {};
+    return normalizeReport({
+      executiveSummary: asString(standardReport.executiveSummary),
+      deviceIdentity: {
+        canonicalPartNumber: asString(deviceIdentity.canonicalPartNumber) || input.identity.canonicalPartNumber,
+        manufacturer: asString(deviceIdentity.manufacturer) || input.identity.manufacturer,
+        deviceClass: asString(deviceIdentity.deviceClass) || input.identity.deviceClass,
+        parameterTemplateId: resolveIdentityTemplateId(deviceIdentity, input.identity.parameterTemplateId),
+        confidence:
+          typeof deviceIdentity.confidence === "number" && Number.isFinite(deviceIdentity.confidence)
+            ? deviceIdentity.confidence
+            : input.identity.confidence
+      },
+      keyParameters: Array.isArray(standardReport.keyParameters) ? (standardReport.keyParameters as ReportClaim[]) : [],
+      designFocus: Array.isArray(standardReport.designFocus) ? (standardReport.designFocus as ReportClaim[]) : [],
+      risks: Array.isArray(standardReport.risks) ? (standardReport.risks as ReportClaim[]) : [],
+      openQuestions: Array.isArray(standardReport.openQuestions) ? (standardReport.openQuestions as ReportClaim[]) : [],
+      publicNotes: Array.isArray(standardReport.publicNotes) ? (standardReport.publicNotes as ReportClaim[]) : [],
+      citations: Array.isArray(standardReport.citations) ? (standardReport.citations as ClaimCitation[]) : [],
+      sections: Array.isArray(standardReport.sections) ? (standardReport.sections as ReportOutput["sections"]) : [],
+      claims: Array.isArray(standardReport.claims) ? (standardReport.claims as ReportClaim[]) : []
+    });
   }
 
   if (root.deviceIdentification && root.instructionalReport) {
@@ -3064,6 +3090,7 @@ function normalizeSectionId(section: ReportOutput["sections"][number]) {
     normalizedId === "how_to_read_this_datasheet" ||
     normalizedId === "section_by_section_reading_order" ||
     normalizedId === "critical_graphs_and_tables" ||
+    normalizedId === "implementation_constraints" ||
     normalizedId === "key_parameters" ||
     normalizedId === "risks_and_gotchas" ||
     normalizedId === "intern_action_list" ||
@@ -3104,6 +3131,18 @@ function normalizeSectionId(section: ReportOutput["sections"][number]) {
     return "critical_graphs_and_tables";
   }
   if (
+    combined.includes("工艺与落地约束") ||
+    combined.includes("implementation constraints") ||
+    combined.includes("manufacturing constraints") ||
+    combined.includes("smt") ||
+    combined.includes("msl") ||
+    combined.includes("贴片") ||
+    combined.includes("焊盘") ||
+    combined.includes("assembly")
+  ) {
+    return "implementation_constraints";
+  }
+  if (
     combined.includes("关键参数") ||
     combined.includes("key parameters") ||
     combined.includes("第五步：rf 参数") ||
@@ -3135,6 +3174,52 @@ function normalizeSectionId(section: ReportOutput["sections"][number]) {
   return section.id;
 }
 
+function buildImplementationConstraintsSection(report: ReportOutput): ReportOutput["sections"][number] | null {
+  const seen = new Set<string>();
+  const candidates = [...report.designFocus, ...report.risks];
+  const relevant = candidates.filter((claim) => {
+    const merged = normalizeClaimText([claim.label, claim.title ?? "", claim.value ?? "", claim.body ?? ""].join(" "));
+    return (
+      merged.includes("thermal") ||
+      merged.includes("layout") ||
+      merged.includes("matching") ||
+      merged.includes("ground") ||
+      merged.includes("decoupling") ||
+      merged.includes("package") ||
+      merged.includes("msl") ||
+      merged.includes("smt") ||
+      merged.includes("assembly") ||
+      merged.includes("贴片") ||
+      merged.includes("焊盘") ||
+      merged.includes("散热") ||
+      merged.includes("接地") ||
+      merged.includes("封装")
+    );
+  });
+
+  const lines = relevant
+    .map((claim) => [claim.label, claim.value, claim.body].filter(Boolean).join(": ").trim())
+    .filter(Boolean)
+    .filter((line) => {
+      const key = normalizeClaimText(line);
+      if (seen.has(key)) return false;
+      seen.add(key);
+      return true;
+    });
+
+  if (lines.length === 0) {
+    return null;
+  }
+
+  return {
+    id: "implementation_constraints",
+    title: "工艺与落地约束",
+    body: lines.join("\n"),
+    sourceType: "review",
+    citations: []
+  };
+}
+
 function normalizeReport(report: ReportOutput): ReportOutput {
   const normalizedKeyParameters = normalizeClaimList(report.keyParameters);
   const normalizedDesignFocus = normalizeClaimList(report.designFocus);
@@ -3161,22 +3246,34 @@ function normalizeReport(report: ReportOutput): ReportOutput {
     sections: normalizedSections
   });
 
+  const hasImplementationConstraintsSection = alignedReport.sections.some(
+    (section) => section.id === "implementation_constraints"
+  );
+  const implementationConstraintsSection = buildImplementationConstraintsSection(alignedReport);
+  const nextSections = implementationConstraintsSection && !hasImplementationConstraintsSection
+    ? normalizeSectionList([...alignedReport.sections, implementationConstraintsSection]).map((section) => ({
+        ...section,
+        id: normalizeSectionId(section),
+        citations: section.citations.map(normalizeCitation)
+      }))
+    : alignedReport.sections;
+
   return {
     ...alignedReport,
     deviceIdentity: {
       ...alignedReport.deviceIdentity,
       deviceClass: fallbackDeviceClass({
         ...alignedReport,
-        sections: normalizedSections
+        sections: nextSections
       })
     },
+    sections: nextSections,
     keyParameters: alignedReport.keyParameters.map(normalizeClaim),
     designFocus: alignedReport.designFocus.map(normalizeClaim),
     risks: alignedReport.risks.map(normalizeClaim),
     openQuestions: alignedReport.openQuestions.map(normalizeClaim),
     publicNotes: alignedReport.publicNotes.map(normalizeClaim),
     citations: alignedReport.citations.map(normalizeCitation),
-    sections: normalizedSections,
     claims: alignedReport.claims.map(normalizeClaim)
   };
 }

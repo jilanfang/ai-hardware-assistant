@@ -156,6 +156,54 @@ function buildProcessingSnapshot(overrides?: Partial<AnalysisJobSnapshot>): Anal
   };
 }
 
+function buildSourceAttribution(
+  overrides: Partial<NonNullable<AnalysisResult["sourceAttribution"]>> = {}
+): NonNullable<AnalysisResult["sourceAttribution"]> {
+  return {
+    mode: "llm_first_with_odl",
+    llmProvider: "mock",
+    llmTarget: "mock/gpt-4.1",
+    searchProvider: "mock",
+    documentPath: "pdf_direct",
+    pipelineMode: "staged",
+    ...overrides
+  };
+}
+
+function buildReport(overrides: Partial<NonNullable<AnalysisResult["report"]>> = {}): NonNullable<AnalysisResult["report"]> {
+  return {
+    executiveSummary: "这是最终报告。",
+    deviceIdentity: {
+      canonicalPartNumber: "LMR51430",
+      manufacturer: "Texas Instruments",
+      deviceClass: "DC-DC",
+      parameterTemplateId: "dc-dc",
+      confidence: 0.92
+    },
+    keyParameters: [],
+    designFocus: [],
+    risks: [],
+    openQuestions: [],
+    publicNotes: [],
+    citations: [],
+    sections: [],
+    claims: [],
+    ...overrides
+  };
+}
+
+function buildAnalysisResult(overrides: Partial<AnalysisResult> = {}): AnalysisResult {
+  return {
+    summary: "LMR51430 已完成真实解析。",
+    review: "建议优先检查输入范围和封装散热。",
+    report: buildReport(),
+    sourceAttribution: buildSourceAttribution(),
+    keyParameters: [],
+    evidence: [],
+    ...overrides
+  };
+}
+
 describe("Workspace", () => {
   test("shows the signed-in user and can log out from the rail", async () => {
     fetchMock.mockResolvedValueOnce({
@@ -337,6 +385,13 @@ describe("Workspace", () => {
               body: "回查输入范围、输出电流和封装散热相关原文。",
               sourceType: "review",
               citations: []
+            },
+            {
+              id: "implementation_constraints",
+              title: "工艺与落地约束",
+              body: "封装散热路径、焊盘接地和贴片工艺会直接影响最终落地表现。",
+              sourceType: "review",
+              citations: []
             }
           ],
           claims: []
@@ -389,6 +444,8 @@ describe("Workspace", () => {
     expect(screen.getByText("器件身份")).toBeInTheDocument();
     expect(screen.getByText("怎么读这份 Datasheet")).toBeInTheDocument();
     expect(screen.getByText("实习生下一步动作")).toBeInTheDocument();
+    expect(screen.getByText("工艺与落地约束")).toBeInTheDocument();
+    expect(screen.getByText("封装散热路径、焊盘接地和贴片工艺会直接影响最终落地表现。")).toBeInTheDocument();
     expect(screen.getByText("风险与待确认项")).toBeInTheDocument();
     expect(screen.getByText("已完成")).toBeInTheDocument();
     expect(screen.queryByText("lmr51430 datasheet 初步分析")).not.toBeInTheDocument();
@@ -416,6 +473,83 @@ describe("Workspace", () => {
     fireEvent.click(within(packageRow as HTMLElement).getByRole("button", { name: "定位到证据" }));
 
     expect(screen.getByTitle("PDF 预览")).toHaveAttribute("src", "/api/analysis/file?jobId=job-1#page=4");
+  });
+
+  test("does not render the runtime path note when completed source attribution is missing llmTarget", async () => {
+    fetchMock.mockResolvedValueOnce({
+      ok: true,
+      json: async () => ({ jobs: [] })
+    });
+    queueAnalysisJobResponses({
+      status: "complete",
+      warnings: [],
+      analysis: buildAnalysisResult({
+        report: buildReport({
+          executiveSummary: "",
+          sections: [
+            {
+              id: "device_identity",
+              title: "器件身份",
+              body: "LMR51430 是一颗 DC-DC 电源芯片。",
+              sourceType: "review",
+              citations: []
+            }
+          ]
+        }),
+        sourceAttribution: buildSourceAttribution({
+          llmTarget: ""
+        })
+      })
+    });
+
+    render(<Workspace />);
+
+    const file = new File(["pdf"], "lmr51430-datasheet.pdf", { type: "application/pdf" });
+    fireEvent.change(screen.getByLabelText("上传数据手册 PDF"), { target: { files: [file] } });
+    fireEvent.click(screen.getByRole("button", { name: "上传 PDF 并分析" }));
+
+    expect(await screen.findByText("器件身份")).toBeInTheDocument();
+    expect(screen.getByText("LMR51430 是一颗 DC-DC 电源芯片。")).toBeInTheDocument();
+    expect(screen.queryByText(/^运行路径：/)).not.toBeInTheDocument();
+    expect(screen.queryByText("运行路径：未记录模型 · 路径未知 · unknown")).not.toBeInTheDocument();
+  });
+
+  test("keeps report sections visible when the executive summary is empty and sparse attribution omits pipeline metadata", async () => {
+    fetchMock.mockResolvedValueOnce({
+      ok: true,
+      json: async () => ({ jobs: [] })
+    });
+    queueAnalysisJobResponses({
+      status: "complete",
+      warnings: [],
+      analysis: buildAnalysisResult({
+        report: buildReport({
+          executiveSummary: "",
+          sections: [
+            {
+              id: "how_to_read_this_datasheet",
+              title: "怎么读这份 Datasheet",
+              body: "先看首页、特性列表和工作条件。",
+              sourceType: "review",
+              citations: []
+            }
+          ]
+        }),
+        sourceAttribution: buildSourceAttribution({
+          pipelineMode: undefined
+        })
+      })
+    });
+
+    render(<Workspace />);
+
+    const file = new File(["pdf"], "lmr51430-datasheet.pdf", { type: "application/pdf" });
+    fireEvent.change(screen.getByLabelText("上传数据手册 PDF"), { target: { files: [file] } });
+    fireEvent.click(screen.getByRole("button", { name: "上传 PDF 并分析" }));
+
+    expect(await screen.findByText("怎么读这份 Datasheet")).toBeInTheDocument();
+    expect(screen.getByText("先看首页、特性列表和工作条件。")).toBeInTheDocument();
+    expect(screen.queryByText(/^运行路径：/)).not.toBeInTheDocument();
   });
 
   test("shows fast-parameter middle state without summary, export, or follow-up", async () => {
@@ -980,6 +1114,35 @@ describe("Workspace", () => {
     });
   });
 
+  test("disables locating evidence when the parameter points to a missing evidence entry", async () => {
+    fetchMock.mockResolvedValueOnce({
+      ok: true,
+      json: async () => ({ jobs: [] })
+    });
+    queueAnalysisJobResponses({
+      status: "complete",
+      warnings: [],
+      analysis: buildAnalysisResult({
+        keyParameters: [{ name: "Package", value: "SOT-23-THN", evidenceId: "ev-missing", status: "needs_review" }],
+        evidence: []
+      })
+    });
+
+    render(<Workspace />);
+
+    const file = new File(["pdf"], "lmr51430-datasheet.pdf", { type: "application/pdf" });
+    fireEvent.change(screen.getByLabelText("上传数据手册 PDF"), { target: { files: [file] } });
+    fireEvent.click(screen.getByRole("button", { name: "上传 PDF 并分析" }));
+
+    expect(await screen.findAllByRole("heading", { name: "LMR51430" })).not.toHaveLength(0);
+    const packageLabel = screen.getAllByText("封装").find((node) => node.closest(".dialog-parameter-row"));
+    const packageRow = packageLabel?.closest(".dialog-parameter-row");
+    expect(packageRow).not.toBeNull();
+    const locateButton = within(packageRow as HTMLElement).getByRole("button", { name: "定位到证据" });
+    expect(locateButton).toBeDisabled();
+    expect(screen.getByTitle("PDF 预览")).toHaveAttribute("src", "/api/analysis/file?jobId=job-1#page=1");
+  });
+
   test("updates the preview total page count from analyzed document pages instead of the upload default", async () => {
     fetchMock.mockResolvedValueOnce({
       ok: true,
@@ -1312,6 +1475,48 @@ describe("Workspace", () => {
       })
     );
     expect(screen.getByText("Sources: Datasheet, Public")).toBeInTheDocument();
+  });
+
+  test("shows the server follow-up error instead of any local canned fallback when the follow-up api fails", async () => {
+    fetchMock.mockResolvedValueOnce({
+      ok: true,
+      json: async () => ({ jobs: [] })
+    });
+    queueAnalysisJobResponses({
+      status: "complete",
+      warnings: [],
+      analysis: buildAnalysisResult({
+        keyParameters: [{ name: "Input voltage", value: "4.5 V to 36 V", evidenceId: "ev-input", status: "confirmed" }],
+        evidence: [
+          {
+            id: "ev-input",
+            label: "输入电压范围",
+            page: 1,
+            quote: "VIN operating range 4.5 V to 36 V",
+            rect: { left: 14, top: 18, width: 46, height: 10 }
+          }
+        ]
+      })
+    });
+    fetchMock.mockResolvedValueOnce({
+      ok: false,
+      json: async () => ({
+        error: "full report not ready"
+      })
+    });
+
+    render(<Workspace />);
+
+    const file = new File(["pdf"], "lmr51430-datasheet.pdf", { type: "application/pdf" });
+    fireEvent.change(screen.getByLabelText("上传数据手册 PDF"), { target: { files: [file] } });
+    fireEvent.click(screen.getByRole("button", { name: "上传 PDF 并分析" }));
+
+    const composer = await screen.findByLabelText("继续提问");
+    fireEvent.change(composer, { target: { value: "这颗芯片最重要的限制条件是什么？" } });
+    fireEvent.click(screen.getByRole("button", { name: "发送问题" }));
+
+    expect(await screen.findByText("full report not ready")).toBeInTheDocument();
+    expect(screen.queryByText("基于当前 datasheet 总结")).not.toBeInTheDocument();
   });
 
   test("updates the url with jobId after the upload job is created", async () => {

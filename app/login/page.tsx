@@ -1,9 +1,9 @@
 "use client";
 
 import { useRouter, useSearchParams } from "next/navigation";
-import { FormEvent, useState } from "react";
+import { FormEvent, Suspense, useState } from "react";
 
-export default function LoginPage() {
+function LoginPageForm() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const [username, setUsername] = useState("");
@@ -47,40 +47,63 @@ export default function LoginPage() {
 
   return (
     <main className="login-shell">
-      <section className="login-card">
-        <div className="login-copy">
-          <p className="eyebrow">Pin2pin Atlas</p>
-          <h1>登录</h1>
-          <p>这是一个受控内测环境，请使用管理员分配的用户名和密码。</p>
+      <section className="login-stage">
+        <div className="login-hero">
+          <div className="login-hero-panel">
+            <p className="eyebrow">Pin2pin Atlas</p>
+            <h1>受控内测分析台</h1>
+            <p className="login-lead">围绕 datasheet 形成总结、证据回查、参数确认与追问的统一工作区。</p>
+            <div className="login-hero-points" aria-hidden="true">
+              <span>Summary</span>
+              <span>Evidence</span>
+              <span>Follow-up</span>
+            </div>
+          </div>
         </div>
 
-        <form className="login-form" onSubmit={handleSubmit}>
-          <label>
-            <span>用户名</span>
-            <input
-              name="username"
-              autoComplete="username"
-              value={username}
-              onChange={(event) => setUsername(event.target.value)}
-            />
-          </label>
-          <label>
-            <span>密码</span>
-            <input
-              name="password"
-              type="password"
-              autoComplete="current-password"
-              value={password}
-              onChange={(event) => setPassword(event.target.value)}
-            />
-          </label>
-          <input type="hidden" name="returnTo" value={returnTo} />
-          {error ? <p className="login-error">{error}</p> : null}
-          <button type="submit" disabled={isSubmitting}>
-            {isSubmitting ? "登录中..." : "登录"}
-          </button>
-        </form>
+        <section className="login-card">
+          <div className="login-copy">
+            <p className="eyebrow">Pin2pin Atlas</p>
+            <h1>登录</h1>
+            <p>这是一个受控内测环境，请使用管理员分配的用户名和密码。</p>
+          </div>
+
+          <form className="login-form" onSubmit={handleSubmit}>
+            <label>
+              <span>用户名</span>
+              <input
+                name="username"
+                autoComplete="username"
+                value={username}
+                onChange={(event) => setUsername(event.target.value)}
+              />
+            </label>
+            <label>
+              <span>密码</span>
+              <input
+                name="password"
+                type="password"
+                autoComplete="current-password"
+                value={password}
+                onChange={(event) => setPassword(event.target.value)}
+              />
+            </label>
+            <input type="hidden" name="returnTo" value={returnTo} />
+            {error ? <p className="login-error">{error}</p> : null}
+            <button type="submit" disabled={isSubmitting}>
+              {isSubmitting ? "登录中..." : "登录"}
+            </button>
+          </form>
+        </section>
       </section>
     </main>
+  );
+}
+
+export default function LoginPage() {
+  return (
+    <Suspense fallback={null}>
+      <LoginPageForm />
+    </Suspense>
   );
 }

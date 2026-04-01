@@ -2,6 +2,14 @@
 
 This repository is deployed as a standalone internal-test app on a single Linux host.
 
+Current target host for Atlas:
+
+- server IP: `8.217.40.70`
+- existing public site: `pin2pin.ai` / `www.pin2pin.ai`
+- existing site layout: static files under `/var/www/pin2pin/current`, served directly by Nginx
+
+Atlas should stay isolated from that static-site path. Do not reuse `/var/www/pin2pin/current`.
+
 ## Recommended Entry
 
 - Subdomain: `atlas.pin2pin.ai`
@@ -16,6 +24,15 @@ Reasoning:
 - clean separation from the marketing site on the root domain
 - simpler cookie scope and TLS handling
 - easier rollback and operational isolation
+
+## Included Repo Assets
+
+This repository now includes the deployment assets for the Aliyun host:
+
+- Nginx bootstrap vhost: [`deploy/nginx/atlas.pin2pin.ai.conf`](/Users/jilanfang/ai-hardware-assistant/deploy/nginx/atlas.pin2pin.ai.conf)
+- systemd unit: [`deploy/systemd/atlas.service`](/Users/jilanfang/ai-hardware-assistant/deploy/systemd/atlas.service)
+- one-time host bootstrap script: [`scripts/deploy/aliyun-atlas-bootstrap.sh`](/Users/jilanfang/ai-hardware-assistant/scripts/deploy/aliyun-atlas-bootstrap.sh)
+- release script: [`scripts/deploy/aliyun-atlas-release.sh`](/Users/jilanfang/ai-hardware-assistant/scripts/deploy/aliyun-atlas-release.sh)
 
 ## Server Dependencies
 
@@ -43,6 +60,9 @@ Recommended ownership:
 - service user: `atlas`
 - writable paths: `/var/lib/atlas`, `/var/log/atlas`
 - code directory should be read-only for the service user
+- if `/var/lib/atlas/atlas.db` was ever created by `root`, reset it before login testing:
+  - `chown atlas:atlas /var/lib/atlas/atlas.db`
+  - `chmod 660 /var/lib/atlas/atlas.db`
 
 ## Required Environment
 
@@ -68,73 +88,60 @@ Copy [`.env.example`](/Users/jilanfang/ai-hardware-assistant/.env.example) to th
 
 Only set the stage overrides when `ANALYSIS_PIPELINE_MODE=staged`.
 
-## Nginx Example
+## Bootstrap On 8.217.40.70
 
-```nginx
-server {
-    listen 80;
-    server_name atlas.pin2pin.ai;
-    return 301 https://$host$request_uri;
-}
+Use the same SSH identity that already manages the public site:
 
-server {
-    listen 443 ssl http2;
-    server_name atlas.pin2pin.ai;
-
-    ssl_certificate /etc/ssl/atlas/fullchain.pem;
-    ssl_certificate_key /etc/ssl/atlas/privkey.pem;
-
-    client_max_body_size 30m;
-
-    location / {
-        proxy_pass http://127.0.0.1:3111;
-        proxy_http_version 1.1;
-        proxy_set_header Host $host;
-        proxy_set_header X-Forwarded-Proto https;
-        proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
-        proxy_set_header X-Real-IP $remote_addr;
-        proxy_set_header Upgrade $http_upgrade;
-        proxy_set_header Connection "upgrade";
-    }
-}
+```bash
+chmod 600 /Users/jilanfang/Downloads/pin2pin.pem
+DEPLOY_KEY_PATH=/Users/jilanfang/Downloads/pin2pin.pem \
+scripts/deploy/aliyun-atlas-bootstrap.sh
 ```
 
-## systemd Example
+What this does:
 
-```ini
-[Unit]
-Description=Atlas Next.js app
-After=network.target
+- creates the `atlas` service user if missing
+- creates `/srv/atlas/app`, `/var/lib/atlas/jobs`, and `/var/log/atlas/reports`
+- installs `atlas.service` into `systemd`
+- installs an HTTP-only Nginx vhost for `atlas.pin2pin.ai`
+- reloads Nginx
 
-[Service]
-Type=simple
-User=atlas
-Group=atlas
-WorkingDirectory=/srv/atlas/app
-Environment=NODE_ENV=production
-EnvironmentFile=/srv/atlas/app/.env.production
-ExecStart=/usr/bin/npm run start
-Restart=always
-RestartSec=5
-StandardOutput=journal
-StandardError=journal
-
-[Install]
-WantedBy=multi-user.target
-```
+This does not touch the existing `pin2pin.ai` static-site root at `/var/www/pin2pin/current`.
 
 ## First Deploy
 
-```bash
-sudo mkdir -p /srv/atlas/app /var/lib/atlas/jobs /var/log/atlas/reports
-sudo chown -R atlas:atlas /var/lib/atlas /var/log/atlas
+1. Create the production env file on the server:
 
+```bash
+ssh -i /Users/jilanfang/Downloads/pin2pin.pem root@8.217.40.70
 cd /srv/atlas/app
-npm ci
-npm run build
-npm run preflight:prod
-sudo systemctl daemon-reload
-sudo systemctl enable --now atlas
+cp .env.example .env.production
+```
+
+2. Fill `.env.production` with the real secrets and model config.
+
+3. Sync code, install deps, build, preflight, and restart Atlas:
+
+```bash
+DEPLOY_KEY_PATH=/Users/jilanfang/Downloads/pin2pin.pem \
+scripts/deploy/aliyun-atlas-release.sh
+```
+
+The release script now also re-applies ownership for `ANALYSIS_JOB_STORE_DIR`, the SQLite parent directory, and `ATLAS_DB_PATH` when the DB file already exists, which prevents `SQLITE_READONLY` regressions after manual root-side maintenance.
+
+4. After DNS for `atlas.pin2pin.ai` points to `8.217.40.70`, issue TLS on the server:
+
+```bash
+ssh -i /Users/jilanfang/Downloads/pin2pin.pem root@8.217.40.70
+certbot --nginx -d atlas.pin2pin.ai
+```
+
+5. Verify:
+
+```bash
+curl http://127.0.0.1:3111/healthz
+curl https://atlas.pin2pin.ai/healthz
+curl -I https://atlas.pin2pin.ai/login
 ```
 
 The preflight command is intentionally strict in production. It fails fast when:

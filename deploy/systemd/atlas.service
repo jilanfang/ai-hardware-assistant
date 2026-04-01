@@ -1,0 +1,20 @@
+[Unit]
+Description=Pin2pin Atlas Next.js app
+After=network.target
+
+[Service]
+Type=simple
+User=atlas
+Group=atlas
+WorkingDirectory=/srv/atlas/app
+Environment=NODE_ENV=production
+EnvironmentFile=/srv/atlas/app/.env.production
+ExecStart=/usr/bin/npm run start
+Restart=always
+RestartSec=5
+TimeoutStartSec=120
+StandardOutput=journal
+StandardError=journal
+
+[Install]
+WantedBy=multi-user.target

@@ -19,6 +19,7 @@ Use this together with [docs/ops/atlas-private-beta-deployment.md](/Users/jilanf
 
 - [ ] code is deployed to `/srv/atlas/app`
 - [ ] `.env.production` is created from [`.env.example`](/Users/jilanfang/ai-hardware-assistant/.env.example)
+- [ ] `scripts/deploy/aliyun-atlas-bootstrap.sh` has been run against `8.217.40.70`
 - [ ] required env vars are filled:
   - `NODE_ENV`
   - `ANALYSIS_JOB_STORE_DIR`
@@ -31,11 +32,14 @@ Use this together with [docs/ops/atlas-private-beta-deployment.md](/Users/jilanf
 - [ ] `npm ci`
 - [ ] `npm run build`
 - [ ] `npm run preflight:prod`
+- [ ] `scripts/deploy/aliyun-atlas-release.sh` finishes successfully
+- [ ] if `/var/lib/atlas/atlas.db` already exists, its ownership is `atlas:atlas` and mode is compatible with writes
 
 ## 3. Reverse Proxy Ready
 
 - [ ] DNS for `atlas.pin2pin.ai` points to the server
 - [ ] Nginx is configured to proxy `atlas.pin2pin.ai` to `127.0.0.1:3111`
+- [ ] the Atlas vhost is separate from the existing `pin2pin.ai` static-site root `/var/www/pin2pin/current`
 - [ ] HTTPS certificate is installed
 - [ ] `client_max_body_size` is large enough for datasheet uploads
 - [ ] `nginx -t` passes
@@ -48,6 +52,7 @@ Use this together with [docs/ops/atlas-private-beta-deployment.md](/Users/jilanf
 - [ ] `systemctl daemon-reload`
 - [ ] `systemctl enable --now atlas`
 - [ ] `systemctl status atlas` shows the process healthy
+- [ ] `curl http://127.0.0.1:3111/healthz` returns `{"ok":true}`
 - [ ] `curl https://atlas.pin2pin.ai/healthz` returns `{"ok":true}`
 
 ## 5. Account Provisioning Ready

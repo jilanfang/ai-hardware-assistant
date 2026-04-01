@@ -8,6 +8,7 @@ import { POST } from "@/app/api/analysis/follow-up/route";
 import { createAnalysisJob, getAnalysisJob, resetAnalysisJobs } from "@/lib/analysis-jobs";
 import { createUser, getDailyAuditSummary, resetAuthDatabase } from "@/lib/auth-db";
 import { hashPassword } from "@/lib/auth";
+import * as serverAnalysis from "@/lib/server-analysis";
 
 let analysisJobStoreDir: string;
 
@@ -205,6 +206,30 @@ describe("POST /api/analysis/follow-up", () => {
     );
   });
 
+  test("rejects requests with missing follow-up fields", async () => {
+    const user = createUser({
+      username: "tester",
+      passwordHash: await hashPassword("secret-pass"),
+      displayName: "Test User"
+    });
+
+    const response = await POST(
+      new Request("http://localhost/api/analysis/follow-up", {
+        method: "POST",
+        headers: { "content-type": "application/json", "x-test-user-id": user.id },
+        body: JSON.stringify({
+          jobId: "job-follow-up",
+          question: "   "
+        })
+      })
+    );
+
+    expect(response.status).toBe(400);
+    await expect(response.json()).resolves.toEqual({
+      error: "missing follow-up fields"
+    });
+  });
+
   test("fails instead of falling back to local canned reply when no llm provider is configured", async () => {
     const user = createUser({
       username: "tester",
@@ -219,6 +244,45 @@ describe("POST /api/analysis/follow-up", () => {
         body: JSON.stringify({
           jobId: "missing-job",
           question: "这个器件最先看哪几个参数，为什么？"
+        })
+      })
+    );
+
+    expect(response.status).toBe(404);
+    await expect(response.json()).resolves.toEqual({
+      error: "job not found"
+    });
+  });
+
+  test("returns 404 when the job snapshot exists but analysis is still missing", async () => {
+    const user = createUser({
+      username: "tester",
+      passwordHash: await hashPassword("secret-pass"),
+      displayName: "Test User"
+    });
+    createAnalysisJob(
+      {
+        fileName: "LMR51430.pdf",
+        taskName: "LMR51430 初步分析",
+        chipName: "LMR51430",
+        buffer: new Uint8Array([37, 80, 68, 70])
+      },
+      {
+        createId: () => "job-no-analysis",
+        analyze: async () => ({
+          status: "processing",
+          warnings: []
+        })
+      }
+    );
+
+    const response = await POST(
+      new Request("http://localhost/api/analysis/follow-up", {
+        method: "POST",
+        headers: { "content-type": "application/json", "x-test-user-id": user.id },
+        body: JSON.stringify({
+          jobId: "job-no-analysis",
+          question: "这个器件最先看哪几个参数？"
         })
       })
     );
@@ -308,6 +372,81 @@ describe("POST /api/analysis/follow-up", () => {
     expect(response.status).toBe(409);
     await expect(response.json()).resolves.toEqual({
       error: "full report not ready"
+    });
+  });
+
+  test("returns 500 when the follow-up engine throws instead of synthesizing a local fallback", async () => {
+    const user = createUser({
+      username: "tester",
+      passwordHash: await hashPassword("secret-pass"),
+      displayName: "Test User"
+    });
+    const answerSpy = vi.spyOn(serverAnalysis, "answerAnalysisFollowUp").mockRejectedValue(new Error("provider offline"));
+
+    createAnalysisJob(
+      {
+        fileName: "S55643-51Q.pdf",
+        taskName: "S55643-51Q 初步分析",
+        chipName: "S55643-51Q",
+        buffer: new Uint8Array([37, 80, 68, 70])
+      },
+      {
+        createId: () => "job-follow-up-error",
+        analyze: async () => ({
+          status: "complete",
+          warnings: [],
+          analysis: {
+            summary: "S55643-51Q 已完成主报告。",
+            review: "优先核对支持频段和线性输出功率。",
+            keyParameters: [],
+            evidence: [],
+            identity: {
+              canonicalPartNumber: "S55643-51Q",
+              manufacturer: "Samsung",
+              deviceClass: "Cellular PAM / PA",
+              parameterTemplateId: "cellular-3g4g5g",
+              focusChecklist: [],
+              publicContext: [],
+              confidence: 0.92
+            },
+            report: {
+              executiveSummary: "S55643-51Q 是一颗蜂窝 PAM。",
+              deviceIdentity: {
+                canonicalPartNumber: "S55643-51Q",
+                manufacturer: "Samsung",
+                deviceClass: "Cellular PAM / PA",
+                parameterTemplateId: "cellular-3g4g5g",
+                confidence: 0.92
+              },
+              keyParameters: [],
+              designFocus: [],
+              risks: [],
+              openQuestions: [],
+              publicNotes: [],
+              citations: [],
+              sections: [],
+              claims: []
+            }
+          }
+        })
+      }
+    );
+
+    const response = await POST(
+      new Request("http://localhost/api/analysis/follow-up", {
+        method: "POST",
+        headers: { "content-type": "application/json", "x-test-user-id": user.id },
+        body: JSON.stringify({
+          jobId: "job-follow-up-error",
+          question: "这个器件最先看哪几个参数？"
+        })
+      })
+    );
+
+    expect(answerSpy).toHaveBeenCalledOnce();
+    expect(response.status).toBe(500);
+    await expect(response.json()).resolves.toEqual({
+      error: "provider offline"
     });
   });
 });

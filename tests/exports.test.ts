@@ -334,6 +334,13 @@ describe("export builders", () => {
             body: "先看首页，再看工作条件和电气参数。",
             sourceType: "review",
             citations: []
+          },
+          {
+            id: "implementation_constraints",
+            title: "工艺与落地约束",
+            body: "封装散热、焊盘接地和贴片工艺需要单独复核。",
+            sourceType: "review",
+            citations: []
           }
         ],
         claims: []
@@ -360,6 +367,8 @@ describe("export builders", () => {
     expect(html.mimeType).toBe("text/html");
     expect(html.content).toContain("<html");
     expect(html.content).toContain("怎么读这份 Datasheet");
+    expect(html.content).toContain("工艺与落地约束");
+    expect(html.content).toContain("封装散热、焊盘接地和贴片工艺需要单独复核。");
     expect(html.content).toContain("最先看哪几个参数？");
     expect(html.content).toContain("不要把 Absolute Maximum 当正常工作条件。");
     expect(html.content).toContain("custom/gpt-4.1");

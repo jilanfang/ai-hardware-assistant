@@ -57,6 +57,24 @@ describe("GET /api/analysis/file", () => {
     });
   });
 
+  test("returns 400 when jobId is missing", async () => {
+    const user = createUser({
+      username: "tester",
+      passwordHash: await hashPassword("secret-pass"),
+      displayName: "Test User"
+    });
+    const response = await GET(
+      new Request("http://localhost/api/analysis/file", {
+        headers: { "x-test-user-id": user.id }
+      })
+    );
+
+    expect(response.status).toBe(400);
+    await expect(response.json()).resolves.toEqual({
+      error: "missing jobId"
+    });
+  });
+
   test("returns persisted pdf bytes with application/pdf content type", async () => {
     const user = createUser({
       username: "tester",

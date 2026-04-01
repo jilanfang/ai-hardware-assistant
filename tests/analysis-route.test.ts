@@ -252,6 +252,31 @@ describe("POST /api/analysis", () => {
     });
   });
 
+  test("returns 400 when patching with missing required fields", async () => {
+    resetAnalysisJobs();
+    const user = createUser({
+      username: "tester",
+      passwordHash: await hashPassword("secret-pass"),
+      displayName: "Test User"
+    });
+
+    const response = await PATCH(
+      new Request("http://localhost/api/analysis", {
+        method: "PATCH",
+        headers: { "content-type": "application/json", "x-test-user-id": user.id },
+        body: JSON.stringify({
+          jobId: "job-confirm",
+          parameterName: "Input voltage"
+        })
+      })
+    );
+
+    expect(response.status).toBe(400);
+    await expect(response.json()).resolves.toEqual({
+      error: "missing patch fields"
+    });
+  });
+
   test("persists a parameter confirmation into the job snapshot", async () => {
     resetAnalysisJobs();
     const user = createUser({

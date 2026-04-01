@@ -56,6 +56,7 @@ const FIXED_REPORT_SECTION_IDS = [
   "key_parameters",
   "section_by_section_reading_order",
   "critical_graphs_and_tables",
+  "implementation_constraints",
   "risks_and_gotchas",
   "intern_action_list",
   "open_questions",

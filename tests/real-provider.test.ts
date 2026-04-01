@@ -519,6 +519,536 @@ describe("OpenAiLlmProvider", () => {
     );
   });
 
+  test("adds implementation constraints section from thermal and assembly-oriented claims", async () => {
+    fetchMock.mockResolvedValue({
+      ok: true,
+      json: async () => ({
+        choices: [
+          {
+            message: {
+              content: JSON.stringify({
+                executiveSummary: [],
+                deviceIdentity: {
+                  canonicalPartNumber: "SKY85755-11",
+                  manufacturer: "Skyworks",
+                  deviceClass: "Wi-Fi FEM",
+                  parameterTemplateId: "wifi",
+                  confidence: 0.9
+                },
+                keyParameters: [
+                  {
+                    id: "claim-1",
+                    label: "Package / Case",
+                    value: "16-pin QFN, 3 x 3 mm",
+                    title: "封装尺寸",
+                    body: "紧凑型 3x3mm 封装。",
+                    sourceType: "datasheet",
+                    citations: []
+                  }
+                ],
+                designFocus: [
+                  {
+                    id: "focus-1",
+                    label: "Layout 简化",
+                    value: "全内部匹配",
+                    title: "Layout 简化",
+                    body: "输入输出端已内部完成 50Ω 匹配，但 PCB 走线和接地仍需严格控制。",
+                    sourceType: "datasheet",
+                    citations: []
+                  }
+                ],
+                risks: [
+                  {
+                    id: "risk-1",
+                    label: "热管理风险",
+                    value: "MSL3 敏感度与中心焊盘散热",
+                    title: "制造风险",
+                    body: "中心焊盘必须通过足够的过孔接地，贴片与回流工艺需按 MSL 要求执行。",
+                    sourceType: "review",
+                    citations: []
+                  }
+                ],
+                openQuestions: [],
+                publicNotes: [],
+                citations: [],
+                sections: [
+                  {
+                    id: "how_to_read_this_datasheet",
+                    title: "怎么读这份 Datasheet",
+                    body: "先看首页、特性列表和工作条件。",
+                    sourceType: "review",
+                    citations: []
+                  }
+                ],
+                claims: []
+              })
+            }
+          }
+        ]
+      })
+    });
+
+    const provider = new OpenAiLlmProvider({
+      model: "gemini-3-flash-preview",
+      apiKey: "test-key",
+      baseUrl: "https://example.com"
+    });
+
+    const report = await provider.synthesizeReport({
+      pdfBuffer: new Uint8Array([1, 2, 3]),
+      fileName: "sky85755-11.pdf",
+      taskName: "test",
+      chipName: "SKY85755-11",
+      preparation: createPreparation({
+        fileName: "sky85755-11.pdf",
+        pagePackets: [],
+        localCandidates: []
+      }),
+      identity: {
+        canonicalPartNumber: "SKY85755-11",
+        manufacturer: "Skyworks",
+        deviceClass: "Wi-Fi FEM",
+        parameterTemplateId: "wifi",
+        focusChecklist: [],
+        publicContext: [],
+        confidence: 0.9
+      },
+      parameterTemplate: getParameterTemplate("wifi"),
+      publicContext: []
+    });
+
+    expect(report.sections.map((section) => section.id)).toEqual(
+      expect.arrayContaining(["implementation_constraints"])
+    );
+    expect(report.sections).toEqual(
+      expect.arrayContaining([
+        expect.objectContaining({
+          id: "implementation_constraints",
+          title: "工艺与落地约束"
+        })
+      ])
+    );
+    expect(
+      report.sections.find((section) => section.id === "implementation_constraints")?.body
+    ).toContain("中心焊盘必须通过足够的过孔接地");
+  });
+
+  test("does not add implementation constraints section when no manufacturing or layout claims exist", async () => {
+    fetchMock.mockResolvedValue({
+      ok: true,
+      json: async () => ({
+        choices: [
+          {
+            message: {
+              content: JSON.stringify({
+                executiveSummary: [],
+                deviceIdentity: {
+                  canonicalPartNumber: "LMR51430",
+                  manufacturer: "Texas Instruments",
+                  deviceClass: "Buck Converter",
+                  parameterTemplateId: "power",
+                  confidence: 0.9
+                },
+                keyParameters: [],
+                designFocus: [
+                  {
+                    id: "focus-1",
+                    label: "输入范围",
+                    value: "4.5V to 36V",
+                    title: "输入范围",
+                    body: "先确认输入电压范围是否覆盖系统母线。",
+                    sourceType: "review",
+                    citations: []
+                  }
+                ],
+                risks: [
+                  {
+                    id: "risk-1",
+                    label: "Absolute maximum",
+                    value: "",
+                    title: "Absolute maximum",
+                    body: "不要把 Absolute Maximum 当正常工作条件。",
+                    sourceType: "review",
+                    citations: []
+                  }
+                ],
+                openQuestions: [],
+                publicNotes: [],
+                citations: [],
+                sections: [],
+                claims: []
+              })
+            }
+          }
+        ]
+      })
+    });
+
+    const provider = new OpenAiLlmProvider({
+      model: "gemini-3-flash-preview",
+      apiKey: "test-key",
+      baseUrl: "https://example.com"
+    });
+
+    const report = await provider.synthesizeReport({
+      pdfBuffer: new Uint8Array([1, 2, 3]),
+      fileName: "lmr51430.pdf",
+      taskName: "test",
+      chipName: "LMR51430",
+      preparation: createPreparation({
+        fileName: "lmr51430.pdf",
+        pagePackets: [],
+        localCandidates: []
+      }),
+      identity: {
+        canonicalPartNumber: "LMR51430",
+        manufacturer: "Texas Instruments",
+        deviceClass: "Buck Converter",
+        parameterTemplateId: "power",
+        focusChecklist: [],
+        publicContext: [],
+        confidence: 0.9
+      },
+      parameterTemplate: getParameterTemplate("power"),
+      publicContext: []
+    });
+
+    expect(report.sections.some((section) => section.id === "implementation_constraints")).toBe(false);
+  });
+
+  test("does not duplicate implementation constraints section when the model already emitted one", async () => {
+    fetchMock.mockResolvedValue({
+      ok: true,
+      json: async () => ({
+        choices: [
+          {
+            message: {
+              content: JSON.stringify({
+                executiveSummary: [],
+                deviceIdentity: {
+                  canonicalPartNumber: "SKY85755-11",
+                  manufacturer: "Skyworks",
+                  deviceClass: "Wi-Fi FEM",
+                  parameterTemplateId: "wifi",
+                  confidence: 0.9
+                },
+                keyParameters: [],
+                designFocus: [],
+                risks: [
+                  {
+                    id: "risk-1",
+                    label: "热管理风险",
+                    value: "中心焊盘散热",
+                    title: "制造风险",
+                    body: "中心焊盘必须通过足够的过孔接地。",
+                    sourceType: "review",
+                    citations: []
+                  }
+                ],
+                openQuestions: [],
+                publicNotes: [],
+                citations: [],
+                sections: [
+                  {
+                    id: "implementation_constraints",
+                    title: "工艺与落地约束",
+                    body: "已有工艺约束区块。",
+                    sourceType: "review",
+                    citations: []
+                  }
+                ],
+                claims: []
+              })
+            }
+          }
+        ]
+      })
+    });
+
+    const provider = new OpenAiLlmProvider({
+      model: "gemini-3-flash-preview",
+      apiKey: "test-key",
+      baseUrl: "https://example.com"
+    });
+
+    const report = await provider.synthesizeReport({
+      pdfBuffer: new Uint8Array([1, 2, 3]),
+      fileName: "sky85755-11.pdf",
+      taskName: "test",
+      chipName: "SKY85755-11",
+      preparation: createPreparation({
+        fileName: "sky85755-11.pdf",
+        pagePackets: [],
+        localCandidates: []
+      }),
+      identity: {
+        canonicalPartNumber: "SKY85755-11",
+        manufacturer: "Skyworks",
+        deviceClass: "Wi-Fi FEM",
+        parameterTemplateId: "wifi",
+        focusChecklist: [],
+        publicContext: [],
+        confidence: 0.9
+      },
+      parameterTemplate: getParameterTemplate("wifi"),
+      publicContext: []
+    });
+
+    expect(report.sections.filter((section) => section.id === "implementation_constraints")).toHaveLength(1);
+    expect(report.sections.find((section) => section.id === "implementation_constraints")?.body).toBe(
+      "已有工艺约束区块。"
+    );
+  });
+
+  test("does not misclassify generic compatibility risks as implementation constraints", async () => {
+    fetchMock.mockResolvedValue({
+      ok: true,
+      json: async () => ({
+        choices: [
+          {
+            message: {
+              content: JSON.stringify({
+                executiveSummary: [],
+                deviceIdentity: {
+                  canonicalPartNumber: "UPF5755",
+                  manufacturer: "UPMicro",
+                  deviceClass: "Wi-Fi FEM",
+                  parameterTemplateId: "wifi",
+                  confidence: 0.9
+                },
+                keyParameters: [],
+                designFocus: [],
+                risks: [
+                  {
+                    id: "risk-1",
+                    label: "兼容性风险",
+                    value: "",
+                    title: "兼容性风险",
+                    body: "主控和外围配置不兼容会导致 bring-up 风险。",
+                    sourceType: "review",
+                    citations: []
+                  }
+                ],
+                openQuestions: [],
+                publicNotes: [],
+                citations: [],
+                sections: [],
+                claims: []
+              })
+            }
+          }
+        ]
+      })
+    });
+
+    const provider = new OpenAiLlmProvider({
+      model: "gemini-3-flash-preview",
+      apiKey: "test-key",
+      baseUrl: "https://example.com"
+    });
+
+    const report = await provider.synthesizeReport({
+      pdfBuffer: new Uint8Array([1, 2, 3]),
+      fileName: "upf5755.pdf",
+      taskName: "test",
+      chipName: "UPF5755",
+      preparation: createPreparation({
+        fileName: "upf5755.pdf",
+        pagePackets: [],
+        localCandidates: []
+      }),
+      identity: {
+        canonicalPartNumber: "UPF5755",
+        manufacturer: "UPMicro",
+        deviceClass: "Wi-Fi FEM",
+        parameterTemplateId: "wifi",
+        focusChecklist: [],
+        publicContext: [],
+        confidence: 0.9
+      },
+      parameterTemplate: getParameterTemplate("wifi"),
+      publicContext: []
+    });
+
+    expect(report.sections.some((section) => section.id === "implementation_constraints")).toBe(false);
+  });
+
+  test("normalizes sparse report payloads that only include section content and blank identity fields", async () => {
+    fetchMock.mockResolvedValue({
+      ok: true,
+      json: async () => ({
+        choices: [
+          {
+            message: {
+              content: JSON.stringify({
+                executiveSummary: "",
+                deviceIdentity: {
+                  canonicalPartNumber: "",
+                  manufacturer: "",
+                  deviceClass: "",
+                  parameterTemplateId: "wifi",
+                  confidence: 0.9
+                },
+                keyParameters: [],
+                designFocus: [],
+                risks: [],
+                openQuestions: [],
+                publicNotes: [],
+                citations: [],
+                sections: [
+                  {
+                    id: "step_2",
+                    title: "第二步：关键特性",
+                    body: "先确认频率覆盖、发射功率和控制接口。",
+                    sourceType: "review",
+                    citations: []
+                  }
+                ],
+                claims: []
+              })
+            }
+          }
+        ]
+      })
+    });
+
+    const provider = new OpenAiLlmProvider({
+      model: "gemini-3-flash-preview",
+      apiKey: "test-key",
+      baseUrl: "https://example.com"
+    });
+
+    const report = await provider.synthesizeReport({
+      pdfBuffer: new Uint8Array([1, 2, 3]),
+      fileName: "upf5755.pdf",
+      taskName: "test",
+      chipName: "UPF5755",
+      preparation: createPreparation({
+        fileName: "upf5755.pdf",
+        pagePackets: [],
+        localCandidates: []
+      }),
+      identity: {
+        canonicalPartNumber: "UPF5755",
+        manufacturer: "UPMicro",
+        deviceClass: "Wi-Fi FEM",
+        parameterTemplateId: "wifi",
+        focusChecklist: [],
+        publicContext: [],
+        confidence: 0.9
+      },
+      parameterTemplate: getParameterTemplate("wifi"),
+      publicContext: []
+    });
+
+    expect(report.deviceIdentity).toEqual(
+      expect.objectContaining({
+        canonicalPartNumber: "UPF5755",
+        manufacturer: "UPMicro",
+        parameterTemplateId: "wifi"
+      })
+    );
+    expect(report.sections).toEqual(
+      expect.arrayContaining([
+        expect.objectContaining({
+          id: "how_to_read_this_datasheet",
+          body: "先确认频率覆盖、发射功率和控制接口。"
+        })
+      ])
+    );
+  });
+
+  test("normalizes mixed sourceType and sparse citation shapes without dropping the claim", async () => {
+    fetchMock.mockResolvedValue({
+      ok: true,
+      json: async () => ({
+        choices: [
+          {
+            message: {
+              content: JSON.stringify({
+                executiveSummary: [],
+                deviceIdentity: {
+                  canonicalPartNumber: "UPF5755",
+                  manufacturer: "UPMicro",
+                  deviceClass: "Wi-Fi FEM",
+                  parameterTemplateId: "wifi",
+                  confidence: 0.9
+                },
+                keyParameters: [
+                  {
+                    id: "claim-1",
+                    label: "Frequency Range",
+                    value: "5.15 - 5.85 GHz",
+                    sourceType: "",
+                    citations: [
+                      {
+                        id: "cite-1",
+                        sourceType: "",
+                        page: 1,
+                        quote: "5.15 to 5.85GHz"
+                      }
+                    ]
+                  }
+                ],
+                designFocus: [],
+                risks: [],
+                openQuestions: [],
+                publicNotes: [],
+                citations: [],
+                sections: [],
+                claims: []
+              })
+            }
+          }
+        ]
+      })
+    });
+
+    const provider = new OpenAiLlmProvider({
+      model: "gemini-3-flash-preview",
+      apiKey: "test-key",
+      baseUrl: "https://example.com"
+    });
+
+    const report = await provider.synthesizeReport({
+      pdfBuffer: new Uint8Array([1, 2, 3]),
+      fileName: "upf5755.pdf",
+      taskName: "test",
+      chipName: "UPF5755",
+      preparation: createPreparation({
+        fileName: "upf5755.pdf",
+        pagePackets: [],
+        localCandidates: []
+      }),
+      identity: {
+        canonicalPartNumber: "UPF5755",
+        manufacturer: "UPMicro",
+        deviceClass: "Wi-Fi FEM",
+        parameterTemplateId: "wifi",
+        focusChecklist: [],
+        publicContext: [],
+        confidence: 0.9
+      },
+      parameterTemplate: getParameterTemplate("wifi"),
+      publicContext: []
+    });
+
+    expect(report.keyParameters).toEqual(
+      expect.arrayContaining([
+        expect.objectContaining({
+          label: "Frequency Coverage",
+          value: "5.15 - 5.85 GHz",
+          citations: expect.arrayContaining([
+            expect.objectContaining({
+              page: 1,
+              quote: "5.15 to 5.85GHz"
+            })
+          ])
+        })
+      ])
+    );
+  });
+
   test("normalizes alternate gemini teaching report payloads returned from sparse-page direct reading", async () => {
     fetchMock.mockResolvedValue({
       ok: true,

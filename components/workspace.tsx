@@ -1861,21 +1861,24 @@ export function Workspace({
   return (
     <main className="app-shell">
       <aside className="rail-column">
-        <div className="rail-brand">P</div>
+        <div className="rail-brand" aria-label="Pin2pin Atlas">
+          AT
+        </div>
         <nav className="rail-nav" aria-label="主导航">
-          <button type="button" className="rail-icon is-active" aria-label="首页">
-            □
+          <button type="button" className="rail-icon is-active" aria-label="首页" title="首页">
+            <span aria-hidden="true">⌂</span>
           </button>
-          <button type="button" className="rail-icon" aria-label="任务">
-            ◇
+          <button type="button" className="rail-icon" aria-label="任务" title="任务">
+            <span aria-hidden="true">◫</span>
           </button>
-          <button type="button" className="rail-icon" aria-label="收藏">
-            ▵
+          <button type="button" className="rail-icon" aria-label="收藏" title="收藏">
+            <span aria-hidden="true">★</span>
           </button>
         </nav>
         {currentUser ? (
           <div className="rail-user">
             <div className="rail-avatar">{currentUser.displayName.trim().charAt(0).toUpperCase() || "U"}</div>
+            <span className="rail-user-label">{currentUser.displayName}</span>
             <button type="button" className="rail-logout" onClick={handleLogout}>
               退出登录
             </button>
@@ -1887,20 +1890,28 @@ export function Workspace({
 
       <aside className="control-column">
         <header className="control-header">
-          <p className="eyebrow">Pin2pin.ai</p>
+          <p className="eyebrow">Pin2pin Atlas</p>
           <h1>任务</h1>
+          <p className="control-header-subtitle">上传、恢复和优先处理当前 datasheet，都在这一侧完成。</p>
         </header>
 
         <section className="control-panel">
-          <div className="control-section">
-            <span className="control-label">当前任务</span>
+          <div className="control-section control-summary-card">
+            <p className="control-label">当前任务</p>
             <strong>{currentPdf?.taskName ?? "等待上传数据手册"}</strong>
             <span>{currentPdf?.fileName ?? "尚未选择 PDF"}</span>
+            <div className="control-summary-meta">
+              <span>{currentPdf?.chipName ?? "Atlas session"}</span>
+              <span>{currentJobId ? "任务已创建" : "尚未发起任务"}</span>
+            </div>
           </div>
 
-          <div className="control-section">
-            <label htmlFor={uploadId}>上传数据手册 PDF</label>
-            <span className="control-upload-capability">支持单个 datasheet PDF</span>
+          <div className="control-section control-upload-card">
+            <div className="control-card-header">
+              <label htmlFor={uploadId}>上传数据手册 PDF</label>
+              <span className="control-upload-capability">支持单个 datasheet PDF</span>
+            </div>
+            <p className="control-card-body">开始一次新分析。系统会先生成 summary 和关键参数，再保留证据回查与后续追问入口。</p>
             <input
               id={uploadId}
               aria-label="上传数据手册 PDF"
@@ -1927,7 +1938,7 @@ export function Workspace({
             </div>
           </div>
 
-          <div className="control-section">
+          <div className="control-section control-parameter-card">
             <span className="control-label">参数导航</span>
             {parameterInteractiveAnalysis ? (
               <div className="parameter-nav-list">
@@ -1956,7 +1967,10 @@ export function Workspace({
         </section>
 
         <section className="history-panel">
-          <h2>最近任务</h2>
+          <div className="history-header">
+            <h2>最近任务</h2>
+            <span>恢复会话</span>
+          </div>
           <div className="history-list">
             {recentTasks.length ? (
               recentTasks.map((task) => (
@@ -1983,14 +1997,18 @@ export function Workspace({
         {!currentPdf ? (
           <div className="canvas-empty">
             <div className="workspace-start-card">
-                <strong>{"上传一份 PDF -> 开始分析 -> 获得 summary / key parameters / follow-up"}</strong>
+              <p className="workspace-start-kicker">Atlas Workspace</p>
+              <strong>{"上传一份 PDF -> 开始分析 -> 获得 summary / key parameters / follow-up"}</strong>
               <p>上传后，PDF 中间页会自动聚焦第一页或最重要的待确认证据。</p>
             </div>
           </div>
         ) : (
           <div className="pdf-canvas">
             <div className="canvas-topbar">
-              <span>{currentPdf.fileName}</span>
+              <div className="canvas-topbar-copy">
+                <span className="canvas-kicker">当前文档</span>
+                <strong>{currentPdf.fileName}</strong>
+              </div>
               <div className="canvas-toolbar">
                 <span>{focusedEvidence ? `第 ${focusedEvidence.page} 页` : "第 1 页"}</span>
                 <span>/</span>
@@ -2026,6 +2044,7 @@ export function Workspace({
       <section className="dialog-column">
         <header className="dialog-header">
           <div>
+            <p className="eyebrow">Copilot</p>
             <h2>{currentPdf?.chipName ?? "对话区"}</h2>
             <p className="dialog-header-subtitle">
               {currentPdf ? "围绕当前 datasheet 的总结、参数确认和后续提问都在这里进行。" : "上传一份 datasheet 后，这里会依次给出 summary、风险待确认项、关键参数、导出和 follow-up。"}
@@ -2037,8 +2056,9 @@ export function Workspace({
           {!taskThread ? (
             <article className="message assistant intro-card">
               <div className="dialog-message-block">
-                <div className="assistant-avatar">AI</div>
+                <div className="assistant-avatar">AT</div>
                 <div className="assistant-bubble">
+                  <span className="message-kicker">Atlas Copilot</span>
                   <p>上传一份 datasheet 后，这里会依次给出 summary、风险待确认项、关键参数、导出和 follow-up。</p>
                 </div>
               </div>
@@ -2109,11 +2129,12 @@ export function Workspace({
                   {taskAnalysis && (interactiveAnalysis || taskAnalysis.sourceAttribution?.mode === "failed" || taskInteractiveAnalysis) ? (
                     <>
                       {interactiveAnalysis || taskAnalysis.sourceAttribution?.mode === "failed" ? (
-                        <div className="dialog-message-block">
-                          <div className="assistant-avatar">AI</div>
+                      <div className="dialog-message-block">
+                          <div className="assistant-avatar">AT</div>
                           <div className="assistant-bubble">
                             {hasReportContent && report ? (
                               <>
+                                <span className="message-kicker">Final report</span>
                                 <strong>最终报告</strong>
                                 {hasVisibleText(report.executiveSummary) ? <p>{report.executiveSummary}</p> : null}
                                 {report.citations.length ? renderClaimMeta({
@@ -2153,8 +2174,9 @@ export function Workspace({
 
                       {hasReportContent ? (
                         <div className="dialog-message-block">
-                          <div className="assistant-avatar">AI</div>
+                          <div className="assistant-avatar">AT</div>
                           <div className="assistant-bubble parameter-bubble">
+                            <span className="message-kicker">Review queue</span>
                             <strong>风险与待确认项</strong>
                             <div className="dialog-risk-groups">
                               {reportEvidenceClaims.length ? (
@@ -2185,8 +2207,9 @@ export function Workspace({
 
                       {hasReportContent && report && report.keyParameters.length > 0 ? (
                         <div className="dialog-message-block">
-                          <div className="assistant-avatar">AI</div>
+                          <div className="assistant-avatar">AT</div>
                           <div className="assistant-bubble parameter-bubble">
+                            <span className="message-kicker">Structured output</span>
                             <strong>关键参数表</strong>
                             {report.keyParameters.map(renderReportClaim)}
                           </div>
@@ -2195,8 +2218,9 @@ export function Workspace({
 
                       {taskInteractiveAnalysis && hasParameterContent ? (
                       <div className="dialog-message-block">
-                        <div className="assistant-avatar">AI</div>
+                        <div className="assistant-avatar">AT</div>
                         <div className="assistant-bubble parameter-bubble">
+                          <span className="message-kicker">Parameter review</span>
                           <strong>关键参数表</strong>
                           {prioritizedParameters.map((item) => {
                             const evidence = taskInteractiveAnalysis.evidence.find((entry) => entry.id === item.evidenceId);
@@ -2235,6 +2259,7 @@ export function Workspace({
                                   <button
                                     type="button"
                                     className="inline-action"
+                                    disabled={!evidence}
                                     onClick={() => {
                                       setFocusedEvidence(evidence ?? null);
                                       flashParameterRow(item);
@@ -2299,8 +2324,9 @@ export function Workspace({
 
                       {interactiveAnalysis && hasParameterContent ? (
                       <div className="dialog-message-block">
-                        <div className="assistant-avatar">AI</div>
+                        <div className="assistant-avatar">AT</div>
                         <div className="assistant-bubble export-bubble">
+                          <span className="message-kicker">Export</span>
                           <div className="export-header">
                             <strong>导出给下游继续使用</strong>
                             <span>{exportableParameterCount > 0 ? "CSV 可导出" : "CSV 暂不可导出"}</span>
@@ -2362,6 +2388,7 @@ export function Workspace({
             if (message.kind === "correction") {
               return (
                 <article key={message.id} className="message assistant correction-card">
+                  <span className="message-kicker">Correction</span>
                   <p>{message.content}</p>
                 </article>
               );
@@ -2369,6 +2396,7 @@ export function Workspace({
 
             return (
               <article key={message.id} className={`message ${message.role}`}>
+                {message.role === "assistant" ? <span className="message-kicker">Assistant</span> : null}
                 <p>{message.content}</p>
                 {message.role === "assistant" && message.claims?.length ? (
                   <div className="assistant-bubble parameter-bubble">
