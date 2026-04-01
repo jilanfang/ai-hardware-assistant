@@ -588,7 +588,7 @@ label:has(input:focus-visible) {
 .workspace-start-card {
   display: grid;
   gap: var(--space-3);
-  width: min(560px, calc(100% - 40px));
+  width: min(620px, calc(100% - 40px));
   padding: var(--space-8);
   border-radius: 30px;
   background: rgba(255, 255, 255, 0.68);
@@ -600,6 +600,29 @@ label:has(input:focus-visible) {
   font-size: var(--text-lg);
   line-height: var(--lh-tight);
   font-weight: var(--fw-semibold);
+  max-width: 18ch;
+}
+
+.workspace-start-flow,
+.dialog-empty-points,
+.login-hero-points {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-2);
+}
+
+.workspace-start-flow span,
+.dialog-empty-points span {
+  display: inline-flex;
+  align-items: center;
+  min-height: 30px;
+  padding: 0 12px;
+  border-radius: 999px;
+  background: rgba(23, 72, 107, 0.08);
+  color: var(--muted-strong);
+  font-size: var(--text-xs);
+  line-height: var(--lh-meta);
+  font-family: var(--font-mono);
 }
 
 .canvas-topbar {
@@ -992,6 +1015,10 @@ label:has(input:focus-visible) {
   padding: 20px 22px;
 }
 
+.intro-card {
+  align-self: start;
+}
+
 .correction-card {
   justify-self: start;
   max-width: min(78%, 620px);
@@ -1158,6 +1185,7 @@ label:has(input:focus-visible) {
     grid-template-columns: 1fr;
     grid-template-areas:
       "rail"
+      "dialog"
       "control"
       "canvas"
       "dialog";
@@ -1212,11 +1240,12 @@ label:has(input:focus-visible) {
 
   .dialog-column {
     grid-area: dialog;
+    margin-top: 12px;
   }
 
   .canvas-empty,
   .pdf-canvas {
-    min-height: 420px;
+    min-height: 320px;
   }
 
   .pdf-sheet {
@@ -1226,7 +1255,7 @@ label:has(input:focus-visible) {
   }
 
   .messages {
-    min-height: 420px;
+    min-height: 260px;
   }
 
   .login-stage {
@@ -1237,6 +1266,33 @@ label:has(input:focus-visible) {
 @media (max-width: 720px) {
   .app-shell {
     padding: 10px;
+  }
+
+  .rail-column {
+    grid-template-columns: auto 1fr auto;
+    gap: var(--space-2);
+    border-radius: 26px;
+  }
+
+  .rail-nav {
+    justify-content: flex-start;
+    gap: var(--space-2);
+  }
+
+  .rail-icon,
+  .rail-brand,
+  .rail-avatar {
+    width: 42px;
+    height: 42px;
+  }
+
+  .rail-user {
+    gap: 6px;
+  }
+
+  .rail-user-label {
+    max-width: 72px;
+    font-size: 11px;
   }
 
   .control-header,
@@ -1263,6 +1319,18 @@ label:has(input:focus-visible) {
     padding: var(--space-5);
   }
 
+  .workspace-start-card {
+    width: 100%;
+    border-radius: 24px;
+  }
+
+  .workspace-start-card strong,
+  .login-hero-panel h1,
+  .login-copy h1 {
+    max-width: none;
+    font-size: 24px;
+  }
+
   .dialog-message-block {
     grid-template-columns: 1fr;
   }
@@ -1287,6 +1355,19 @@ label:has(input:focus-visible) {
   .composer-card {
     margin: var(--space-3);
     margin-top: 0;
+  }
+
+  .canvas-column {
+    min-height: auto;
+  }
+
+  .canvas-empty {
+    padding: 0 var(--space-4) var(--space-4);
+    place-items: start;
+  }
+
+  .dialog-column .messages {
+    padding-top: var(--space-4);
   }
 
   .login-shell {

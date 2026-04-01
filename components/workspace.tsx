@@ -2000,6 +2000,11 @@ export function Workspace({
               <p className="workspace-start-kicker">Atlas Workspace</p>
               <strong>{"上传一份 PDF -> 开始分析 -> 获得 summary / key parameters / follow-up"}</strong>
               <p>上传后，PDF 中间页会自动聚焦第一页或最重要的待确认证据。</p>
+              <div className="workspace-start-flow" aria-hidden="true">
+                <span>Upload</span>
+                <span>Review</span>
+                <span>Export</span>
+              </div>
             </div>
           </div>
         ) : (
@@ -2060,6 +2065,11 @@ export function Workspace({
                 <div className="assistant-bubble">
                   <span className="message-kicker">Atlas Copilot</span>
                   <p>上传一份 datasheet 后，这里会依次给出 summary、风险待确认项、关键参数、导出和 follow-up。</p>
+                  <div className="dialog-empty-points" aria-hidden="true">
+                    <span>Summary first</span>
+                    <span>Evidence-linked</span>
+                    <span>Ask follow-up</span>
+                  </div>
                 </div>
               </div>
             </article>
