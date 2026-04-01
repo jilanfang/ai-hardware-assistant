@@ -27,6 +27,8 @@ Pin2pin Atlas is:
 - evidence-first
 - scene-based instead of role-based
 - built to shorten verification loops
+- a datasheet-native workspace rather than a chat wrapper
+- designed to expose trust state instead of hiding uncertainty behind smooth copy
 
 It is not:
 
@@ -44,6 +46,15 @@ This principle follows directly from user research:
 - engineers will use AI for speed
 - engineers will not trust unsupported conclusions
 - every meaningful output must remain traceable to source evidence
+
+In the current repo, that principle is implemented through concrete trust mechanisms rather than generic prompting:
+
+- category-aware parameter templates instead of freeform summary-only output
+- device-class reading methods and RF knowledge injection for domain-heavy categories
+- explicit `single` vs `staged` pipeline behavior
+- parameter conflict reconciliation and arbitration instead of silent value merging
+- reviewed vs. review-needed vs. user-corrected parameter states
+- runtime attribution for `provider/model`, document path, and pipeline mode
 
 ## 5. Target Users
 
@@ -69,6 +80,9 @@ The key filter is not job title. The key filter is whether the user is trying to
 - Important constraints hide in footnotes, family manuals, and related references.
 - Manual parameter extraction is repetitive and easy to get wrong.
 - Users need evidence-linked first-pass understanding before deeper evaluation.
+- Generic chat tools flatten parameters, risks, and unknowns into one answer surface.
+- Different datasheets describe similar fields with different wording, making first-pass extraction hard to reuse.
+- Users need to know not just a parameter value, but whether it came from fast extraction, deeper synthesis, system reconciliation, or human correction.
 
 ## 7. Current Shipped Scope
 
@@ -77,8 +91,12 @@ The shipped scope in this repo is:
 - upload one datasheet PDF
 - run a first-pass analysis job
 - produce a summary, review, and key parameters
+- organize key parameters with category-aware field templates when supported
 - tie parameters and conclusions to evidence
+- mark parameters as confirmed, needs review, or user corrected
+- preserve parameter provenance across fast pass, report pass, reconciliation, arbitration, and user actions
 - support grounded follow-up questions
+- expose runtime attribution for the current result path
 - export the current result as JSON, HTML, or CSV
 - persist recent tasks locally and reopen them
 - require internal-test login before using the workspace
@@ -104,6 +122,7 @@ The MVP goal is to prove that users will repeatedly use one evidence workspace t
 
 - get grounded first-pass outputs faster than their manual workflow
 - validate those outputs with clear source references
+- distinguish usable values from review-needed values without rereading the whole report
 - export reusable structured artifacts
 
 ## 11. Scene A User Journey
@@ -124,6 +143,8 @@ Scene A is successful if users can:
 - verify key values and conclusions with evidence
 - trust the workflow enough to continue using it
 - reuse structured results outside the product
+- understand whether a value came from direct extraction, deeper synthesis, system arbitration, or human correction
+- see when the system is still in a fast-first staged state versus a completed full-report state
 
 ## 13. Traceability Standard
 
@@ -132,6 +153,24 @@ All meaningful outputs should support fast validation.
 - page-aware evidence jumps
 - visible location context
 - source-linked parameters and conclusions
+- explicit runtime attribution for the current analysis path
+- visible parameter trust states before export
+- no silent promotion of review-needed values into “final” values
+
+## 14. Mechanism-Level Differentiators
+
+The phase-1 wedge is not “AI reads datasheets better.”
+
+The phase-1 wedge is that Atlas combines several trust mechanisms generic chat products usually do not expose:
+
+- category-aware parameter templates that force output into engineering field slots instead of broad prose
+- RF and other device-class knowledge injection that guides reading order, misread traps, and parameter focus
+- a result model that separates parameter truth, design focus, risks, and open questions
+- optional staged execution with fast parameters first, full report later, and explicit user-visible progress states
+- conflict reconciliation and arbitration when fast and report paths disagree
+- parameter-level provenance and trust state transitions
+- reviewed exports that preserve evidence, status, and user corrections instead of flattening them away
+- runtime attribution that shows the actual `provider/model`, `pdf_direct` or fallback document path, and pipeline mode
 
 ## 14. Current Priorities
 
@@ -142,22 +181,34 @@ All meaningful outputs should support fast validation.
 - improve evidence precision and extraction quality
 - preserve grounded exports and follow-up behavior
 - stabilize internal-test access, deployment, and audit observability
+- make existing trust mechanisms legible enough to become clear product selling points
 
 ### P1
 
 - improve datasheet parser quality and category-aware extraction consistency
 - improve evidence precision and citation clarity
 - tighten export and verification behavior around reviewed outputs
+- make parameter value + condition + applicability a stronger first-class output layer
+- improve variant / package / family ambiguity exposure
+- make staged fast-pass vs full-report behavior more explicit in the workspace
 
 ### P2
 
 - limited multi-document grounding only if the single-document loop proves insufficient
 - stronger structured outputs
 - adjacent scene evaluation only after repeated datasheet usage is proven
+- batch preselection only after the single-document trust loop is stable
 
 ## 15. Product North Star
 
 `A verifiable datasheet evidence workspace that helps electronics engineers turn component PDFs into grounded, structured outputs.`
+
+In operational terms, this means:
+
+- first-pass outputs are fast enough to be useful
+- trust state is explicit enough to be actionable
+- evidence is easy enough to inspect that users do not have to re-open the whole datasheet from scratch
+- exports are structured enough to reuse without losing review context
 
 ## 16. Open Questions
 
@@ -165,3 +216,5 @@ All meaningful outputs should support fast validation.
 - Should the datasheet scene support multi-document grounding later, or stay strictly single-document longer?
 - Which export formats matter most once datasheet trust is strong?
 - What is the first repeated-usage proof point that matters more than abstract feature demand?
+- Which mechanism do users perceive as the most important trust signal: evidence jump, parameter status, arbitration visibility, or runtime attribution?
+- How explicit should parameter applicability become in phase 1: conditions only, or conditions plus variant/package scope?

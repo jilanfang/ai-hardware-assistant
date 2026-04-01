@@ -57,6 +57,12 @@ For the current datasheet scene the order is:
 - suggestion prompts
 - follow-up composer
 
+If the current run exposes useful trust metadata, the task thread may also show:
+
+- current runtime path
+- staged fast-pass vs full-report progress
+- whether parameter reconciliation is still incomplete
+
 ## 6. Evidence Validation Rule
 
 The core trust interaction is always:
@@ -67,6 +73,8 @@ The core trust interaction is always:
 4. user validates or corrects
 
 This is the core interaction for the current datasheet scene.
+
+The product should treat parameter correction as part of the trust loop, not as an edge action.
 
 ## 7. Degraded-State Rule
 
@@ -80,6 +88,12 @@ The user must always understand:
 
 The product should never hide uncertainty behind a smooth UI.
 
+When helpful, the product should also reveal:
+
+- whether the current result is still in fast-pass-only staged mode
+- whether parameter conflicts exist between fast and full analysis
+- whether a value is still marked `needs_review`
+
 ## 8. Export Rule
 
 Exports are downstream workflow actions, not decorative controls.
@@ -92,11 +106,23 @@ For the current build:
 - CSV should export only confirmed or user-corrected parameters
 - the UI should make reviewed vs. unreviewed output visible before export
 
+Export actions should preserve the distinction between:
+
+- AI-confirmed values
+- review-needed values
+- user-corrected values
+
 ## 9. Follow-Up Rule
 
 Follow-up input should stay hidden until the first useful output exists.
 
 Follow-up answers must stay bounded by current evidence and explicitly say when the system does not know enough.
+
+Follow-up should not erase the current trust surface. The user should still be able to see:
+
+- which parameter row they were validating
+- which evidence target is active
+- whether the current answer depends on reviewed or review-needed material
 
 ## 10. Interaction Principles
 
@@ -106,3 +132,5 @@ Follow-up answers must stay bounded by current evidence and explicitly say when 
 - outputs before chatter
 - datasheet-first scope without product sprawl
 - internal-test boundary made explicit, not hidden
+- trust state made explicit, not implied
+- parameter truth, risks, and open questions kept in separate semantic lanes

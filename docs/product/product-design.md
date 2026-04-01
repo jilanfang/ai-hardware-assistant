@@ -1,122 +1,199 @@
-# Pin2pin Atlas Product Design v0.2
+# Pin2pin Atlas Product Design v0.3
 
-> Current design note for the shipped datasheet workspace.
-> Older “chat-first single result card” descriptions are superseded by the current result-first three-column workspace plus rail.
+> Current design note for the shipped Atlas workspace.
+> Older “fixed four-column workbench” descriptions are no longer current.
 
 ## 1. Design Goal
-The current Atlas workspace should help users quickly understand one datasheet, validate important conclusions against the source PDF, and export reviewed results.
+Atlas should feel like an AI copilot first, not a legacy task console.
 
-The design must support:
-- fast scanning
-- evidence validation
-- continued questioning
-- exportable results
+The current product has one core job:
+- user brings in one datasheet PDF
+- Atlas produces a structured first pass
+- user verifies conclusions against the source PDF
+- user confirms, corrects, exports, and keeps asking within the same session
 
-## 2. Overall Page Structure
-The current shipped workspace uses four visual regions:
-- rail: product identity, nav, signed-in user, logout
-- left control column: upload, current task, recent tasks, parameter navigation
-- middle evidence column: PDF preview and page-jump verification
-- right task thread: timeline, summary, risk/review, parameters, export, follow-up
+So the interface must optimize for:
+- a low-friction start
+- a strong conversation center
+- visible evidence validation
+- clear task recovery
+- explicit trust state
 
-## 3. Control Column
-The left control column should keep the user anchored around one uploaded datasheet and one recoverable task.
+## 2. Two-Stage Interface
+The workspace now has two major interface stages.
 
-Current content:
-- current task label derived from the uploaded file
-- single-PDF upload entry
-- clear upload capability statement
-- recent tasks sourced from real snapshots
-- top-priority parameter navigation
+### Empty state / no active task
+Before a task exists, the product should behave more like ChatGPT or Gemini:
+- the main surface is a centered upload composer
+- the primary action is drag in a PDF or choose one
+- file selection immediately starts analysis
+- no empty PDF viewer is shown
+- no oversized left-side upload button should compete for attention
 
-## 4. Task Thread
-The user should not see an empty chat interface by default.
+This state is intentionally sparse. The user should understand the first move in one glance.
 
-The first useful screen should prioritize:
-- processing status
-- structured first-pass result
-- parameter review and correction
+### Active task state
+After a PDF is uploaded, the page switches into a three-part working layout:
+- left: weak, collapsible management sidebar
+- center: main conversation and task thread
+- right: PDF evidence panel, expanded by default and collapsible
+
+This shift matters. The product starts like a chat tool, then becomes a chat-plus-evidence workspace.
+
+## 3. Layout Structure
+The current shipped layout is:
+- left sidebar
+- center dialog column
+- right PDF panel
+
+### Left sidebar
+The left side is deliberately low frequency. It should not compete with the dialog.
+
+It keeps:
+- workspace identity
+- basic navigation
+- current task summary
+- recent tasks and restore entry
+- low-frequency parameter jump shortcuts
+- current user and logout
+
+It supports explicit collapse and expand behavior.
+
+### Center dialog column
+The center column is the main stage.
+
+It contains:
+- current task timeline
+- summary and review output
+- parameter confirmation and correction
 - export actions
 - follow-up conversation
+- state explanations, warnings, and degraded messages
 
-Recommended fixed order:
-- task block and timeline
-- quick summary
-- engineering review and risks
-- key parameter summary with confirmation/correction actions
-- export row
+The input area is fixed to the bottom and should stay visible while the message thread scrolls above it.
+
+### Right PDF panel
+The PDF panel is the evidence surface, not a general reading view.
+
+It should:
+- open by default when a task exists
+- collapse on demand to give more room to the dialog
+- reopen when the user needs to inspect evidence
+- preserve jump-to-page and highlight behavior
+
+## 4. Empty-State Start Experience
+The empty state should teach one thing only: bring in a datasheet.
+
+The centered composer-style upload area should support:
+- drag-and-drop PDF upload
+- click-to-select PDF upload
+- immediate start after file selection
+- inline validation for invalid or empty files
+
+The empty state should not waste space on:
+- a blank PDF frame
+- a heavy control panel
+- duplicate submit actions
+
+Recent tasks still exist, but they stay in the weak left sidebar instead of becoming the hero action.
+
+## 5. Conversation-First Task Flow
+Once a task starts, the product should guide the user through one continuous thread instead of scattering actions across side panels.
+
+The main thread should hold:
+- processing status
+- staged or complete analysis output
+- engineering review and open questions
+- parameter confirmation and correction
+- export actions
 - suggestion prompts
-- follow-up transcript and composer
+- follow-up answers
 
-## 5. Simplified Parameter Summary
-The parameter section inside the analysis card should only show the most useful fields for initial understanding. It should:
-- vary by material category
-- support evidence lookup
-- stay lightweight enough for reading and validation
+The center thread is where the user works. Side structures only support it.
 
-It should not become the full data export layer.
+## 6. Parameter Handling
+Parameter handling stays inside the conversation flow as the default path.
 
-## 6. Export Artifacts
-Full parameter reuse belongs to export artifacts, not to the in-app task thread. This separation helps:
-- preserve in-app readability
-- keep exports practical for engineers who need to paste results elsewhere
+This means:
+- confirmation and correction should happen in-thread
+- evidence-linked parameter review should stay near the analysis output
+- sidebar parameter navigation is secondary and optional
 
-The current shipped export row exposes:
-- JSON
-- HTML
-- CSV
+The product should not present parameter handling as a separate admin console.
 
-## 7. Evidence-Linked Interaction
-Every important parameter and major conclusion should support source lookup when possible. The expected interaction is:
-- click a parameter or conclusion
-- navigate to the PDF page
-- highlight the relevant content
-- preserve the current reading context
+## 7. Evidence-Linked Verification
+Atlas is not meant to be “just another chat answer.” The PDF linkage is the trust mechanism.
 
-This is one of the core trust-building flows in the product.
+Important conclusions and parameters should support:
+- evidence lookup
+- page jump
+- source highlight
+- return to the current reading context
 
-## 8. PDF Viewer
-The middle PDF viewer is not a generic reading tool. It is a source-verification panel.
+The PDF area exists to back up the conversation with inspectable source material.
 
-It should prioritize:
-- fast jump to evidence
-- visible highlight of the relevant source
-- support for multiple references when needed
-- continued navigation back to the report or conversation
+## 8. Export Placement
+Export remains a conversation-stage action, not a left-nav module.
 
-The viewer does not need membership or share-watermark logic in the current repo scope.
+That keeps the user in one workflow:
+- read the result
+- review trust and evidence
+- confirm or correct key values
+- export from the same thread
 
-## 9. Follow-Up Questions
-The current slice supports freeform follow-up questions after the first-pass result appears.
+Exports should continue to reflect:
+- reviewed vs unreviewed values
+- user corrections
+- evidence references when available
+- current runtime attribution where relevant
 
-Over time, follow-up guidance should focus on:
-- understanding
-- fit/decision support
-- hidden limits and risks
+## 9. Follow-Up Boundaries
+Follow-up is a continuation of the current task, not a reset into generic free chat.
 
-## 10. Access Boundary
-The current shipped slice is an internal-test application with username/password access.
+The interface should make clear that follow-up draws from:
+- the current report
+- the extracted parameters
+- the stored evidence
+- the current job context
 
-The UI should make that feel intentional:
-- clear login page
-- no fake public-sharing affordances
-- no misleading collaboration surface
+If coverage is weak or the job is incomplete, the UI should say so directly instead of faking certainty.
 
-## 11. Key States
-The design must explicitly handle:
-- empty state before upload
-- processing state during generation
-- successful result state
-- degraded/partial result state
-- failure state
+## 10. Key States
+The design still needs to make system state obvious:
+- empty
+- processing
+- partial
+- complete
+- failed
+- restored
+- delayed / resumed polling
 
-Users should understand what the system is doing and why a result may be incomplete.
+When staged execution is active, the product should still distinguish:
+- fast-stage output available
+- full report pending
+- reconciliation complete
+- review-needed conflicts
+
+These states should appear inside the main thread, because that is where the user is paying attention.
+
+## 11. Responsive Behavior
+The layout should remain chat-first on smaller screens.
+
+Mobile and tablet behavior should follow these priorities:
+- keep the dialog column primary
+- compress the left sidebar into a lighter entry point
+- keep PDF collapsed by default until needed
+- avoid empty-state horizontal crowding
+
+Responsive behavior should adapt layout first, not invent a second product.
 
 ## 12. Defensive UX
-The interface should communicate product boundaries clearly:
-- unsupported inputs
-- oversized or long-document degradation
-- result incompleteness due to poor document quality
-- future share visibility and access boundaries
+The product should communicate limits clearly and early:
+- unsupported file types
+- empty files
+- degraded output due to document quality
+- missing job during restore
+- incomplete evidence linkage
+- follow-up or export limitations when the result is not ready
 
-These constraints should feel intentional, not like random failures.
+These messages should feel like product behavior, not stray error text.

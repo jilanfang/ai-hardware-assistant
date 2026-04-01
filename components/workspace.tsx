@@ -716,6 +716,9 @@ export function Workspace({
 }: WorkspaceProps = {}) {
   const uploadId = useId();
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
+  const [isDragActive, setIsDragActive] = useState(false);
+  const [isSidebarCollapsed, setIsSidebarCollapsed] = useState(true);
+  const [isPdfPanelOpen, setIsPdfPanelOpen] = useState(true);
   const [currentPdf, setCurrentPdf] = useState<UploadedPdf | null>(null);
   const [currentJobId, setCurrentJobId] = useState<string | null>(null);
   const [analysis, setAnalysis] = useState<AnalysisResult | null>(null);
@@ -856,6 +859,12 @@ export function Workspace({
       }
     };
   }, []);
+
+  useEffect(() => {
+    if (currentPdf) {
+      setIsPdfPanelOpen(true);
+    }
+  }, [currentPdf?.id]);
 
   useEffect(() => {
     let cancelled = false;
@@ -1258,9 +1267,9 @@ export function Workspace({
     await startPolling(currentJobId, currentPdf);
   }
 
-  async function handleAnalyze() {
-    if (!selectedFile) return;
-    const uploadError = validateUploadedFile(selectedFile);
+  async function handleAnalyze(file: File) {
+    setSelectedFile(file);
+    const uploadError = validateUploadedFile(file);
     if (uploadError) {
       invalidatePollingSession();
       currentPdfRef.current = null;
@@ -1282,11 +1291,12 @@ export function Workspace({
       return;
     }
 
-    const pdf = createUploadedPdf(selectedFile);
+    const pdf = createUploadedPdf(file);
     window.history.replaceState(null, "", "/");
     invalidatePollingSession();
     currentPdfRef.current = pdf;
     setCurrentPdf(pdf);
+    setIsPdfPanelOpen(true);
     currentJobIdRef.current = null;
     setCurrentJobId(null);
     setAnalysis(null);
@@ -1311,7 +1321,7 @@ export function Workspace({
 
     try {
       const formData = new FormData();
-      formData.append("file", selectedFile);
+      formData.append("file", file);
       formData.append("taskName", pdf.taskName);
       formData.append("chipName", pdf.chipName);
 
@@ -1374,6 +1384,40 @@ export function Workspace({
     } catch {
       applyFailure(pdf, GENERIC_ANALYSIS_FAILURE_MESSAGE);
     }
+  }
+
+  function handleFileSelection(file: File | null) {
+    if (!file) {
+      return;
+    }
+
+    void handleAnalyze(file);
+  }
+
+  function handleUploadInputChange(event: React.ChangeEvent<HTMLInputElement>) {
+    const file = event.target.files?.[0] ?? null;
+    handleFileSelection(file);
+    event.target.value = "";
+  }
+
+  function handleUploadDrop(event: React.DragEvent<HTMLElement>) {
+    event.preventDefault();
+    setIsDragActive(false);
+    const file = event.dataTransfer.files?.[0] ?? null;
+    handleFileSelection(file);
+  }
+
+  function handleUploadDragOver(event: React.DragEvent<HTMLElement>) {
+    event.preventDefault();
+    if (event.dataTransfer) {
+      event.dataTransfer.dropEffect = "copy";
+    }
+    setIsDragActive(true);
+  }
+
+  function handleUploadDragLeave(event: React.DragEvent<HTMLElement>) {
+    event.preventDefault();
+    setIsDragActive(false);
   }
 
   async function submitFollowUp(question: string) {
@@ -1805,6 +1849,12 @@ export function Workspace({
   const prioritizedParameters = parameterInteractiveAnalysis ? prioritizeParameters(parameterInteractiveAnalysis.keyParameters) : [];
   const prioritizedNavParameters = prioritizedParameters.slice(0, 5);
   const currentSuggestions = interactiveAnalysis ? suggestionPrompts(interactiveAnalysis) : [];
+  const canAskFollowUp = Boolean(interactiveAnalysis);
+  const latestAssistantTextMessage =
+    [...messages]
+      .reverse()
+      .find((message): message is Extract<ChatMessage, { kind: "text"; role: "assistant" }> => message.kind === "text" && message.role === "assistant") ??
+    null;
   const reportEvidenceClaims = hasReportContent && (taskThread?.status === "complete" || taskThread?.status === "partial")
     ? [...(renderedAnalysis?.report?.risks ?? []), ...(renderedAnalysis?.report?.openQuestions ?? [])].filter(
         (claim) => claim.sourceType !== "review"
@@ -1859,22 +1909,128 @@ export function Workspace({
   }
 
   return (
-    <main className="app-shell">
-      <aside className="rail-column">
-        <div className="rail-brand" aria-label="Pin2pin Atlas">
-          AT
+    <main
+      className={`app-shell ${currentPdf ? "has-task" : "is-empty"} ${isSidebarCollapsed ? "is-sidebar-collapsed" : "is-sidebar-open"} ${currentPdf && isPdfPanelOpen ? "is-pdf-open" : "is-pdf-closed"}`}
+    >
+      <input
+        id={uploadId}
+        aria-label="上传数据手册 PDF"
+        className="hidden-file-input"
+        type="file"
+        accept="application/pdf"
+        onChange={handleUploadInputChange}
+      />
+
+      <aside className={`rail-column ${isSidebarCollapsed ? "is-collapsed" : "is-open"}`}>
+        <div className="rail-top">
+          <div className="rail-brand" aria-label="Pin2pin Atlas">
+            AT
+          </div>
+          <button
+            type="button"
+            className="rail-toggle"
+            aria-label={isSidebarCollapsed ? "展开侧边栏" : "收起侧边栏"}
+            onClick={() => setIsSidebarCollapsed((current) => !current)}
+          >
+            <span aria-hidden="true">{isSidebarCollapsed ? "›" : "‹"}</span>
+          </button>
         </div>
+
         <nav className="rail-nav" aria-label="主导航">
           <button type="button" className="rail-icon is-active" aria-label="首页" title="首页">
             <span aria-hidden="true">⌂</span>
+            <span className="rail-icon-label">首页</span>
           </button>
           <button type="button" className="rail-icon" aria-label="任务" title="任务">
             <span aria-hidden="true">◫</span>
+            <span className="rail-icon-label">任务</span>
           </button>
           <button type="button" className="rail-icon" aria-label="收藏" title="收藏">
             <span aria-hidden="true">★</span>
+            <span className="rail-icon-label">收藏</span>
           </button>
         </nav>
+
+        <div className="rail-side-content">
+          <section className="sidebar-section">
+            <div className="sidebar-section-header">
+              <span className="eyebrow">Workspace</span>
+              <strong>{currentPdf ? "当前任务" : "最近任务"}</strong>
+            </div>
+            {currentPdf ? (
+              <div className="sidebar-task-card">
+                <strong>{currentPdf.taskName}</strong>
+                <span>{currentPdf.fileName}</span>
+                <div className="control-summary-meta">
+                  <span>{currentPdf.chipName}</span>
+                  <span>{currentJobId ? "任务已创建" : "正在准备"}</span>
+                </div>
+              </div>
+            ) : (
+              <p className="control-empty">上传后会在这里保留当前任务和恢复入口。</p>
+            )}
+          </section>
+
+          <section className="sidebar-section">
+            <div className="sidebar-section-header">
+              <strong>最近任务</strong>
+              <span>恢复会话</span>
+            </div>
+            <div className="history-list">
+              {recentTasks.length ? (
+                recentTasks.map((task) => (
+                  <button
+                    key={task.jobId}
+                    type="button"
+                    className="history-item"
+                    aria-label={`打开最近任务 ${task.taskName}`}
+                    onClick={() => void handleOpenRecentTask(task.jobId)}
+                  >
+                    <strong>{task.taskName}</strong>
+                    <span>{task.fileName}</span>
+                    <small>{`${taskStatusLabel(task.status)} · ${formatRecentTaskTime(task.updatedAt)}`}</small>
+                  </button>
+                ))
+              ) : (
+                <p className="control-empty">还没有最近任务，上传第一份 datasheet 开始。</p>
+              )}
+            </div>
+          </section>
+
+          <section className="sidebar-section">
+            <div className="sidebar-section-header">
+              <strong>参数导航</strong>
+              <span>低频入口</span>
+            </div>
+            {parameterInteractiveAnalysis ? (
+              <div className="parameter-nav-list">
+                {prioritizedNavParameters.map((item) => {
+                  const evidence = parameterInteractiveAnalysis.evidence.find((entry) => entry.id === item.evidenceId);
+                  return (
+                    <button
+                      key={`nav-${item.name}`}
+                      type="button"
+                      className={`parameter-nav-item ${item.status === "needs_review" ? "is-review" : ""}`}
+                      onClick={() => {
+                        setFocusedEvidence(evidence ?? null);
+                        if (!isPdfPanelOpen) {
+                          setIsPdfPanelOpen(true);
+                        }
+                        flashParameterRow(item);
+                      }}
+                    >
+                      <span>{displayParameterName(item.name)}</span>
+                      <small>{item.value}</small>
+                    </button>
+                  );
+                })}
+              </div>
+            ) : (
+              <p className="control-empty">参数处理优先放在中间对话区，这里只保留低频跳转。</p>
+            )}
+          </section>
+        </div>
+
         {currentUser ? (
           <div className="rail-user">
             <div className="rail-avatar">{currentUser.displayName.trim().charAt(0).toUpperCase() || "U"}</div>
@@ -1888,175 +2044,54 @@ export function Workspace({
         )}
       </aside>
 
-      <aside className="control-column">
-        <header className="control-header">
-          <p className="eyebrow">Pin2pin Atlas</p>
-          <h1>任务</h1>
-          <p className="control-header-subtitle">上传、恢复和优先处理当前 datasheet，都在这一侧完成。</p>
-        </header>
-
-        <section className="control-panel">
-          <div className="control-section control-summary-card">
-            <p className="control-label">当前任务</p>
-            <strong>{currentPdf?.taskName ?? "等待上传数据手册"}</strong>
-            <span>{currentPdf?.fileName ?? "尚未选择 PDF"}</span>
-            <div className="control-summary-meta">
-              <span>{currentPdf?.chipName ?? "Atlas session"}</span>
-              <span>{currentJobId ? "任务已创建" : "尚未发起任务"}</span>
-            </div>
-          </div>
-
-          <div className="control-section control-upload-card">
-            <div className="control-card-header">
-              <label htmlFor={uploadId}>上传数据手册 PDF</label>
-              <span className="control-upload-capability">支持单个 datasheet PDF</span>
-            </div>
-            <p className="control-card-body">开始一次新分析。系统会先生成 summary 和关键参数，再保留证据回查与后续追问入口。</p>
-            <input
-              id={uploadId}
-              aria-label="上传数据手册 PDF"
-              className="hidden-file-input"
-              type="file"
-              accept="application/pdf"
-              onChange={(event) => {
-                setSelectedFile(event.target.files?.[0] ?? null);
-              }}
-            />
-            <div className="upload-row">
-              <label htmlFor={uploadId} className="file-picker-button">
-                选择文件
-              </label>
-              <span className="selected-file-name">{selectedFile?.name ?? "未选择文件"}</span>
-            </div>
-            <button type="button" className="primary-control-button" onClick={handleAnalyze}>
-              上传 PDF 并分析
-            </button>
-            <div className="upload-guidance">
-              <span>会先生成总结和关键参数</span>
-              <span>每条重要结果都可回查</span>
-              <span>你可以确认/修正后再导出</span>
-            </div>
-          </div>
-
-          <div className="control-section control-parameter-card">
-            <span className="control-label">参数导航</span>
-            {parameterInteractiveAnalysis ? (
-              <div className="parameter-nav-list">
-                {prioritizedNavParameters.map((item) => {
-                  const evidence = parameterInteractiveAnalysis.evidence.find((entry) => entry.id === item.evidenceId);
-                  return (
-                    <button
-                      key={`nav-${item.name}`}
-                      type="button"
-                      className={`parameter-nav-item ${item.status === "needs_review" ? "is-review" : ""}`}
-                      onClick={() => {
-                        setFocusedEvidence(evidence ?? null);
-                        flashParameterRow(item);
-                      }}
-                    >
-                      <span>{displayParameterName(item.name)}</span>
-                      <small>{item.value}</small>
-                    </button>
-                  );
-                }) ?? null}
-              </div>
-            ) : (
-              <p className="control-empty">上传后这里会列出最需要先处理的 5 个参数。</p>
-            )}
-          </div>
-        </section>
-
-        <section className="history-panel">
-          <div className="history-header">
-            <h2>最近任务</h2>
-            <span>恢复会话</span>
-          </div>
-          <div className="history-list">
-            {recentTasks.length ? (
-              recentTasks.map((task) => (
-                <button
-                  key={task.jobId}
-                  type="button"
-                  className="history-item"
-                  aria-label={`打开最近任务 ${task.taskName}`}
-                  onClick={() => void handleOpenRecentTask(task.jobId)}
-                >
-                  <strong>{task.taskName}</strong>
-                  <span>{task.fileName}</span>
-                  <small>{`${taskStatusLabel(task.status)} · ${formatRecentTaskTime(task.updatedAt)}`}</small>
-                </button>
-              ))
-            ) : (
-              <p className="control-empty">还没有最近任务，上传第一份 datasheet 开始。</p>
-            )}
-          </div>
-        </section>
-      </aside>
-
-      <section className="canvas-column">
-        {!currentPdf ? (
-          <div className="canvas-empty">
-            <div className="workspace-start-card">
-              <p className="workspace-start-kicker">Atlas Workspace</p>
-              <strong>{"上传一份 PDF -> 开始分析 -> 获得 summary / key parameters / follow-up"}</strong>
-              <p>上传后，PDF 中间页会自动聚焦第一页或最重要的待确认证据。</p>
-              <div className="workspace-start-flow" aria-hidden="true">
-                <span>Upload</span>
-                <span>Review</span>
-                <span>Export</span>
-              </div>
-            </div>
-          </div>
-        ) : (
-          <div className="pdf-canvas">
-            <div className="canvas-topbar">
-              <div className="canvas-topbar-copy">
-                <span className="canvas-kicker">当前文档</span>
-                <strong>{currentPdf.fileName}</strong>
-              </div>
-              <div className="canvas-toolbar">
-                <span>{focusedEvidence ? `第 ${focusedEvidence.page} 页` : "第 1 页"}</span>
-                <span>/</span>
-                <span>{currentPdf.pageCount}</span>
-              </div>
-            </div>
-            <div className="pdf-stage">
-              <div className="pdf-sheet">
-                <iframe
-                  key={previewUrl(currentPdf, focusedEvidence)}
-                  title="PDF 预览"
-                  className="pdf-frame"
-                  src={previewUrl(currentPdf, focusedEvidence)}
-                />
-                {focusedEvidence ? (
-                  <div
-                    data-testid="evidence-highlight"
-                    className="evidence-highlight"
-                    style={{
-                      left: `${focusedEvidence.rect.left}%`,
-                      top: `${focusedEvidence.rect.top}%`,
-                      width: `${focusedEvidence.rect.width}%`,
-                      height: `${focusedEvidence.rect.height}%`
-                    }}
-                  />
-                ) : null}
-              </div>
-            </div>
-          </div>
-        )}
-      </section>
-
       <section className="dialog-column">
         <header className="dialog-header">
-          <div>
+          <div className="dialog-header-copy">
             <p className="eyebrow">Copilot</p>
-            <h2>{currentPdf?.chipName ?? "对话区"}</h2>
+            <h2>{currentPdf?.chipName ?? "Atlas Copilot"}</h2>
             <p className="dialog-header-subtitle">
-              {currentPdf ? "围绕当前 datasheet 的总结、参数确认和后续提问都在这里进行。" : "上传一份 datasheet 后，这里会依次给出 summary、风险待确认项、关键参数、导出和 follow-up。"}
+              {currentPdf
+                ? "围绕当前 datasheet 的总结、参数确认、导出和后续提问都在这里进行。"
+                : "先把 PDF 拖进来。Atlas 会先给你总结、关键参数和可回查证据。"}
             </p>
           </div>
+          {currentPdf ? (
+            <button
+              type="button"
+              className="inline-action dialog-pdf-toggle"
+              onClick={() => setIsPdfPanelOpen((current) => !current)}
+            >
+              {isPdfPanelOpen ? "收起 PDF" : "展开 PDF"}
+            </button>
+          ) : null}
         </header>
 
+        {!currentPdf ? (
+          <section
+            className={`empty-dropzone ${isDragActive ? "is-drag-active" : ""}`}
+            onDragOver={handleUploadDragOver}
+            onDragLeave={handleUploadDragLeave}
+            onDrop={handleUploadDrop}
+          >
+            <div className="empty-dropzone-inner">
+              <p className="workspace-start-kicker">Atlas Workspace</p>
+              <h1>拖入一份 datasheet PDF，直接开始分析</h1>
+              <p>
+                像 GPT 或 Gemini 一样先从输入区进入，但上传后会自动切到带 PDF 证据校验的工作台。
+              </p>
+              <div className="workspace-start-flow" aria-hidden="true">
+                <span>Drag PDF</span>
+                <span>Analyze</span>
+                <span>Review evidence</span>
+              </div>
+              <label htmlFor={uploadId} className="empty-dropzone-cta">
+                选择 PDF 或直接拖入
+              </label>
+              <p className="empty-dropzone-hint">支持单个 datasheet PDF，选中后立即开始分析，不需要再点第二个提交按钮。</p>
+              {latestAssistantTextMessage ? <p className="empty-dropzone-error">{latestAssistantTextMessage.content}</p> : null}
+            </div>
+          </section>
+        ) : (
         <div className="messages">
           {!taskThread ? (
             <article className="message assistant intro-card">
@@ -2423,23 +2458,81 @@ export function Workspace({
             );
           })}
         </div>
+        )}
 
-        {interactiveAnalysis ? (
-          <div className="composer-card">
-            <label htmlFor="follow-up">继续提问</label>
-            <textarea
-              id="follow-up"
-              aria-label="继续提问"
-              value={composer}
-              onChange={(event) => setComposer(event.target.value)}
-              placeholder="继续问这份数据手册..."
-            />
-            <button type="button" onClick={handleAsk} disabled={isAsking}>
-              {isAsking ? "发送中..." : "发送问题"}
-            </button>
-          </div>
-        ) : null}
+        <div className="composer-card">
+          <label htmlFor={currentPdf && canAskFollowUp ? "follow-up" : uploadId}>{currentPdf && canAskFollowUp ? "继续提问" : "上传 datasheet PDF"}</label>
+          {currentPdf && canAskFollowUp ? (
+            <>
+              <textarea
+                id="follow-up"
+                aria-label="继续提问"
+                value={composer}
+                onChange={(event) => setComposer(event.target.value)}
+                placeholder="继续问这份数据手册..."
+              />
+              <button type="button" onClick={handleAsk} disabled={isAsking}>
+                {isAsking ? "发送中..." : "发送问题"}
+              </button>
+            </>
+          ) : (
+            <div
+              className={`composer-upload-surface ${isDragActive ? "is-drag-active" : ""}`}
+              onDragOver={handleUploadDragOver}
+              onDragLeave={handleUploadDragLeave}
+              onDrop={handleUploadDrop}
+            >
+              <div className="composer-upload-copy">
+                <strong>拖入 PDF，开始一个新的 Atlas 任务</strong>
+                <p>不会先占一个空白 PDF 预览区。上传后自动进入对话 + 证据工作台。</p>
+              </div>
+              <label htmlFor={uploadId} className="file-picker-button composer-upload-button">
+                选择 PDF
+              </label>
+            </div>
+          )}
+        </div>
       </section>
+
+      {currentPdf && isPdfPanelOpen ? (
+        <section className="canvas-column">
+          <div className="pdf-canvas">
+            <div className="canvas-topbar">
+              <div className="canvas-topbar-copy">
+                <span className="canvas-kicker">当前文档</span>
+                <strong>{currentPdf.fileName}</strong>
+              </div>
+              <div className="canvas-toolbar">
+                <span>{focusedEvidence ? `第 ${focusedEvidence.page} 页` : "第 1 页"}</span>
+                <span>/</span>
+                <span>{currentPdf.pageCount}</span>
+              </div>
+            </div>
+            <div className="pdf-stage">
+              <div className="pdf-sheet">
+                <iframe
+                  key={previewUrl(currentPdf, focusedEvidence)}
+                  title="PDF 预览"
+                  className="pdf-frame"
+                  src={previewUrl(currentPdf, focusedEvidence)}
+                />
+                {focusedEvidence ? (
+                  <div
+                    data-testid="evidence-highlight"
+                    className="evidence-highlight"
+                    style={{
+                      left: `${focusedEvidence.rect.left}%`,
+                      top: `${focusedEvidence.rect.top}%`,
+                      width: `${focusedEvidence.rect.width}%`,
+                      height: `${focusedEvidence.rect.height}%`
+                    }}
+                  />
+                ) : null}
+              </div>
+            </div>
+          </div>
+        </section>
+      ) : null}
     </main>
   );
 }

@@ -24,14 +24,21 @@ Phase 21: datasheet trust-loop hardening on top of relay-backed PDF direct routi
 - [x] Make relay provider/model routing explicit and benchmarkable instead of assuming one native provider path.
 - [x] Add a runtime switch so Atlas can default to a single-model path while keeping staged orchestration optional.
 - [ ] Finish the current datasheet trust loop: evidence-linked reading, grounded extraction, honest degraded states, exportable structured output, and stronger real-runtime observability.
+- [ ] Turn current trust mechanisms into user-visible product strengths instead of leaving them as mostly internal implementation detail.
+- [ ] Make parameter trust state clearer in the product surface: confirmed vs needs_review vs user_corrected should feel operational, not cosmetic.
 - [ ] Finish private-beta readiness: docs cleanup, deploy runbook, account provisioning, and audit reporting workflow.
 
 ### Next
 - [ ] Improve parser quality and category-aware extraction consistency for the current datasheet scene.
+- [ ] Strengthen parameter value + test condition + applicability binding for the current result model.
+- [ ] Surface variant / package / family ambiguity earlier so users can see scope limits before export.
+- [ ] Make staged fast-pass vs full-report progress and conflict reconciliation more legible in the workspace.
+- [ ] Improve PDF / parse / evidence quality visibility so users can tell why a result is partial or review-heavy.
 - [ ] Add more real benchmark scenarios so routing decisions are not based on one UPF5755 report case only.
 - [ ] Define whether the datasheet scene should remain strictly single-document or later support limited multi-document grounding.
 
 ### Later
+- [ ] Evaluate multi-document preselection only after the single-document trust loop is stable enough that trust problems do not multiply with scale.
 - [ ] Reassess whether any adjacent scene deserves its own repository or a later expansion only after datasheet usage is stable.
 - [ ] Reassess broader comparison, FA support, and workflow write-back only after the current datasheet scene is stable and repeatedly used.
 
@@ -39,6 +46,9 @@ Phase 21: datasheet trust-loop hardening on top of relay-backed PDF direct routi
 - [ ] One uploaded datasheet can produce a grounded first-pass result with evidence-linked parameters and summary.
 - [ ] `processing`, `partial`, `failed`, and delayed states feel materially different and understandable to the user.
 - [ ] Current supported families use consistent field naming and evidence jumps.
+- [ ] Current supported families expose enough category-specific structure that the result feels like an engineering work surface, not a generic summary.
+- [ ] Parameters clearly distinguish confirmed, review-needed, and user-corrected states before export.
+- [ ] The workspace makes it clear when staged fast parameters are ready, when the full report is ready, and when reconciliation is still pending.
 - [ ] A user can complete upload -> verify -> export without product guidance.
 - [ ] The result feels faster to verify than the user’s existing Ctrl+F + copy/paste workflow.
 - [ ] The runtime can explain which `provider/model` handled the task and whether the job used PDF direct or fallback modality.
@@ -69,6 +79,7 @@ Phase 21: datasheet trust-loop hardening on top of relay-backed PDF direct routi
 ## Notes
 - The current product shell is one evidence workspace, not a generic office assistant or broad hardware copilot.
 - Datasheet deep reading is the only in-scope scene for this repository.
+- Current differentiation comes from trust mechanisms such as category templates, knowledge injection, staged execution, arbitration, provenance, reviewed export, and runtime attribution, not from claiming a generic model is “smarter.”
 - DigiKey work is a supporting one-time taxonomy calibration input, not an ongoing product track and not a monitoring target.
 - Checked-in generated taxonomy remains a supporting runtime layer for grounded extraction quality, not a top-level backlog driver.
 - Runtime routing decisions must be expressed as explicit `provider/model` pairs rather than bare model names.

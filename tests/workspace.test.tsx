@@ -278,21 +278,16 @@ describe("Workspace", () => {
 
     render(<Workspace />);
 
-    expect(screen.getByRole("heading", { name: "任务" })).toBeInTheDocument();
-    expect(screen.getByRole("heading", { name: "对话区" })).toBeInTheDocument();
-    expect(screen.getByText("最近任务")).toBeInTheDocument();
+    expect(screen.getByRole("heading", { name: "Atlas Copilot" })).toBeInTheDocument();
+    expect(screen.getByRole("heading", { name: "拖入一份 datasheet PDF，直接开始分析" })).toBeInTheDocument();
+    expect(screen.getAllByText("最近任务").length).toBeGreaterThan(0);
     expect(screen.queryByText("LMR51430")).not.toBeInTheDocument();
     expect(screen.queryByText("TPS54302")).not.toBeInTheDocument();
-    expect(await screen.findByText("支持单个 datasheet PDF")).toBeInTheDocument();
-    expect(screen.getByText("上传一份 PDF -> 开始分析 -> 获得 summary / key parameters / follow-up")).toBeInTheDocument();
-    expect(screen.getByText("会先生成总结和关键参数")).toBeInTheDocument();
-    expect(screen.getByText("每条重要结果都可回查")).toBeInTheDocument();
-    expect(screen.getByText("你可以确认/修正后再导出")).toBeInTheDocument();
-    expect(screen.getByRole("button", { name: "上传 PDF 并分析" })).toBeInTheDocument();
+    expect(await screen.findByText("选择 PDF 或直接拖入")).toBeInTheDocument();
+    expect(screen.getByText("支持单个 datasheet PDF，选中后立即开始分析，不需要再点第二个提交按钮。")).toBeInTheDocument();
+    expect(screen.getByText("拖入 PDF，开始一个新的 Atlas 任务")).toBeInTheDocument();
     expect(screen.queryByLabelText("继续提问")).not.toBeInTheDocument();
-    expect(
-      screen.getAllByText("上传一份 datasheet 后，这里会依次给出 summary、风险待确认项、关键参数、导出和 follow-up。").length
-    ).toBeGreaterThan(0);
+    expect(screen.queryByTitle("PDF 预览")).not.toBeInTheDocument();
     expect(screen.getByText("还没有最近任务，上传第一份 datasheet 开始。")).toBeInTheDocument();
   });
 
@@ -301,7 +296,6 @@ describe("Workspace", () => {
 
     const file = new File(["not pdf"], "notes.txt", { type: "text/plain" });
     fireEvent.change(screen.getByLabelText("上传数据手册 PDF"), { target: { files: [file] } });
-    fireEvent.click(screen.getByRole("button", { name: "上传 PDF 并分析" }));
 
     expect(await screen.findByText("请上传 PDF 格式的数据手册。")).toBeInTheDocument();
     expect(
@@ -314,7 +308,6 @@ describe("Workspace", () => {
 
     const file = new File([], "empty.pdf", { type: "application/pdf" });
     fireEvent.change(screen.getByLabelText("上传数据手册 PDF"), { target: { files: [file] } });
-    fireEvent.click(screen.getByRole("button", { name: "上传 PDF 并分析" }));
 
     expect(await screen.findByText("上传的 PDF 为空，请重新选择文件。")).toBeInTheDocument();
     expect(
@@ -330,19 +323,9 @@ describe("Workspace", () => {
     queueAnalysisJobResponses({
       status: "complete",
       warnings: [],
-      analysis: {
+      analysis: buildAnalysisResult({
         pipelineMode: "staged",
-        summary: "LMR51430 已完成真实解析。",
-        review: "建议优先检查输入范围和封装散热。",
-        report: {
-          executiveSummary: "这是最终报告。",
-          deviceIdentity: {
-            canonicalPartNumber: "LMR51430",
-            manufacturer: "Texas Instruments",
-            deviceClass: "DC-DC",
-            parameterTemplateId: "dc-dc",
-            confidence: 0.92
-          },
+        report: buildReport({
           keyParameters: [
             {
               id: "claim-input",
@@ -359,11 +342,6 @@ describe("Workspace", () => {
               ]
             }
           ],
-          designFocus: [],
-          risks: [],
-          openQuestions: [],
-          publicNotes: [],
-          citations: [],
           sections: [
             {
               id: "device_identity",
@@ -393,17 +371,9 @@ describe("Workspace", () => {
               sourceType: "review",
               citations: []
             }
-          ],
-          claims: []
-        },
-        sourceAttribution: {
-          mode: "llm_first_with_odl",
-          llmProvider: "mock",
-          llmTarget: "mock/gpt-4.1",
-          searchProvider: "mock",
-          documentPath: "pdf_direct",
-          pipelineMode: "staged"
-        },
+          ]
+        }),
+        sourceAttribution: buildSourceAttribution(),
         keyParameters: [
           { name: "Input voltage", value: "4.5 V to 36 V", evidenceId: "ev-input", status: "confirmed" },
           { name: "Package", value: "SOT-23-THN", evidenceId: "ev-package", status: "needs_review" }
@@ -424,7 +394,7 @@ describe("Workspace", () => {
             rect: { left: 18, top: 30, width: 42, height: 9 }
           }
         ]
-      }
+      })
     });
 
     render(<Workspace />);
@@ -433,7 +403,6 @@ describe("Workspace", () => {
     const input = screen.getByLabelText("上传数据手册 PDF");
 
     fireEvent.change(input, { target: { files: [file] } });
-    fireEvent.click(screen.getByRole("button", { name: "上传 PDF 并分析" }));
 
     expect(await screen.findByText("Task Received")).toBeInTheDocument();
     expect(screen.getByText("Identity Ready")).toBeInTheDocument();
@@ -506,7 +475,6 @@ describe("Workspace", () => {
 
     const file = new File(["pdf"], "lmr51430-datasheet.pdf", { type: "application/pdf" });
     fireEvent.change(screen.getByLabelText("上传数据手册 PDF"), { target: { files: [file] } });
-    fireEvent.click(screen.getByRole("button", { name: "上传 PDF 并分析" }));
 
     expect(await screen.findByText("器件身份")).toBeInTheDocument();
     expect(screen.getByText("LMR51430 是一颗 DC-DC 电源芯片。")).toBeInTheDocument();
@@ -545,7 +513,6 @@ describe("Workspace", () => {
 
     const file = new File(["pdf"], "lmr51430-datasheet.pdf", { type: "application/pdf" });
     fireEvent.change(screen.getByLabelText("上传数据手册 PDF"), { target: { files: [file] } });
-    fireEvent.click(screen.getByRole("button", { name: "上传 PDF 并分析" }));
 
     expect(await screen.findByText("怎么读这份 Datasheet")).toBeInTheDocument();
     expect(screen.getByText("先看首页、特性列表和工作条件。")).toBeInTheDocument();
@@ -616,7 +583,6 @@ describe("Workspace", () => {
 
     const file = new File(["pdf"], "lmr51430-datasheet.pdf", { type: "application/pdf" });
     fireEvent.change(screen.getByLabelText("上传数据手册 PDF"), { target: { files: [file] } });
-    fireEvent.click(screen.getByRole("button", { name: "上传 PDF 并分析" }));
 
     expect(await screen.findByText("参数初稿已生成，完整报告仍在整理。")).toBeInTheDocument();
     expect(screen.getAllByText("输入电压").length).toBeGreaterThan(0);
@@ -681,7 +647,6 @@ describe("Workspace", () => {
 
     const file = new File(["pdf"], "lmr51430-datasheet.pdf", { type: "application/pdf" });
     fireEvent.change(screen.getByLabelText("上传数据手册 PDF"), { target: { files: [file] } });
-    fireEvent.click(screen.getByRole("button", { name: "上传 PDF 并分析" }));
 
     expect(await screen.findByText("这是一颗 36 V 输入降压芯片。")).toBeInTheDocument();
     expect(screen.queryByText("Fast Parameters Ready")).not.toBeInTheDocument();
@@ -852,7 +817,6 @@ describe("Workspace", () => {
 
     const file = new File(["pdf"], "upf5755.pdf", { type: "application/pdf" });
     fireEvent.change(screen.getByLabelText("上传数据手册 PDF"), { target: { files: [file] } });
-    fireEvent.click(screen.getByRole("button", { name: "上传 PDF 并分析" }));
 
     expect(await screen.findByText("参数初稿已生成，完整报告仍在整理。")).toBeInTheDocument();
     expect(screen.getAllByText("输入电压").length).toBeGreaterThan(0);
@@ -962,7 +926,6 @@ describe("Workspace", () => {
 
     const file = new File(["pdf"], "lmr51430-datasheet.pdf", { type: "application/pdf" });
     fireEvent.change(screen.getByLabelText("上传数据手册 PDF"), { target: { files: [file] } });
-    fireEvent.click(screen.getByRole("button", { name: "上传 PDF 并分析" }));
 
     expect(await screen.findByText("这是一颗 36 V 输入降压芯片，适合中低功率电源轨。")).toBeInTheDocument();
     expect(screen.getByRole("button", { name: "P2" })).toBeInTheDocument();
@@ -1023,7 +986,6 @@ describe("Workspace", () => {
 
     const file = new File(["pdf"], "lmr51430-datasheet.pdf", { type: "application/pdf" });
     fireEvent.change(screen.getByLabelText("上传数据手册 PDF"), { target: { files: [file] } });
-    fireEvent.click(screen.getByRole("button", { name: "上传 PDF 并分析" }));
 
     expect(await screen.findByText("LMR51430 已完成真实解析。")).toBeInTheDocument();
     expect(screen.getByTitle("PDF 预览")).toHaveAttribute("src", "/api/analysis/file?jobId=job-1#page=4");
@@ -1054,7 +1016,6 @@ describe("Workspace", () => {
 
     const file = new File(["pdf"], "lmr51430-datasheet.pdf", { type: "application/pdf" });
     fireEvent.change(screen.getByLabelText("上传数据手册 PDF"), { target: { files: [file] } });
-    fireEvent.click(screen.getByRole("button", { name: "上传 PDF 并分析" }));
 
     expect(
       (await screen.findAllByText("未配置可用 LLM provider，当前系统已切换为 LLM-first，因而不会再退回本地抽取。")).length
@@ -1101,7 +1062,6 @@ describe("Workspace", () => {
 
     const file = new File(["pdf"], "lmr51430-datasheet.pdf", { type: "application/pdf" });
     fireEvent.change(screen.getByLabelText("上传数据手册 PDF"), { target: { files: [file] } });
-    fireEvent.click(screen.getByRole("button", { name: "上传 PDF 并分析" }));
 
     expect((await screen.findAllByRole("heading", { name: "LMR51430" })).length).toBeGreaterThan(0);
     const inputLabel = screen.getAllByText("输入电压").find((node) => node.closest(".dialog-parameter-row"));
@@ -1132,7 +1092,6 @@ describe("Workspace", () => {
 
     const file = new File(["pdf"], "lmr51430-datasheet.pdf", { type: "application/pdf" });
     fireEvent.change(screen.getByLabelText("上传数据手册 PDF"), { target: { files: [file] } });
-    fireEvent.click(screen.getByRole("button", { name: "上传 PDF 并分析" }));
 
     expect(await screen.findAllByRole("heading", { name: "LMR51430" })).not.toHaveLength(0);
     const packageLabel = screen.getAllByText("封装").find((node) => node.closest(".dialog-parameter-row"));
@@ -1181,7 +1140,6 @@ describe("Workspace", () => {
 
     const file = new File(["pdf"], "S55643-51Q.pdf", { type: "application/pdf" });
     fireEvent.change(screen.getByLabelText("上传数据手册 PDF"), { target: { files: [file] } });
-    fireEvent.click(screen.getByRole("button", { name: "上传 PDF 并分析" }));
 
     expect(await screen.findByText("S55643-51Q 已完成真实解析。")).toBeInTheDocument();
     const toolbar = container.querySelector(".canvas-toolbar");
@@ -1217,7 +1175,6 @@ describe("Workspace", () => {
 
     const file = new File(["pdf"], "lmr51430-datasheet.pdf", { type: "application/pdf" });
     fireEvent.change(screen.getByLabelText("上传数据手册 PDF"), { target: { files: [file] } });
-    fireEvent.click(screen.getByRole("button", { name: "上传 PDF 并分析" }));
 
     expect((await screen.findAllByRole("heading", { name: "LMR51430" })).length).toBeGreaterThan(0);
 
@@ -1260,7 +1217,6 @@ describe("Workspace", () => {
 
     const file = new File(["pdf"], "lmr51430-datasheet.pdf", { type: "application/pdf" });
     fireEvent.change(screen.getByLabelText("上传数据手册 PDF"), { target: { files: [file] } });
-    fireEvent.click(screen.getByRole("button", { name: "上传 PDF 并分析" }));
 
     expect(await screen.findByLabelText("继续提问")).toBeInTheDocument();
   });
@@ -1303,7 +1259,6 @@ describe("Workspace", () => {
 
     const file = new File(["pdf"], "lmr51430-datasheet.pdf", { type: "application/pdf" });
     fireEvent.change(screen.getByLabelText("上传数据手册 PDF"), { target: { files: [file] } });
-    fireEvent.click(screen.getByRole("button", { name: "上传 PDF 并分析" }));
 
     expect(await screen.findByRole("button", { name: "总结这份数据手册" })).toBeInTheDocument();
     expect(screen.getByRole("button", { name: "适用场景有哪些？" })).toBeInTheDocument();
@@ -1357,11 +1312,10 @@ describe("Workspace", () => {
 
     const file = new File(["pdf"], "lmr51430-datasheet.pdf", { type: "application/pdf" });
     fireEvent.change(screen.getByLabelText("上传数据手册 PDF"), { target: { files: [file] } });
-    fireEvent.click(screen.getByRole("button", { name: "上传 PDF 并分析" }));
 
     await screen.findByText("LMR51430 已完成真实解析。");
 
-    const navButtons = within(screen.getByText("参数导航").closest(".control-section") as HTMLElement).getAllByRole("button");
+    const navButtons = within(screen.getByText("参数导航").closest(".sidebar-section") as HTMLElement).getAllByRole("button");
     expect(navButtons[0]).toHaveTextContent("封装");
     expect(navButtons[1]).toHaveTextContent("输入电压");
     expect(navButtons[2]).toHaveTextContent("输出电流");
@@ -1385,7 +1339,6 @@ describe("Workspace", () => {
 
     const file = new File(["pdf"], "processing.pdf", { type: "application/pdf" });
     fireEvent.change(screen.getByLabelText("上传数据手册 PDF"), { target: { files: [file] } });
-    fireEvent.click(screen.getByRole("button", { name: "上传 PDF 并分析" }));
 
     expect(await screen.findByText("Task Received")).toBeInTheDocument();
     expect(screen.getByText("Identity Ready")).toBeInTheDocument();
@@ -1455,7 +1408,6 @@ describe("Workspace", () => {
 
     const file = new File(["pdf"], "lmr51430-datasheet.pdf", { type: "application/pdf" });
     fireEvent.change(screen.getByLabelText("上传数据手册 PDF"), { target: { files: [file] } });
-    fireEvent.click(screen.getByRole("button", { name: "上传 PDF 并分析" }));
 
     const composer = await screen.findByLabelText("继续提问");
     fireEvent.change(composer, { target: { value: "这颗芯片最重要的限制条件是什么？" } });
@@ -1509,7 +1461,6 @@ describe("Workspace", () => {
 
     const file = new File(["pdf"], "lmr51430-datasheet.pdf", { type: "application/pdf" });
     fireEvent.change(screen.getByLabelText("上传数据手册 PDF"), { target: { files: [file] } });
-    fireEvent.click(screen.getByRole("button", { name: "上传 PDF 并分析" }));
 
     const composer = await screen.findByLabelText("继续提问");
     fireEvent.change(composer, { target: { value: "这颗芯片最重要的限制条件是什么？" } });
@@ -1539,7 +1490,6 @@ describe("Workspace", () => {
 
     const file = new File(["pdf"], "lmr51430-datasheet.pdf", { type: "application/pdf" });
     fireEvent.change(screen.getByLabelText("上传数据手册 PDF"), { target: { files: [file] } });
-    fireEvent.click(screen.getByRole("button", { name: "上传 PDF 并分析" }));
 
     await screen.findByText("LMR51430 已完成真实解析。");
     expect(replaceStateMock).toHaveBeenCalledWith(null, "", "/?jobId=job-1");
@@ -1721,7 +1671,6 @@ describe("Workspace", () => {
 
     const file = new File(["pdf"], "lmr51430-datasheet.pdf", { type: "application/pdf" });
     fireEvent.change(screen.getByLabelText("上传数据手册 PDF"), { target: { files: [file] } });
-    fireEvent.click(screen.getByRole("button", { name: "上传 PDF 并分析" }));
 
     expect(await screen.findByText("LMR51430 已完成真实解析。")).toBeInTheDocument();
 
@@ -1938,7 +1887,6 @@ describe("Workspace", () => {
 
     const file = new File(["pdf"], "partial-empty.pdf", { type: "application/pdf" });
     fireEvent.change(screen.getByLabelText("上传数据手册 PDF"), { target: { files: [file] } });
-    fireEvent.click(screen.getByRole("button", { name: "上传 PDF 并分析" }));
 
     expect(await screen.findByText("部分结果")).toBeInTheDocument();
     const resultReadyStep = screen.getByText("Result Ready").closest(".timeline-step");
@@ -1954,12 +1902,11 @@ describe("Workspace", () => {
 
     render(<Workspace currentUser={{ username: "tester", displayName: "Atlas User" }} />);
 
-    expect(await screen.findByText("支持单个 datasheet PDF")).toBeInTheDocument();
+    expect(await screen.findByText("选择 PDF 或直接拖入")).toBeInTheDocument();
     expect(document.querySelector(".app-shell")).not.toBeNull();
     expect(document.querySelector(".rail-column")).not.toBeNull();
-    expect(document.querySelector(".control-column")).not.toBeNull();
-    expect(document.querySelector(".canvas-column")).not.toBeNull();
     expect(document.querySelector(".dialog-column")).not.toBeNull();
+    expect(document.querySelector(".canvas-column")).toBeNull();
   });
 
   test("shows clearer recent task timing text and processing elapsed time", async () => {
@@ -2025,7 +1972,6 @@ describe("Workspace", () => {
 
     const file = new File(["pdf"], "lmr51430-datasheet.pdf", { type: "application/pdf" });
     fireEvent.change(screen.getByLabelText("上传数据手册 PDF"), { target: { files: [file] } });
-    fireEvent.click(screen.getByRole("button", { name: "上传 PDF 并分析" }));
 
     expect((await screen.findAllByRole("heading", { name: "LMR51430" })).length).toBeGreaterThan(0);
 
@@ -2095,7 +2041,6 @@ describe("Workspace", () => {
 
     const file = new File(["pdf"], "tmp-SKY85755-11.pdf", { type: "application/pdf" });
     fireEvent.change(screen.getByLabelText("上传数据手册 PDF"), { target: { files: [file] } });
-    fireEvent.click(screen.getByRole("button", { name: "上传 PDF 并分析" }));
 
     expect(await screen.findByText("SKY85755-11 已按 DigiKey 的 RF Front End (LNA + PA) 类别完成真实解析。")).toBeInTheDocument();
     expect(screen.getAllByText("RF Type").length).toBeGreaterThan(0);
@@ -2135,7 +2080,6 @@ describe("Workspace", () => {
 
     const file = new File(["pdf"], "lmr51430-datasheet.pdf", { type: "application/pdf" });
     fireEvent.change(screen.getByLabelText("上传数据手册 PDF"), { target: { files: [file] } });
-    fireEvent.click(screen.getByRole("button", { name: "上传 PDF 并分析" }));
 
     expect((await screen.findAllByRole("heading", { name: "LMR51430" })).length).toBeGreaterThan(0);
 
@@ -2173,7 +2117,6 @@ describe("Workspace", () => {
 
     const file = new File(["pdf"], "lmr51430-datasheet.pdf", { type: "application/pdf" });
     fireEvent.change(screen.getByLabelText("上传数据手册 PDF"), { target: { files: [file] } });
-    fireEvent.click(screen.getByRole("button", { name: "上传 PDF 并分析" }));
 
     expect((await screen.findAllByRole("heading", { name: "LMR51430" })).length).toBeGreaterThan(0);
 
@@ -2249,7 +2192,6 @@ describe("Workspace", () => {
 
     const file = new File(["pdf"], "lmr51430-datasheet.pdf", { type: "application/pdf" });
     fireEvent.change(screen.getByLabelText("上传数据手册 PDF"), { target: { files: [file] } });
-    fireEvent.click(screen.getByRole("button", { name: "上传 PDF 并分析" }));
 
     expect((await screen.findAllByRole("heading", { name: "LMR51430" })).length).toBeGreaterThan(0);
 
@@ -2328,7 +2270,6 @@ describe("Workspace", () => {
 
     const file = new File(["pdf"], "lmr51430-datasheet.pdf", { type: "application/pdf" });
     fireEvent.change(screen.getByLabelText("上传数据手册 PDF"), { target: { files: [file] } });
-    fireEvent.click(screen.getByRole("button", { name: "上传 PDF 并分析" }));
 
     expect((await screen.findAllByRole("heading", { name: "LMR51430" })).length).toBeGreaterThan(0);
 
@@ -2387,7 +2328,6 @@ describe("Workspace", () => {
 
     const file = new File(["pdf"], "partial.pdf", { type: "application/pdf" });
     fireEvent.change(screen.getByLabelText("上传数据手册 PDF"), { target: { files: [file] } });
-    fireEvent.click(screen.getByRole("button", { name: "上传 PDF 并分析" }));
 
     expect(
       await screen.findByText("仅提取到有限文本，以下结果适合初步分析，不适合直接下结论。")
@@ -2426,7 +2366,6 @@ describe("Workspace", () => {
 
     const file = new File(["pdf"], "scanned.pdf", { type: "application/pdf" });
     fireEvent.change(screen.getByLabelText("上传数据手册 PDF"), { target: { files: [file] } });
-    fireEvent.click(screen.getByRole("button", { name: "上传 PDF 并分析" }));
 
     expect(await screen.findByText("解析失败")).toBeInTheDocument();
     expect(
@@ -2478,7 +2417,6 @@ describe("Workspace", () => {
 
     const file = new File(["pdf"], "lmr51430-datasheet.pdf", { type: "application/pdf" });
     fireEvent.change(screen.getByLabelText("上传数据手册 PDF"), { target: { files: [file] } });
-    fireEvent.click(screen.getByRole("button", { name: "上传 PDF 并分析" }));
 
     expect(await screen.findByText("导出给下游继续使用")).toBeInTheDocument();
     expect(screen.getByText("CSV 只包含已确认或已修正的参数，避免把待确认值直接写入下游。")).toBeInTheDocument();
@@ -2528,7 +2466,6 @@ describe("Workspace", () => {
 
     const file = new File(["pdf"], "lmr51430-datasheet.pdf", { type: "application/pdf" });
     fireEvent.change(screen.getByLabelText("上传数据手册 PDF"), { target: { files: [file] } });
-    fireEvent.click(screen.getByRole("button", { name: "上传 PDF 并分析" }));
 
     expect(await screen.findByRole("button", { name: "导出已确认参数 CSV" })).toBeDisabled();
     expect(screen.getByText("先确认至少一个参数，再导出干净的参数表。")).toBeInTheDocument();
@@ -2618,7 +2555,6 @@ describe("Workspace", () => {
 
     const file = new File(["pdf"], "lmr51430-datasheet.pdf", { type: "application/pdf" });
     fireEvent.change(screen.getByLabelText("上传数据手册 PDF"), { target: { files: [file] } });
-    fireEvent.click(screen.getByRole("button", { name: "上传 PDF 并分析" }));
 
     expect(await screen.findByText("已确认参数 1 个")).toBeInTheDocument();
     expect(screen.getByText("人工修正 0 次")).toBeInTheDocument();
@@ -2661,7 +2597,6 @@ describe("Workspace", () => {
 
     const file = new File(["pdf"], "lmr51430-datasheet.pdf", { type: "application/pdf" });
     fireEvent.change(screen.getByLabelText("上传数据手册 PDF"), { target: { files: [file] } });
-    fireEvent.click(screen.getByRole("button", { name: "上传 PDF 并分析" }));
 
     expect((await screen.findAllByRole("heading", { name: "LMR51430" })).length).toBeGreaterThan(0);
 
@@ -2722,7 +2657,6 @@ describe("Workspace", () => {
 
     const file = new File(["pdf"], "lmr51430-datasheet.pdf", { type: "application/pdf" });
     fireEvent.change(screen.getByLabelText("上传数据手册 PDF"), { target: { files: [file] } });
-    fireEvent.click(screen.getByRole("button", { name: "上传 PDF 并分析" }));
 
     expect((await screen.findAllByRole("heading", { name: "LMR51430" })).length).toBeGreaterThan(0);
     expect(fetchMock).toHaveBeenCalledTimes(4);
@@ -2739,7 +2673,6 @@ describe("Workspace", () => {
 
     const file = new File(["pdf"], "slow.pdf", { type: "application/pdf" });
     fireEvent.change(screen.getByLabelText("上传数据手册 PDF"), { target: { files: [file] } });
-    fireEvent.click(screen.getByRole("button", { name: "上传 PDF 并分析" }));
 
     expect(await screen.findByText("Intelligent Analysis")).toBeInTheDocument();
     expect(
@@ -2825,7 +2758,6 @@ describe("Workspace", () => {
 
     const file = new File(["pdf"], "slow-progress.pdf", { type: "application/pdf" });
     fireEvent.change(screen.getByLabelText("上传数据手册 PDF"), { target: { files: [file] } });
-    fireEvent.click(screen.getByRole("button", { name: "上传 PDF 并分析" }));
 
     expect(
       await screen.findByText("解析时间比预期更长，但任务还在后台继续。你不需要重传 PDF，可以继续等待当前任务。")
@@ -2862,7 +2794,6 @@ describe("Workspace", () => {
 
     const file = new File(["pdf"], "slow.pdf", { type: "application/pdf" });
     fireEvent.change(screen.getByLabelText("上传数据手册 PDF"), { target: { files: [file] } });
-    fireEvent.click(screen.getByRole("button", { name: "上传 PDF 并分析" }));
 
     fireEvent.click(await screen.findByRole("button", { name: "继续等待当前任务" }));
 
@@ -2908,7 +2839,6 @@ describe("Workspace", () => {
 
     const file = new File(["pdf"], "slow.pdf", { type: "application/pdf" });
     fireEvent.change(screen.getByLabelText("上传数据手册 PDF"), { target: { files: [file] } });
-    fireEvent.click(screen.getByRole("button", { name: "上传 PDF 并分析" }));
 
     const resumeButton = await screen.findByRole("button", { name: "继续等待当前任务" });
 
@@ -2963,7 +2893,6 @@ describe("Workspace", () => {
 
     const file = new File(["pdf"], "slow.pdf", { type: "application/pdf" });
     fireEvent.change(screen.getByLabelText("上传数据手册 PDF"), { target: { files: [file] } });
-    fireEvent.click(screen.getByRole("button", { name: "上传 PDF 并分析" }));
 
     fireEvent.click(await screen.findByRole("button", { name: "继续等待当前任务" }));
 
@@ -3046,12 +2975,10 @@ describe("Workspace", () => {
 
     const firstFile = new File(["pdf"], "lmr51430-datasheet.pdf", { type: "application/pdf" });
     fireEvent.change(screen.getByLabelText("上传数据手册 PDF"), { target: { files: [firstFile] } });
-    fireEvent.click(screen.getByRole("button", { name: "上传 PDF 并分析" }));
     expect(await screen.findByText("已接收文档 lmr51430-datasheet.pdf")).toBeInTheDocument();
 
     const secondFile = new File(["pdf"], "tps54302-datasheet.pdf", { type: "application/pdf" });
     fireEvent.change(screen.getByLabelText("上传数据手册 PDF"), { target: { files: [secondFile] } });
-    fireEvent.click(screen.getByRole("button", { name: "上传 PDF 并分析" }));
 
     expect(await screen.findByText("TPS54302 已完成真实解析。")).toBeInTheDocument();
 

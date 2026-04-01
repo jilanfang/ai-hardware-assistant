@@ -25,6 +25,10 @@ The current repo includes:
   - OpenAI `responses` PDF direct path for verified non-Gemini relay targets such as `gpt-4o` and `gpt-4.1`
   - image-rendered multimodal fallback for models that still lack verified relay PDF direct support
 - parser-assisted parameter extraction and evidence enhancement
+- category-aware parameter templates and device-class prompt shaping
+- RF knowledge injection and misread-trap guidance for RF-family categories
+- parameter provenance and trust-state tracking
+- reviewed-output aware export shaping
 - evidence generation and page jumps
 - grounded follow-up behavior
 - JSON, HTML, and CSV exports
@@ -66,6 +70,7 @@ Output:
 - extracted parameters
 - evidence-linked validation actions
 - grounded exports
+- explicit trust states around parameter review and current runtime path
 
 Current implementation status: shipped in first-pass form.
 
@@ -121,11 +126,12 @@ Current implementation status: shipped in first-pass form.
 5. `lib/server-analysis.ts` chooses:
    - `single`: identity + full report
    - `staged`: identity + fast parameters + full report + optional arbitration
-6. The UI polls for `processing`, `complete`, `partial`, or `failed`.
-7. The task thread renders progress, grounded results, and warnings.
-8. The user validates via evidence jumps.
-9. The user asks bounded follow-up questions or exports results.
-10. Core actions are recorded into audit events.
+6. Parameters are normalized against the current template, assigned trust status, and annotated with provenance where possible.
+7. The UI polls for `processing`, `complete`, `partial`, or `failed`.
+8. The task thread renders progress, grounded results, warnings, and runtime attribution.
+9. The user validates via evidence jumps and parameter confirmation/correction.
+10. The user asks bounded follow-up questions or exports results.
+11. Core actions are recorded into audit events.
 
 ## 7. Shared Trust Architecture
 
@@ -138,6 +144,15 @@ The system should make it possible to:
 - record user confirmation and correction actions
 - keep exports grounded in reviewed output
 
+The trust architecture also depends on several non-evidence primitives:
+
+- template-constrained parameter slots instead of freeform extraction only
+- device-class reading methods and knowledge injection for domain-heavy categories
+- explicit parameter trust states such as `confirmed`, `needs_review`, and `user_corrected`
+- provenance labels such as fast-pass, report-pass, reconciled, arbitrated, and user-corrected
+- runtime attribution for current `provider/model`, document path, and pipeline mode
+- staged conflict exposure instead of silent parameter merging
+
 This is the trust architecture for the current datasheet scene.
 
 ## 8. Current Limitations
@@ -145,6 +160,8 @@ This is the trust architecture for the current datasheet scene.
 - domestic relay models do not yet have a verified PDF direct path in this repo
 - extraction quality still depends on a mix of heuristic preparation and model interpretation
 - evidence rectangles are heuristic rather than native coordinates
+- parameter condition binding is still weaker than the current reading methodology requires
+- variant / package / family applicability is not yet a strong first-class result layer
 - auth, session, and audit storage are still single-node SQLite by design
 - task objects and export logic are still centered on the current datasheet-first product
 - benchmark quality is still scenario-driven and currently grounded on the UPF5755 reference case
@@ -157,6 +174,7 @@ The correct near-term direction is:
 - improve the shared evidence model for datasheet verification
 - keep the task-thread model narrow and coherent
 - strengthen parser and result-shaping quality for the existing scene
+- make trust mechanisms more explicit and more user-visible without broadening scope
 
 ## 10. Datasheet Scene Support Work
 
@@ -173,8 +191,9 @@ They are not the product goal by themselves.
 1. Finish the datasheet trust loop with better evidence precision and reliable grounded outputs.
 2. Keep the workspace shell stable while making the datasheet workflow easier to verify and reopen.
 3. Improve parser quality, parameter normalization, and degraded-state honesty.
-4. Tighten exports and follow-up behavior around reviewed outputs.
-5. Keep the single-server auth/audit/deploy path operationally boring before any infrastructure expansion.
+4. Strengthen parameter condition binding, applicability modeling, and review-needed exposure.
+5. Tighten exports and follow-up behavior around reviewed outputs.
+6. Keep the single-server auth/audit/deploy path operationally boring before any infrastructure expansion.
 
 ## 12. Technical Open Questions
 
@@ -182,3 +201,5 @@ They are not the product goal by themselves.
 - Should the current single-document datasheet scope stay fixed longer before any expansion?
 - Which export formats matter most once the datasheet trust loop is genuinely stable?
 - How much of the current `AnalysisResult` shape should be simplified or hardened for long-term datasheet-only use?
+- How explicit should runtime attribution become in the normal workspace surface versus advanced diagnostics?
+- Should parameter applicability be modeled first around conditions only, or around conditions plus variant/package scope together?
