@@ -1854,11 +1854,11 @@ export function Workspace({
   const prioritizedNavParameters = prioritizedParameters.slice(0, 5);
   const currentSuggestions = interactiveAnalysis ? suggestionPrompts(interactiveAnalysis) : [];
   const canAskFollowUp = Boolean(interactiveAnalysis);
-  const latestAssistantTextMessage =
-    [...messages]
-      .reverse()
-      .find((message): message is Extract<ChatMessage, { kind: "text"; role: "assistant" }> => message.kind === "text" && message.role === "assistant") ??
-    null;
+  const latestAssistantTextMessage = [...messages].reverse().find(
+    (message) => message.kind === "text" && message.role === "assistant"
+  );
+  const latestAssistantTextMessageContent =
+    latestAssistantTextMessage && "content" in latestAssistantTextMessage ? latestAssistantTextMessage.content : null;
   const reportEvidenceClaims = hasReportContent && (taskThread?.status === "complete" || taskThread?.status === "partial")
     ? [...(renderedAnalysis?.report?.risks ?? []), ...(renderedAnalysis?.report?.openQuestions ?? [])].filter(
         (claim) => claim.sourceType !== "review"
@@ -2092,7 +2092,7 @@ export function Workspace({
                 选择 PDF 或直接拖入
               </label>
               <p className="empty-dropzone-hint">支持单个 datasheet PDF，选中后立即开始分析，不需要再点第二个提交按钮。</p>
-              {latestAssistantTextMessage ? <p className="empty-dropzone-error">{latestAssistantTextMessage.content}</p> : null}
+              {latestAssistantTextMessageContent ? <p className="empty-dropzone-error">{latestAssistantTextMessageContent}</p> : null}
             </div>
           </section>
         ) : (

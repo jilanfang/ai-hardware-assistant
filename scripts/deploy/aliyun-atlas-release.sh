@@ -68,7 +68,7 @@ rsync -az --delete --delete-excluded \
   -e "${RSYNC_RSH}" \
   "${REPO_ROOT}/" "${REMOTE}:${REMOTE_APP_DIR}/"
 
-ssh "${SSH_OPTS[@]}" "${REMOTE}" "bash -s" <<EOF
+ssh "${SSH_OPTS[@]}" "${REMOTE}" "REMOTE_APP_DIR='${REMOTE_APP_DIR}' bash -s" <<'EOF'
 set -euo pipefail
 
 cd "${REMOTE_APP_DIR}"
