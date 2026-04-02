@@ -93,6 +93,9 @@ For the current recommended dual-stage datasheet path when `ANALYSIS_PIPELINE_MO
 - full report:
   - `ANALYSIS_REPORT_LLM_PROVIDER=lyapi`
   - `ANALYSIS_REPORT_LLM_MODEL=gemini-3.1-pro-preview`
+- bounded follow-up:
+  - `ANALYSIS_FOLLOW_UP_LLM_PROVIDER=lyapi`
+  - `ANALYSIS_FOLLOW_UP_LLM_MODEL=gemini-3-flash-preview`
 - arbitration:
   - `ANALYSIS_ARBITRATION_LLM_PROVIDER=lyapi`
   - `ANALYSIS_ARBITRATION_LLM_MODEL=deepseek-v3.2`

@@ -371,8 +371,10 @@ describe("export builders", () => {
     expect(html.content).toContain("封装散热、焊盘接地和贴片工艺需要单独复核。");
     expect(html.content).toContain("最先看哪几个参数？");
     expect(html.content).toContain("不要把 Absolute Maximum 当正常工作条件。");
-    expect(html.content).toContain("custom/gpt-4.1");
-    expect(html.content).toContain("pdf_direct");
+    expect(html.content).toContain("处理记录");
+    expect(html.content).toContain("PDF direct");
+    expect(html.content).toContain("处理阶段：single");
+    expect(html.content).not.toContain("custom/gpt-4.1");
   });
 
   test("uses the same status semantics across pdf, word, html, and json exports", () => {

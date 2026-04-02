@@ -12,6 +12,7 @@ import {
 import { answerAnalysisFollowUp } from "@/lib/server-analysis";
 
 export const runtime = "nodejs";
+const SAFE_FOLLOW_UP_ERROR = "follow-up temporarily unavailable";
 
 export async function POST(request: Request) {
   const user = getAuthenticatedUser(request);
@@ -92,7 +93,10 @@ export async function POST(request: Request) {
   } catch (error) {
     return NextResponse.json(
       {
-        error: error instanceof Error ? error.message : "follow-up failed"
+        error:
+          error instanceof Error && (error.message === "job not found" || error.message === "full report not ready")
+            ? error.message
+            : SAFE_FOLLOW_UP_ERROR
       },
       { status: 500 }
     );

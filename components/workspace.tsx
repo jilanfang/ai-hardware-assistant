@@ -302,7 +302,6 @@ function runtimePathLabel(sourceAttribution?: AnalysisResult["sourceAttribution"
     return null;
   }
 
-  const target = sourceAttribution.llmTarget;
   const documentPath =
     sourceAttribution.documentPath === "pdf_direct"
       ? "PDF direct"
@@ -313,7 +312,7 @@ function runtimePathLabel(sourceAttribution?: AnalysisResult["sourceAttribution"
   const statusSuffix =
     status === "partial" ? "（结果未完成）" : status === "failed" ? "（诊断信息）" : "";
 
-  return `运行路径：${target} · ${documentPath} · ${pipelineMode}${statusSuffix}`;
+  return `处理记录：${documentPath} · ${pipelineMode}${statusSuffix}`;
 }
 
 function parameterStatusWeight(status: ParameterItem["status"]) {
@@ -406,6 +405,30 @@ function preferredEvidenceForAnalysis(analysis: AnalysisResult | null | undefine
   }
 
   return analysis.evidence[0] ?? null;
+}
+
+function fallbackEvidenceForParameter(item: ParameterItem, analysis: AnalysisResult | null | undefined): EvidenceTarget | null {
+  if (!analysis) {
+    return null;
+  }
+
+  const matchedEvidence = analysis.evidence.find((entry) => entry.id === item.evidenceId);
+  if (matchedEvidence) {
+    return matchedEvidence;
+  }
+
+  const fallbackPage = item.provenance?.sourcePages.find((page) => Number.isFinite(page) && page > 0);
+  if (!fallbackPage) {
+    return null;
+  }
+
+  return {
+    id: `fallback-${item.evidenceId}`,
+    label: displayParameterName(item.name),
+    page: fallbackPage,
+    quote: item.provenance?.sourceQuote ?? "",
+    rect: { left: 12, top: 16, width: 44, height: 10 }
+  };
 }
 
 function correctedParameterCount(analysis: AnalysisResult | null) {
@@ -706,6 +729,7 @@ const MAX_POLL_ATTEMPTS = 90;
 const GENERIC_ANALYSIS_FAILURE_MESSAGE = "当前解析失败，请稍后重试。";
 const MISSING_JOB_FAILURE_MESSAGE = "后台任务记录不存在，可能已被清理。请重新上传 PDF 发起新任务。";
 const WRITEBACK_FAILURE_MESSAGE = "写回失败，当前改动仅保留在本地界面。请重试。";
+const SAFE_FOLLOW_UP_FAILURE_MESSAGE = "继续提问失败，请稍后重试。";
 
 type WorkspaceProps = {
   pollIntervalMs?: number;
@@ -1484,7 +1508,10 @@ export function Workspace({
           id: `assistant-${Date.now()}`,
           role: "assistant",
           kind: "text",
-          content: error instanceof Error ? error.message : "追问失败，请稍后重试。"
+          content:
+            error instanceof Error && error.message === "missing current job id"
+              ? "当前任务还没有可追问的上下文，请稍后再试。"
+              : SAFE_FOLLOW_UP_FAILURE_MESSAGE
         }
       ]);
     } finally {
@@ -1568,7 +1595,7 @@ export function Workspace({
   }
 
   function handleExportCsv() {
-    if (!analysis || exportableParameterCount === 0) return;
+    if (!analysis) return;
     handleExport("export_csv", buildParameterTable);
   }
 
@@ -2009,7 +2036,7 @@ export function Workspace({
             {parameterInteractiveAnalysis ? (
               <div className="parameter-nav-list">
                 {prioritizedNavParameters.map((item) => {
-                  const evidence = parameterInteractiveAnalysis.evidence.find((entry) => entry.id === item.evidenceId);
+                  const evidence = fallbackEvidenceForParameter(item, parameterInteractiveAnalysis);
                   return (
                     <button
                       key={`nav-${item.name}`}
@@ -2272,7 +2299,7 @@ export function Workspace({
                           <span className="message-kicker">Parameter review</span>
                           <strong>关键参数表</strong>
                           {prioritizedParameters.map((item) => {
-                            const evidence = taskInteractiveAnalysis.evidence.find((entry) => entry.id === item.evidenceId);
+                            const evidence = fallbackEvidenceForParameter(item, taskInteractiveAnalysis);
                             const isEditing = editingParameter === item.name;
                             const writeback = writebackState[parameterWritebackKey(item.name, item.evidenceId)];
                             const rowKey = parameterWritebackKey(item.name, item.evidenceId);
@@ -2308,7 +2335,6 @@ export function Workspace({
                                   <button
                                     type="button"
                                     className="inline-action"
-                                    disabled={!evidence}
                                     onClick={() => {
                                       setFocusedEvidence(evidence ?? null);
                                       flashParameterRow(item);
@@ -2378,13 +2404,14 @@ export function Workspace({
                           <span className="message-kicker">Export</span>
                           <div className="export-header">
                             <strong>导出给下游继续使用</strong>
-                            <span>{exportableParameterCount > 0 ? "CSV 可导出" : "CSV 暂不可导出"}</span>
+                            <span>CSV 可导出</span>
                           </div>
                           <p className="export-note">
-                            CSV 只包含已确认或已修正的参数，避免把待确认值直接写入下游。
+                            CSV 会保留当前状态列，待确认参数也会一并导出，方便下游继续 review。
                           </p>
                           <div className="export-stats">
                             <span>{`已确认参数 ${exportableParameterCount} 个`}</span>
+                            <span>{`待确认参数 ${reviewCount} 个`}</span>
                             <span>{`人工修正 ${manualCorrectionCount} 次`}</span>
                           </div>
                           {correctionCount > 0 ? (
@@ -2401,14 +2428,10 @@ export function Workspace({
                               type="button"
                               className="inline-action"
                               onClick={handleExportCsv}
-                              disabled={exportableParameterCount === 0}
                             >
-                              导出已确认参数 CSV
+                              导出参数 CSV
                             </button>
                           </div>
-                          {exportableParameterCount === 0 ? (
-                            <p className="export-note">先确认至少一个参数，再导出干净的参数表。</p>
-                          ) : null}
                           {exportNotice ? <p className="export-success">{exportNotice}</p> : null}
                         </div>
                       </div>

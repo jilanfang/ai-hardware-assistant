@@ -204,6 +204,11 @@ function buildAnalysisResult(overrides: Partial<AnalysisResult> = {}): AnalysisR
   };
 }
 
+function mockDownloadObjectUrl() {
+  const createObjectUrl = vi.spyOn(URL, "createObjectURL").mockImplementation(() => "blob:mock-download");
+  return { createObjectUrl };
+}
+
 describe("Workspace", () => {
   test("shows the signed-in user and can log out from the rail", async () => {
     fetchMock.mockResolvedValueOnce({
@@ -423,7 +428,7 @@ describe("Workspace", () => {
     expect(screen.getAllByText("输入电压").length).toBeGreaterThan(0);
     expect(screen.queryByRole("heading", { name: "快速总结" })).not.toBeInTheDocument();
     expect(screen.queryByRole("button", { name: "下载报告 Word" })).not.toBeInTheDocument();
-    expect(screen.getByText("运行路径：mock/gpt-4.1 · PDF direct · staged")).toBeInTheDocument();
+    expect(screen.getByText("处理记录：PDF direct · staged")).toBeInTheDocument();
     expect(screen.queryByText("运行路径：未记录模型 · 路径未知 · unknown")).not.toBeInTheDocument();
 
     const riskBlock = screen.getByText("风险与待确认项").closest(".dialog-message-block");
@@ -445,7 +450,7 @@ describe("Workspace", () => {
     expect(screen.queryByText("上传 datasheet PDF")).not.toBeInTheDocument();
   });
 
-  test("does not render the runtime path note when completed source attribution is missing llmTarget", async () => {
+  test("does not render the processing note when completed source attribution is missing llmTarget", async () => {
     fetchMock.mockResolvedValueOnce({
       ok: true,
       json: async () => ({ jobs: [] })
@@ -479,7 +484,7 @@ describe("Workspace", () => {
 
     expect(await screen.findByText("器件身份")).toBeInTheDocument();
     expect(screen.getByText("LMR51430 是一颗 DC-DC 电源芯片。")).toBeInTheDocument();
-    expect(screen.queryByText(/^运行路径：/)).not.toBeInTheDocument();
+    expect(screen.queryByText(/^处理记录：/)).not.toBeInTheDocument();
     expect(screen.queryByText("运行路径：未记录模型 · 路径未知 · unknown")).not.toBeInTheDocument();
   });
 
@@ -517,7 +522,7 @@ describe("Workspace", () => {
 
     expect(await screen.findByText("怎么读这份 Datasheet")).toBeInTheDocument();
     expect(screen.getByText("先看首页、特性列表和工作条件。")).toBeInTheDocument();
-    expect(screen.queryByText(/^运行路径：/)).not.toBeInTheDocument();
+    expect(screen.queryByText(/^处理记录：/)).not.toBeInTheDocument();
   });
 
   test("shows fast-parameter middle state without summary, export, or follow-up", async () => {
@@ -589,7 +594,7 @@ describe("Workspace", () => {
     expect(screen.getAllByText("输入电压").length).toBeGreaterThan(0);
     expect(screen.queryByText("Summary")).not.toBeInTheDocument();
     expect(screen.queryByText("最终报告")).not.toBeInTheDocument();
-    expect(screen.queryByRole("button", { name: "导出已确认参数 CSV" })).not.toBeInTheDocument();
+    expect(screen.queryByRole("button", { name: "导出参数 CSV" })).not.toBeInTheDocument();
     expect(screen.queryByLabelText("继续提问")).not.toBeInTheDocument();
     expect(screen.queryByRole("button", { name: "总结这份数据手册" })).not.toBeInTheDocument();
   });
@@ -1115,7 +1120,7 @@ describe("Workspace", () => {
     });
   });
 
-  test("disables locating evidence when the parameter points to a missing evidence entry", async () => {
+  test("falls back to provenance pages when the parameter points to a missing evidence entry", async () => {
     fetchMock.mockResolvedValueOnce({
       ok: true,
       json: async () => ({ jobs: [] })
@@ -1124,7 +1129,21 @@ describe("Workspace", () => {
       status: "complete",
       warnings: [],
       analysis: buildAnalysisResult({
-        keyParameters: [{ name: "Package", value: "SOT-23-THN", evidenceId: "ev-missing", status: "needs_review" }],
+        keyParameters: [
+          {
+            name: "Package",
+            value: "SOT-23-THN",
+            evidenceId: "ev-missing",
+            status: "needs_review",
+            provenance: {
+              extractedBy: "gemini_report_pass",
+              confidence: "review",
+              confidenceReason: "报告命中但缺少精确框。",
+              sourcePages: [4],
+              sourceQuote: "Package options SOT-23-THN"
+            }
+          }
+        ],
         evidence: []
       })
     });
@@ -1139,8 +1158,9 @@ describe("Workspace", () => {
     const packageRow = packageLabel?.closest(".dialog-parameter-row");
     expect(packageRow).not.toBeNull();
     const locateButton = within(packageRow as HTMLElement).getByRole("button", { name: "定位到证据" });
-    expect(locateButton).toBeDisabled();
-    expect(screen.getByTitle("PDF 预览")).toHaveAttribute("src", "/api/analysis/file?jobId=job-1#page=1");
+    expect(locateButton).toBeEnabled();
+    fireEvent.click(locateButton);
+    expect(screen.getByTitle("PDF 预览")).toHaveAttribute("src", "/api/analysis/file?jobId=job-1#page=4");
   });
 
   test("updates the preview total page count from analyzed document pages instead of the upload default", async () => {
@@ -1470,7 +1490,7 @@ describe("Workspace", () => {
     expect(screen.getByText("Sources: Datasheet, Public")).toBeInTheDocument();
   });
 
-  test("shows the server follow-up error instead of any local canned fallback when the follow-up api fails", async () => {
+  test("shows a product-safe follow-up error instead of exposing provider internals when the follow-up api fails", async () => {
     fetchMock.mockResolvedValueOnce({
       ok: true,
       json: async () => ({ jobs: [] })
@@ -1494,7 +1514,7 @@ describe("Workspace", () => {
     fetchMock.mockResolvedValueOnce({
       ok: false,
       json: async () => ({
-        error: "full report not ready"
+        error: "gemini request failed: 520"
       })
     });
 
@@ -1507,7 +1527,8 @@ describe("Workspace", () => {
     fireEvent.change(composer, { target: { value: "这颗芯片最重要的限制条件是什么？" } });
     fireEvent.click(screen.getByRole("button", { name: "发送问题" }));
 
-    expect(await screen.findByText("full report not ready")).toBeInTheDocument();
+    expect(await screen.findByText("继续提问失败，请稍后重试。")).toBeInTheDocument();
+    expect(screen.queryByText("gemini request failed: 520")).not.toBeInTheDocument();
     expect(screen.queryByText("基于当前 datasheet 总结")).not.toBeInTheDocument();
   });
 
@@ -2374,7 +2395,7 @@ describe("Workspace", () => {
       await screen.findByText("仅提取到有限文本，以下结果适合初步分析，不适合直接下结论。")
     ).toBeInTheDocument();
     expect(screen.getByText("部分结果")).toBeInTheDocument();
-    expect(screen.getByText("运行路径：custom/gpt-4.1 · PDF direct · staged（结果未完成）")).toBeInTheDocument();
+    expect(screen.getByText("处理记录：PDF direct · staged（结果未完成）")).toBeInTheDocument();
     expect(
       screen.queryByText("当前文档只提取到部分文本，先给出可验证的初步分析结果。")
     ).not.toBeInTheDocument();
@@ -2412,7 +2433,7 @@ describe("Workspace", () => {
     expect(
       screen.getAllByText("当前 PDF 未能提取到可用文本，请先上传带文本层的数据手册。").length
     ).toBeGreaterThan(0);
-    expect(screen.getByText("运行路径：custom/gpt-4.1 · 路径未知 · single（诊断信息）")).toBeInTheDocument();
+    expect(screen.getByText("处理记录：路径未知 · single（诊断信息）")).toBeInTheDocument();
     expect(screen.getByText("SCANNED 当前未能提取到可用文本。")).toBeInTheDocument();
     expect(
       screen.getByText("建议优先检查 PDF 是否为扫描件，或换一份带文本层的数据手册后重试。")
@@ -2460,15 +2481,15 @@ describe("Workspace", () => {
     fireEvent.change(screen.getByLabelText("上传数据手册 PDF"), { target: { files: [file] } });
 
     expect(await screen.findByText("导出给下游继续使用")).toBeInTheDocument();
-    expect(screen.getByText("CSV 只包含已确认或已修正的参数，避免把待确认值直接写入下游。")).toBeInTheDocument();
+    expect(screen.getByText("CSV 会保留当前状态列，待确认参数也会一并导出，方便下游继续 review。")).toBeInTheDocument();
     expect(screen.getByText("已确认参数 1 个")).toBeInTheDocument();
     expect(screen.getByText("人工修正 0 次")).toBeInTheDocument();
     expect(screen.getByText("CSV 可导出")).toBeInTheDocument();
     expect(screen.getByRole("button", { name: "导出当前任务 JSON" })).toBeInTheDocument();
     expect(screen.getByRole("button", { name: "导出当前任务 HTML" })).toBeInTheDocument();
-    expect(screen.getByRole("button", { name: "导出已确认参数 CSV" })).toBeInTheDocument();
+    expect(screen.getByRole("button", { name: "导出参数 CSV" })).toBeInTheDocument();
 
-    fireEvent.click(screen.getByRole("button", { name: "导出已确认参数 CSV" }));
+    fireEvent.click(screen.getByRole("button", { name: "导出参数 CSV" }));
 
     expect(await screen.findByText("已导出 LMR51430-参数表.csv，可继续用于下游整理。")).toBeInTheDocument();
     expect(fetchMock).toHaveBeenCalledWith(
@@ -2479,7 +2500,8 @@ describe("Workspace", () => {
     );
   });
 
-  test("disables csv export until the user confirms at least one parameter", async () => {
+  test("keeps csv export available even when all parameters still need review", async () => {
+    const { createObjectUrl } = mockDownloadObjectUrl();
     fetchMock.mockResolvedValueOnce({
       ok: true,
       json: async () => ({ jobs: [] })
@@ -2508,11 +2530,17 @@ describe("Workspace", () => {
     const file = new File(["pdf"], "lmr51430-datasheet.pdf", { type: "application/pdf" });
     fireEvent.change(screen.getByLabelText("上传数据手册 PDF"), { target: { files: [file] } });
 
-    expect(await screen.findByRole("button", { name: "导出已确认参数 CSV" })).toBeDisabled();
-    expect(screen.getByText("先确认至少一个参数，再导出干净的参数表。")).toBeInTheDocument();
+    expect(await screen.findByRole("button", { name: "导出参数 CSV" })).toBeEnabled();
     expect(screen.getByText("已确认参数 0 个")).toBeInTheDocument();
+    expect(screen.getByText("待确认参数 1 个")).toBeInTheDocument();
     expect(screen.getByText("人工修正 0 次")).toBeInTheDocument();
-    expect(screen.getByText("CSV 暂不可导出")).toBeInTheDocument();
+    expect(screen.getByText("CSV 可导出")).toBeInTheDocument();
+    expect(screen.getByText("CSV 会保留当前状态列，待确认参数也会一并导出，方便下游继续 review。")).toBeInTheDocument();
+
+    fireEvent.click(screen.getByRole("button", { name: "导出参数 CSV" }));
+
+    expect(await screen.findByText("已导出 LMR51430-参数表.csv，可继续用于下游整理。")).toBeInTheDocument();
+    expect(createObjectUrl).toHaveBeenCalled();
   });
 
   test("updates export stats immediately after an edit action", async () => {

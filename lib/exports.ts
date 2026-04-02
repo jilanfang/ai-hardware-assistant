@@ -22,6 +22,21 @@ function exportStatusLabel(status: AnalysisDocumentViewModel["parameterRows"][nu
   return "待确认";
 }
 
+function exportRuntimeSummary(sourceAttribution: AnalysisResult["sourceAttribution"] | null) {
+  if (!sourceAttribution?.documentPath || !sourceAttribution?.pipelineMode) {
+    return null;
+  }
+
+  const documentPath =
+    sourceAttribution.documentPath === "pdf_direct"
+      ? "PDF direct"
+      : sourceAttribution.documentPath === "image_fallback"
+        ? "Image fallback"
+        : "路径未知";
+
+  return [`文档路径：${documentPath}`, `处理阶段：${sourceAttribution.pipelineMode}`].join("\n");
+}
+
 export function buildAnalysisDocumentViewModel(
   pdf: UploadedPdf,
   analysis: AnalysisResult,
@@ -65,16 +80,7 @@ function reportBody(viewModel: AnalysisDocumentViewModel, analysis: AnalysisResu
   const parameterLines = viewModel.parameterRows
     .map((item) => `- ${item.name}: ${item.value}（${item.statusLabel}）`)
     .join("\n");
-  const runtimeAttribution = viewModel.sourceAttribution
-    ? [
-        viewModel.sourceAttribution.mode ? `模式：${viewModel.sourceAttribution.mode}` : null,
-        viewModel.sourceAttribution.llmTarget ? `模型：${viewModel.sourceAttribution.llmTarget}` : null,
-        viewModel.sourceAttribution.documentPath ? `文档路径：${viewModel.sourceAttribution.documentPath}` : null,
-        viewModel.sourceAttribution.pipelineMode ? `Pipeline：${viewModel.sourceAttribution.pipelineMode}` : null
-      ]
-        .filter(Boolean)
-        .join("\n")
-    : null;
+  const runtimeAttribution = exportRuntimeSummary(viewModel.sourceAttribution);
   const reportSections = viewModel.reportSections.length
     ? viewModel.reportSections.map((section) => `${section.title}\n${section.body}`).join("\n\n")
     : null;
@@ -192,12 +198,12 @@ export function buildAnalysisHtml(
     </section>
     ${viewModel.sourceAttribution ? `
     <section>
-      <h2>运行路径</h2>
+      <h2>处理记录</h2>
       <div class="card">
-        <p>${escapeHtml(viewModel.sourceAttribution.mode ?? "")}</p>
-        <p>${escapeHtml(viewModel.sourceAttribution.llmTarget ?? "")}</p>
-        <p>${escapeHtml(viewModel.sourceAttribution.documentPath ?? "")}</p>
-        <p>${escapeHtml(viewModel.sourceAttribution.pipelineMode ?? "")}</p>
+        ${exportRuntimeSummary(viewModel.sourceAttribution)
+          ?.split("\n")
+          .map((line) => `<p>${escapeHtml(line)}</p>`)
+          .join("") ?? ""}
       </div>
     </section>` : ""}
     <section>

@@ -93,11 +93,13 @@ label:has(input:focus-visible) {
 }
 
 .app-shell {
+  height: 100vh;
   min-height: 100vh;
   display: grid;
   grid-template-columns: 92px minmax(0, 1.28fr) minmax(380px, 0.92fr);
   gap: 12px;
   padding: 16px;
+  overflow: hidden;
 }
 
 .app-shell.has-task.is-sidebar-open {
@@ -125,7 +127,8 @@ label:has(input:focus-visible) {
 .canvas-column,
 .dialog-column {
   min-width: 0;
-  min-height: calc(100vh - 28px);
+  min-height: calc(100vh - 32px);
+  height: calc(100vh - 32px);
 }
 
 .rail-column,
@@ -342,6 +345,9 @@ label:has(input:focus-visible) {
 }
 
 .canvas-column {
+  position: sticky;
+  top: 16px;
+  align-self: start;
   border-radius: var(--radius-xl);
   overflow: hidden;
   background:
@@ -787,6 +793,10 @@ label:has(input:focus-visible) {
   display: grid;
 }
 
+.pdf-canvas {
+  grid-template-rows: auto minmax(0, 1fr);
+}
+
 .canvas-empty {
   place-items: stretch;
   padding: var(--space-6);
@@ -846,6 +856,10 @@ label:has(input:focus-visible) {
   padding: var(--space-5) var(--space-6);
   background: rgba(248, 251, 254, 0.52);
   border-bottom: 1px solid rgba(255, 255, 255, 0.34);
+  position: sticky;
+  top: 0;
+  z-index: 2;
+  backdrop-filter: blur(12px);
 }
 
 .canvas-topbar-copy {
@@ -882,6 +896,8 @@ label:has(input:focus-visible) {
   display: grid;
   place-items: center;
   padding: 28px;
+  overflow: auto;
+  min-height: 0;
 }
 
 .pdf-sheet {
@@ -911,7 +927,7 @@ label:has(input:focus-visible) {
 
 .messages {
   overflow: auto;
-  padding: var(--space-6);
+  padding: var(--space-6) var(--space-6) 320px;
   align-content: start;
   gap: var(--space-5);
   background: linear-gradient(180deg, rgba(249, 251, 253, 0.86) 0%, rgba(242, 246, 250, 0.96) 100%);
@@ -960,7 +976,7 @@ label:has(input:focus-visible) {
 .dialog-thread-card {
   display: grid;
   gap: var(--space-5);
-  padding: 24px;
+  padding: 26px;
   border: 1px solid rgba(220, 228, 238, 0.92);
   border-radius: 28px;
   background: rgba(255, 255, 255, 0.84);
@@ -1012,8 +1028,9 @@ label:has(input:focus-visible) {
 }
 
 .task-timeline {
+  display: grid;
   gap: var(--space-3);
-  padding-top: var(--space-2);
+  padding: var(--space-2) 2px 0;
 }
 
 .timeline-step {
@@ -1021,6 +1038,7 @@ label:has(input:focus-visible) {
   grid-template-columns: 18px minmax(0, 1fr);
   gap: var(--space-3);
   align-items: start;
+  padding: 4px 0;
 }
 
 .timeline-marker {
@@ -1064,7 +1082,7 @@ label:has(input:focus-visible) {
 .dialog-inline-note {
   display: grid;
   gap: var(--space-2);
-  padding: 14px 16px;
+  padding: 16px 18px;
   border: 1px solid rgba(212, 221, 232, 0.92);
   background: rgba(247, 249, 252, 0.92);
 }
@@ -1213,14 +1231,14 @@ label:has(input:focus-visible) {
 .composer-card {
   display: grid;
   gap: var(--space-3);
-  margin: 0;
-  padding: 20px;
-  border-top: 1px solid rgba(223, 231, 240, 0.94);
+  margin: 0 18px 18px;
   min-height: 250px;
   align-content: start;
-  position: sticky;
+  position: absolute;
+  left: 0;
+  right: 0;
   bottom: 0;
-  z-index: 1;
+  z-index: 4;
   box-shadow: 0 -18px 32px rgba(233, 239, 246, 0.96);
   backdrop-filter: blur(18px);
   padding: 18px;
@@ -1246,7 +1264,7 @@ label:has(input:focus-visible) {
   align-content: center;
   justify-items: start;
   gap: var(--space-4);
-  padding: 24px;
+  padding: 26px 28px;
   border-radius: 24px;
   border: 1px dashed rgba(23, 72, 107, 0.24);
   background: rgba(249, 251, 253, 0.82);
@@ -1413,25 +1431,32 @@ label:has(input:focus-visible) {
 
 @media (max-width: 1400px) {
   .app-shell {
+    height: auto;
     grid-template-columns: 92px minmax(0, 1.18fr) minmax(340px, 0.92fr);
+    overflow: visible;
   }
 }
 
 @media (max-width: 1180px) {
   .app-shell {
+    height: auto;
     grid-template-columns: 92px minmax(0, 1fr);
+    overflow: visible;
   }
 }
 
 @media (max-width: 1024px) {
   .app-shell {
+    height: auto;
     grid-template-columns: 1fr;
+    overflow: visible;
   }
 
   .rail-column,
   .canvas-column,
   .dialog-column {
     min-height: auto;
+    height: auto;
     margin-left: 0;
   }
 
@@ -1469,6 +1494,10 @@ label:has(input:focus-visible) {
     margin-top: 12px;
   }
 
+  .canvas-column {
+    position: static;
+  }
+
   .canvas-empty,
   .pdf-canvas {
     min-height: 320px;
@@ -1482,6 +1511,7 @@ label:has(input:focus-visible) {
 
   .messages {
     min-height: 260px;
+    padding-bottom: 300px;
   }
 
   .login-stage {
@@ -1543,6 +1573,12 @@ label:has(input:focus-visible) {
     padding: var(--space-5);
   }
 
+  .dialog-inline-note,
+  .composer-upload-surface {
+    padding-left: var(--space-5);
+    padding-right: var(--space-5);
+  }
+
   .empty-dropzone-inner,
   .login-hero-panel h1,
   .login-copy h1 {
@@ -1573,6 +1609,8 @@ label:has(input:focus-visible) {
 
   .composer-card {
     min-height: 250px;
+    position: sticky;
+    margin: 0;
   }
 
   .canvas-column {

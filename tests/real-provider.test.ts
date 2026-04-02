@@ -234,6 +234,133 @@ describe("OpenAiLlmProvider", () => {
     expect(body.input?.[0]?.content?.some((part: { type?: string }) => part.type === "input_file")).toBe(true);
   });
 
+  test("keeps follow-up bounded to current report context instead of re-uploading the pdf for gpt-4o", async () => {
+    fetchMock.mockResolvedValue({
+      ok: true,
+      json: async () => ({
+        output: [
+          {
+            type: "message",
+            content: [
+              {
+                type: "output_text",
+                text: JSON.stringify({
+                  answer: "先看频段覆盖和输出功率。",
+                  claims: [
+                    {
+                      id: "follow-bands",
+                      label: "Supported bands",
+                      value: "5.15 GHz to 5.85 GHz",
+                      title: "Supported bands",
+                      body: "先确认频段覆盖是否满足目标制式。",
+                      sourceType: "datasheet",
+                      citations: [
+                        {
+                          id: "cite-bands",
+                          sourceType: "datasheet",
+                          page: 2,
+                          quote: "5.15 to 5.85GHz"
+                        }
+                      ]
+                    }
+                  ],
+                  usedSources: ["datasheet"],
+                  followUpWarnings: []
+                })
+              }
+            ]
+          }
+        ]
+      })
+    });
+
+    const provider = new OpenAiLlmProvider({
+      apiKey: "test-key",
+      model: "gpt-4o",
+      baseUrl: "https://example.com"
+    });
+    const renderMock = vi.mocked(renderPdfPagesToImages);
+    const renderCallCountBefore = renderMock.mock.calls.length;
+
+    const response = await provider.answerFollowUp({
+      pdfBuffer: new Uint8Array([1, 2, 3, 4]),
+      fileName: "202307UPF5755 datasheet V1.2.pdf",
+      taskName: "UPF5755",
+      chipName: "UPF5755",
+      preparation: createPreparation({
+        identityCandidates: {
+          sku: "UPF5755",
+          manufacturer: "UPMicro",
+          documentTitle: "5.15 to 5.85GHz 802.11ax WiFi Front End Module",
+          aliases: []
+        }
+      }),
+      identity: {
+        canonicalPartNumber: "UPF5755",
+        manufacturer: "UPMicro",
+        deviceClass: "WiFi Front End Module",
+        parameterTemplateId: "wifi",
+        focusChecklist: [],
+        publicContext: [],
+        confidence: 0.96
+      },
+      parameterTemplate: getParameterTemplate("wifi"),
+      report: {
+        executiveSummary: "UPF5755 是一颗 5GHz WiFi FEM。",
+        deviceIdentity: {
+          canonicalPartNumber: "UPF5755",
+          manufacturer: "UPMicro",
+          deviceClass: "WiFi Front End Module",
+          parameterTemplateId: "wifi",
+          confidence: 0.96
+        },
+        keyParameters: [
+          {
+            id: "report-bands",
+            label: "Supported bands",
+            value: "5.15 GHz to 5.85 GHz",
+            title: "Supported bands",
+            body: "覆盖 5GHz WiFi 频段。",
+            sourceType: "datasheet",
+            citations: [
+              {
+                id: "report-cite-bands",
+                sourceType: "datasheet",
+                page: 2,
+                quote: "5.15 to 5.85GHz"
+              }
+            ]
+          }
+        ],
+        designFocus: [],
+        risks: [],
+        openQuestions: [],
+        publicNotes: [],
+        citations: [],
+        sections: [],
+        claims: []
+      },
+      keyParameters: [
+        {
+          name: "Supported bands",
+          value: "5.15 GHz to 5.85 GHz",
+          evidenceId: "ev-bands",
+          status: "confirmed"
+        }
+      ],
+      publicContext: [],
+      question: "这颗器件最先看什么？"
+    });
+
+    expect(response.answer).toContain("频段覆盖");
+    expect(renderMock.mock.calls.length).toBe(renderCallCountBefore);
+    expect(fetchMock).toHaveBeenCalledTimes(1);
+    const [url, init] = fetchMock.mock.calls[0];
+    expect(String(url)).toContain("/v1/responses");
+    const body = JSON.parse(String(init?.body ?? "{}"));
+    expect(body.input?.[0]?.content?.some((part: { type?: string }) => part.type === "input_file")).toBe(false);
+  });
+
   test("normalizes teaching-style report payloads and falls back to local datasheet evidence", async () => {
     fetchMock.mockResolvedValue({
       ok: true,
@@ -600,7 +727,12 @@ describe("OpenAiLlmProvider", () => {
       taskName: "test",
       chipName: "SKY85755-11",
       preparation: createPreparation({
-        fileName: "sky85755-11.pdf",
+        documentMeta: {
+          fileName: "sky85755-11.pdf",
+          pageCount: 99,
+          textCoverage: 42,
+          extractionMethod: "none"
+        },
         pagePackets: [],
         localCandidates: []
       }),
@@ -696,7 +828,12 @@ describe("OpenAiLlmProvider", () => {
       taskName: "test",
       chipName: "LMR51430",
       preparation: createPreparation({
-        fileName: "lmr51430.pdf",
+        documentMeta: {
+          fileName: "lmr51430.pdf",
+          pageCount: 99,
+          textCoverage: 42,
+          extractionMethod: "none"
+        },
         pagePackets: [],
         localCandidates: []
       }),
@@ -777,7 +914,12 @@ describe("OpenAiLlmProvider", () => {
       taskName: "test",
       chipName: "SKY85755-11",
       preparation: createPreparation({
-        fileName: "sky85755-11.pdf",
+        documentMeta: {
+          fileName: "sky85755-11.pdf",
+          pageCount: 99,
+          textCoverage: 42,
+          extractionMethod: "none"
+        },
         pagePackets: [],
         localCandidates: []
       }),
@@ -853,7 +995,12 @@ describe("OpenAiLlmProvider", () => {
       taskName: "test",
       chipName: "UPF5755",
       preparation: createPreparation({
-        fileName: "upf5755.pdf",
+        documentMeta: {
+          fileName: "upf5755.pdf",
+          pageCount: 99,
+          textCoverage: 42,
+          extractionMethod: "none"
+        },
         pagePackets: [],
         localCandidates: []
       }),
@@ -924,7 +1071,12 @@ describe("OpenAiLlmProvider", () => {
       taskName: "test",
       chipName: "UPF5755",
       preparation: createPreparation({
-        fileName: "upf5755.pdf",
+        documentMeta: {
+          fileName: "upf5755.pdf",
+          pageCount: 99,
+          textCoverage: 42,
+          extractionMethod: "none"
+        },
         pagePackets: [],
         localCandidates: []
       }),
@@ -1016,7 +1168,12 @@ describe("OpenAiLlmProvider", () => {
       taskName: "test",
       chipName: "UPF5755",
       preparation: createPreparation({
-        fileName: "upf5755.pdf",
+        documentMeta: {
+          fileName: "upf5755.pdf",
+          pageCount: 99,
+          textCoverage: 42,
+          extractionMethod: "none"
+        },
         pagePackets: [],
         localCandidates: []
       }),
@@ -3347,6 +3504,128 @@ describe("GeminiLlmProvider", () => {
     const parts = body.contents?.[0]?.parts ?? [];
     expect(parts.some((part: { inline_data?: { mime_type?: string } }) => part.inline_data?.mime_type === "application/pdf")).toBe(true);
     expect(JSON.stringify(body)).not.toContain("image_url");
+  });
+
+  test("keeps gemini follow-up bounded to current report context instead of re-uploading the pdf", async () => {
+    fetchMock.mockResolvedValue({
+      ok: true,
+      json: async () => ({
+        candidates: [
+          {
+            content: {
+              parts: [
+                {
+                  text: JSON.stringify({
+                    answer: "先看频段覆盖和输出功率。",
+                    claims: [
+                      {
+                        id: "follow-bands",
+                        label: "Supported bands",
+                        value: "5.15 GHz to 5.85 GHz",
+                        title: "Supported bands",
+                        body: "先确认频段覆盖是否满足目标制式。",
+                        sourceType: "datasheet",
+                        citations: [
+                          {
+                            id: "cite-bands",
+                            sourceType: "datasheet",
+                            page: 2,
+                            quote: "5.15 to 5.85GHz"
+                          }
+                        ]
+                      }
+                    ]
+                  })
+                }
+              ]
+            }
+          }
+        ]
+      })
+    });
+
+    const provider = new GeminiLlmProvider({
+      apiKey: "test-key",
+      model: "gemini-3-flash-preview"
+    });
+
+    const response = await provider.answerFollowUp({
+      pdfBuffer: new Uint8Array([1, 2, 3, 4]),
+      fileName: "202307UPF5755 datasheet V1.2.pdf",
+      taskName: "UPF5755",
+      chipName: "UPF5755",
+      preparation: createPreparation({
+        identityCandidates: {
+          sku: "UPF5755",
+          manufacturer: "UPMicro",
+          documentTitle: "5.15 to 5.85GHz 802.11ax WiFi Front End Module",
+          aliases: []
+        }
+      }),
+      identity: {
+        canonicalPartNumber: "UPF5755",
+        manufacturer: "UPMicro",
+        deviceClass: "WiFi Front End Module",
+        parameterTemplateId: "wifi",
+        focusChecklist: [],
+        publicContext: [],
+        confidence: 0.96
+      },
+      parameterTemplate: getParameterTemplate("wifi"),
+      report: {
+        executiveSummary: "UPF5755 是一颗 5GHz WiFi FEM。",
+        deviceIdentity: {
+          canonicalPartNumber: "UPF5755",
+          manufacturer: "UPMicro",
+          deviceClass: "WiFi Front End Module",
+          parameterTemplateId: "wifi",
+          confidence: 0.96
+        },
+        keyParameters: [
+          {
+            id: "report-bands",
+            label: "Supported bands",
+            value: "5.15 GHz to 5.85 GHz",
+            title: "Supported bands",
+            body: "覆盖 5GHz WiFi 频段。",
+            sourceType: "datasheet",
+            citations: [
+              {
+                id: "report-cite-bands",
+                sourceType: "datasheet",
+                page: 2,
+                quote: "5.15 to 5.85GHz"
+              }
+            ]
+          }
+        ],
+        designFocus: [],
+        risks: [],
+        openQuestions: [],
+        publicNotes: [],
+        citations: [],
+        sections: [],
+        claims: []
+      },
+      keyParameters: [
+        {
+          name: "Supported bands",
+          value: "5.15 GHz to 5.85 GHz",
+          evidenceId: "ev-bands",
+          status: "confirmed"
+        }
+      ],
+      publicContext: [],
+      question: "这颗器件最先看什么？"
+    });
+
+    expect(response.answer).toContain("频段覆盖");
+    expect(fetchMock).toHaveBeenCalledTimes(1);
+    const [url, init] = fetchMock.mock.calls[0];
+    expect(String(url)).toContain("/v1beta/models/gemini-3-flash-preview:generateContent");
+    const body = JSON.parse(String(init?.body ?? "{}"));
+    const parts = body.contents?.[0]?.parts ?? [];
+    expect(parts.some((part: { inline_data?: { mime_type?: string } }) => part.inline_data?.mime_type === "application/pdf")).toBe(false);
   });
 
 });

@@ -169,6 +169,7 @@ Atlas now treats `provider/model` as the benchmark target, not just `model`.
 - current production recommendation from the checked-in benchmark artifact:
   - fast parameters: `lyapi/gpt-4o`
   - full report: `lyapi/gemini-3.1-pro-preview`
+  - bounded follow-up: `lyapi/gemini-3-flash-preview`
   - fallback: `lyapi/gpt-4.1`
   - secondary fallback: `vectorengine/gpt-4.1`
 

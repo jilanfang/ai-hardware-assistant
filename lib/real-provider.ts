@@ -8,6 +8,8 @@ import type {
   IdentityClassification,
   ParameterArbitrationNote,
   ParameterDraft,
+  ParameterTemplate,
+  PublicContext,
   ReportClaim,
   ReportOutput
 } from "@/lib/types";
@@ -199,6 +201,7 @@ async function callResponsesApi(config: OpenAiProviderConfig, body: Record<strin
   });
 
   if (!response.ok) {
+    const responseText = await response.text().catch(() => "");
     logAnalysisEvent(
       "provider.request.failed",
       {
@@ -207,7 +210,8 @@ async function callResponsesApi(config: OpenAiProviderConfig, body: Record<strin
         model: config.model,
         endpoint,
         status: response.status,
-        elapsedMs: elapsedMs(startedAtMs)
+        elapsedMs: elapsedMs(startedAtMs),
+        responsePreview: responseText.trimStart().slice(0, 400)
       },
       "error"
     );
@@ -308,6 +312,32 @@ function reportRepairInstruction() {
 
 function pickPagesForFollowUp(input: ReportSynthesisInput) {
   return pickPagesForReport(input).slice(0, 6);
+}
+
+function buildFollowUpContextText(input: {
+  question: string;
+  identity: IdentityClassification;
+  parameterTemplate: ParameterTemplate;
+  keyParameters: Array<{
+    name: string;
+    value: string;
+    evidenceId: string;
+    status: "confirmed" | "needs_review" | "user_corrected";
+  }>;
+  report: ReportOutput;
+  publicContext: PublicContext[];
+}) {
+  return [
+    "你现在只回答当前 follow-up，不要重新分析整份 PDF。",
+    "只允许依据当前 report、parameter store、public context 和用户问题作答。",
+    "如果当前材料里没有答案，就明确说当前资料未覆盖。",
+    `用户问题：${input.question}`,
+    `器件识别：${JSON.stringify(input.identity)}`,
+    `参数模板：${JSON.stringify(input.parameterTemplate)}`,
+    `当前参数表：${JSON.stringify(input.keyParameters)}`,
+    `当前报告：${JSON.stringify(input.report)}`,
+    `公网补充：${JSON.stringify(input.publicContext)}`
+  ].join("\n\n");
 }
 
 function asObject(value: unknown): LooseObject | null {
@@ -3332,6 +3362,7 @@ async function callGeminiGenerateContent(
   });
 
   if (!response.ok) {
+    const responseText = await response.text().catch(() => "");
     logAnalysisEvent(
       "provider.request.failed",
       {
@@ -3339,7 +3370,8 @@ async function callGeminiGenerateContent(
         model: config.model,
         endpoint,
         status: response.status,
-        elapsedMs: elapsedMs(startedAtMs)
+        elapsedMs: elapsedMs(startedAtMs),
+        responsePreview: responseText.trimStart().slice(0, 400)
       },
       "error"
     );
@@ -3731,7 +3763,7 @@ export class OpenAiLlmProvider implements LlmProvider {
         stage: "follow_up",
         provider: "openai-compatible",
         model: this.config.model,
-        modality: "pdf-inline",
+        modality: "text-only",
         transport: "responses",
         fileName: input.fileName,
         taskName: input.taskName,
@@ -3754,18 +3786,15 @@ export class OpenAiLlmProvider implements LlmProvider {
                 text: [
                   promptBundle.systemPrompt,
                   promptBundle.taskPrompt,
-                  `用户问题：${input.question}`,
-                  `器件识别：${JSON.stringify(input.identity)}`,
-                  `参数模板：${JSON.stringify(input.parameterTemplate)}`,
-                  `当前参数表：${JSON.stringify(input.keyParameters)}`,
-                  `当前报告：${JSON.stringify(input.report)}`,
-                  `公网补充：${JSON.stringify(input.publicContext)}`
+                  buildFollowUpContextText({
+                    question: input.question,
+                    identity: input.identity,
+                    parameterTemplate: input.parameterTemplate,
+                    keyParameters: input.keyParameters,
+                    report: input.report,
+                    publicContext: input.publicContext
+                  })
                 ].join("\n\n")
-              },
-              {
-                type: "input_file",
-                filename: input.fileName,
-                file_data: buildDataUrlPdf(input.pdfBuffer)
               }
             ]
           }
@@ -3775,7 +3804,7 @@ export class OpenAiLlmProvider implements LlmProvider {
         stage: "follow_up",
         provider: "openai-compatible",
         model: this.config.model,
-        modality: "pdf-inline",
+        modality: "text-only",
         transport: "responses",
         fileName: input.fileName,
         elapsedMs: elapsedMs(completionStartedAtMs)
@@ -3824,39 +3853,13 @@ export class OpenAiLlmProvider implements LlmProvider {
       };
     }
 
-    const selectedPages = pickPagesForFollowUp({
-      pdfBuffer: input.pdfBuffer,
-      fileName: input.fileName,
-      taskName: input.taskName,
-      chipName: input.chipName,
-      preparation: input.preparation,
-      identity: input.identity,
-      parameterTemplate: input.parameterTemplate,
-      publicContext: input.publicContext
-    });
-    const renderStartedAtMs = Date.now();
     logAnalysisEvent("provider.stage.started", {
       stage: "follow_up",
       provider: "openai-compatible",
       model: this.config.model,
-      modality: "pdf-pages-as-images",
+      modality: "text-only",
       fileName: input.fileName,
-      taskName: input.taskName,
-      selectedPages
-    });
-    const images = await renderPdfPagesToImages({
-      buffer: input.pdfBuffer,
-      pages: selectedPages
-    });
-    logAnalysisEvent("provider.stage.rendered", {
-      stage: "follow_up",
-      provider: "openai-compatible",
-      model: this.config.model,
-      modality: "pdf-pages-as-images",
-      fileName: input.fileName,
-      renderedPageCount: images.length,
-      selectedPages,
-      elapsedMs: elapsedMs(renderStartedAtMs)
+      taskName: input.taskName
     });
     const promptBundle = buildPromptBundle("follow-up-answer", {
       templateId: input.identity.parameterTemplateId,
@@ -3878,15 +3881,16 @@ export class OpenAiLlmProvider implements LlmProvider {
               type: "text",
               text: [
                 promptBundle.taskPrompt,
-                `用户问题：${input.question}`,
-                `器件识别：${JSON.stringify(input.identity)}`,
-                `参数模板：${JSON.stringify(input.parameterTemplate)}`,
-                `当前参数表：${JSON.stringify(input.keyParameters)}`,
-                `当前报告：${JSON.stringify(input.report)}`,
-                `公网补充：${JSON.stringify(input.publicContext)}`
+                buildFollowUpContextText({
+                  question: input.question,
+                  identity: input.identity,
+                  parameterTemplate: input.parameterTemplate,
+                  keyParameters: input.keyParameters,
+                  report: input.report,
+                  publicContext: input.publicContext
+                })
               ].join("\n\n")
-            },
-            ...buildImageContent(images)
+            }
           ]
         }
       ]
@@ -3895,9 +3899,8 @@ export class OpenAiLlmProvider implements LlmProvider {
       stage: "follow_up",
       provider: "openai-compatible",
       model: this.config.model,
-      modality: "pdf-pages-as-images",
+      modality: "text-only",
       fileName: input.fileName,
-      renderedPageCount: images.length,
       elapsedMs: elapsedMs(completionStartedAtMs)
     });
 
@@ -4152,7 +4155,7 @@ export class GeminiLlmProvider implements LlmProvider {
       stage: "follow_up",
       provider: "gemini",
       model: this.config.model,
-      modality: "pdf-inline",
+      modality: "text-only",
       fileName: input.fileName,
       taskName: input.taskName,
       pageCount: input.preparation.documentMeta.pageCount
@@ -4172,15 +4175,17 @@ export class GeminiLlmProvider implements LlmProvider {
         {
           role: "user",
           parts: [
-            buildInlinePdfPart(input.pdfBuffer),
             {
               text: [
                 promptBundle.taskPrompt,
-                `问题：${input.question}`,
-                `器件识别：${JSON.stringify(input.identity)}`,
-                `关键参数：${JSON.stringify(input.keyParameters)}`,
-                `当前报告：${JSON.stringify(input.report)}`,
-                `公网补充：${JSON.stringify(input.publicContext)}`
+                buildFollowUpContextText({
+                  question: input.question,
+                  identity: input.identity,
+                  parameterTemplate: input.parameterTemplate,
+                  keyParameters: input.keyParameters,
+                  report: input.report,
+                  publicContext: input.publicContext
+                })
               ].join("\n\n")
             }
           ]
@@ -4194,7 +4199,7 @@ export class GeminiLlmProvider implements LlmProvider {
       stage: "follow_up",
       provider: "gemini",
       model: this.config.model,
-      modality: "pdf-inline",
+      modality: "text-only",
       fileName: input.fileName,
       elapsedMs: elapsedMs(startedAtMs)
     });

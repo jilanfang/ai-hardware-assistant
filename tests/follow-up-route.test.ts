@@ -269,10 +269,7 @@ describe("POST /api/analysis/follow-up", () => {
       },
       {
         createId: () => "job-no-analysis",
-        analyze: async () => ({
-          status: "processing",
-          warnings: []
-        })
+        analyze: async () => new Promise(() => {})
       }
     );
 
@@ -446,7 +443,7 @@ describe("POST /api/analysis/follow-up", () => {
     expect(answerSpy).toHaveBeenCalledOnce();
     expect(response.status).toBe(500);
     await expect(response.json()).resolves.toEqual({
-      error: "provider offline"
+      error: "follow-up temporarily unavailable"
     });
   });
 });
