@@ -74,7 +74,7 @@ Run one real smoke after deploy:
 - [ ] click at least one evidence-linked parameter
 - [ ] ask one follow-up question
 - [ ] export JSON
-- [ ] export CSV after confirming at least one parameter
+- [ ] export CSV and confirm the status column includes both reviewed and review-needed rows when applicable
 - [ ] log out and confirm the app asks for login again
 
 ## 7. Audit And Reporting Ready

@@ -46,8 +46,8 @@ The current shipped wedge is:
   - future target architecture
 - `docs/ops/atlas-private-beta-deployment.md`
   - current subdomain deployment, provisioning, and audit query path
-- `docs/strategy/mvp-freeze-and-experiment.md`
-  - historical wedge discussion, no longer the active repo scope
+- `docs/archive/strategy/`
+  - historical strategy discussion and market framing, no longer active source of truth
 - `docs/archive/superpowers/`
   - archived prototype-era specs and implementation plans
 - `task_plan.md`
@@ -133,7 +133,7 @@ If this thread is resumed later, restore context in this order:
 7. Read `docs/ops/atlas-private-beta-deployment.md`
 8. Read `app/api/analysis/route.ts`, `lib/analysis-jobs.ts`, `lib/server-analysis.ts`, and `components/workspace.tsx`
 9. Read `docs/archive/` only if historical context is actually needed
-10. Continue from parser/evidence hardening, operational deployment prep, or the next agreed user-facing slice
+10. Continue from parser/evidence hardening, private-beta operational stability, or the next agreed user-facing slice
 
 ## Suggested Resume Prompt
 If you want to resume later with minimal friction, use a prompt like:

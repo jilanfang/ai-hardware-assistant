@@ -70,7 +70,7 @@ It does not currently include:
 ## Current Workflow
 
 1. Upload one datasheet PDF.
-2. Start analysis and show task progress in the right-hand thread.
+2. Start analysis and show task progress in the main task thread.
 3. Review extracted results and evidence-linked parameters.
 4. Jump back into the source PDF to verify.
 5. Ask grounded follow-up questions.
@@ -117,20 +117,22 @@ The current direction is intentionally narrower than the broader company story:
 
 ## Key Documents
 
-- [`docs/INDEX.md`](docs/INDEX.md): current vs historical document map
-- [`task_plan.md`](task_plan.md): current active backlog
-- [`progress.md`](progress.md): current recovery state
-- [`docs/strategy/2026-03-28-office-hours-alignment.md`](docs/strategy/2026-03-28-office-hours-alignment.md): historical alignment discussion, now partially superseded by the datasheet-only scope
-- [`docs/strategy/2026-03-28-phase1-decision-record.md`](docs/strategy/2026-03-28-phase1-decision-record.md): historical decision record with superseded items marked
-- [`docs/strategy/atlas-holding-pattern-2026-03-28.md`](docs/strategy/atlas-holding-pattern-2026-03-28.md): current GTM holding pattern; keep validating the wedge, but do not move Atlas into the public acquisition funnel yet
-- [`docs/product/mvp-prd.md`](docs/product/mvp-prd.md): current product requirements
-- [`docs/product/datasheet-dual-route-reading-strategy.md`](docs/product/datasheet-dual-route-reading-strategy.md): dual-route datasheet reading strategy, shared methodology, prompt system, and teaching-style report contract
-- [`docs/product/interaction-details.md`](docs/product/interaction-details.md): interaction rules for the workspace
-- [`docs/product/product-design.md`](docs/product/product-design.md): current workspace shell and design rules
-- [`docs/engineering/technical-architecture.md`](docs/engineering/technical-architecture.md): current and target architecture
-- [`docs/engineering/lyapi-model-routing-and-pdf-compatibility.md`](docs/engineering/lyapi-model-routing-and-pdf-compatibility.md): verified relay model names, PDF-direct compatibility, and current routing recommendation
-- [`docs/engineering/model-benchmarking.md`](docs/engineering/model-benchmarking.md): benchmark configuration, artifact schema, and current provider/model conclusions
-- [`docs/ops/atlas-private-beta-deployment.md`](docs/ops/atlas-private-beta-deployment.md): single-server deployment, account provisioning, and audit reporting
+- [`docs/INDEX.md`](docs/INDEX.md): full documentation index, source-of-truth map, and archive guide
+- [`task_plan.md`](task_plan.md): only active execution backlog
+- [`progress.md`](progress.md): latest repo checkpoint and verification log
+- [`findings.md`](findings.md): accumulated engineering findings and decisions
+- [`docs/product/mvp-prd.md`](docs/product/mvp-prd.md): current product requirements and scope boundary
+- [`docs/product/product-design.md`](docs/product/product-design.md): current chat-first workspace design
+- [`docs/product/interaction-details.md`](docs/product/interaction-details.md): current interaction contract for empty, processing, result, validation, and export states
+- [`docs/product/datasheet-dual-route-reading-strategy.md`](docs/product/datasheet-dual-route-reading-strategy.md): datasheet reading methodology and dual-route analysis strategy
+- [`docs/engineering/technical-architecture.md`](docs/engineering/technical-architecture.md): current architecture and runtime boundary
+- [`docs/engineering/lyapi-model-routing-and-pdf-compatibility.md`](docs/engineering/lyapi-model-routing-and-pdf-compatibility.md): verified relay routing rules and current provider/model recommendation
+- [`docs/engineering/model-benchmarking.md`](docs/engineering/model-benchmarking.md): benchmark system and baseline interpretation
+- [`docs/ops/atlas-private-beta-deployment.md`](docs/ops/atlas-private-beta-deployment.md): current single-server deployment and release runbook
+- [`docs/ops/private-beta-checklist.md`](docs/ops/private-beta-checklist.md): operational go-live checklist
+- [`docs/handoff/recovery.md`](docs/handoff/recovery.md): recovery order for the next session
+- [`docs/product-line-positioning.md`](docs/product-line-positioning.md): repo-level Atlas naming and product-line boundary
+- [`docs/archive/`](docs/archive): historical strategy notes, prototype-era plans, and old task logs
 
 ## Scraper Utilities
 
@@ -178,12 +180,13 @@ Atlas now treats `provider/model` as the benchmark target, not just `model`.
 Atlas now supports two runtime modes:
 
 - `ANALYSIS_PIPELINE_MODE=single`
-  - default
+  - code-level fallback when no staged overrides are configured
   - one `provider/model` produces the full result directly
 - `ANALYSIS_PIPELINE_MODE=staged`
   - enables fast parameters + full report + arbitration
 
-If you do not need fast/slow/cross-check behavior, keep the app on `single`.
+The current checked-in env template and production deployment use `staged`.
+If you do not need fast/slow/cross-check behavior for a local or simplified deployment, switch the app to `single`.
 
 ## Production Preflight
 

@@ -70,7 +70,7 @@ Output:
 - extracted parameters
 - evidence-linked validation actions
 - grounded exports
-- explicit trust states around parameter review and current runtime path
+- explicit trust states around parameter review and runtime attribution
 
 Current implementation status: shipped in first-pass form.
 

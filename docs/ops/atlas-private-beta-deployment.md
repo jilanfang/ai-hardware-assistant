@@ -77,16 +77,22 @@ Copy [`.env.example`](/Users/jilanfang/ai-hardware-assistant/.env.example) to th
 - optional `LYAPI_BASE_URL=https://lyapi.com`
 - optional `VECTORENGINE_API_KEY=<your-vectorengine-key>`
 - optional `VECTORENGINE_BASE_URL=https://api.vectorengine.ai`
-- `ANALYSIS_PIPELINE_MODE=single`
+- `ANALYSIS_ENABLE_ODL=false`
+- `ANALYSIS_PIPELINE_MODE=staged`
 - `ANALYSIS_LLM_PROVIDER=<provider>`
 - `ANALYSIS_LLM_MODEL=<model>`
-- optional stage overrides such as:
-  - `ANALYSIS_FAST_LLM_PROVIDER`
-  - `ANALYSIS_FAST_LLM_MODEL`
-  - `ANALYSIS_REPORT_LLM_PROVIDER`
-  - `ANALYSIS_REPORT_LLM_MODEL`
+- `ANALYSIS_IDENTITY_LLM_PROVIDER=lyapi`
+- `ANALYSIS_IDENTITY_LLM_MODEL=gemini-3-flash-preview`
+- `ANALYSIS_FAST_LLM_PROVIDER=lyapi`
+- `ANALYSIS_FAST_LLM_MODEL=gpt-4o`
+- `ANALYSIS_REPORT_LLM_PROVIDER=lyapi`
+- `ANALYSIS_REPORT_LLM_MODEL=gemini-3.1-pro-preview`
+- `ANALYSIS_ARBITRATION_LLM_PROVIDER=lyapi`
+- `ANALYSIS_ARBITRATION_LLM_MODEL=deepseek-v3.2`
+- `ANALYSIS_FOLLOW_UP_LLM_PROVIDER=lyapi`
+- `ANALYSIS_FOLLOW_UP_LLM_MODEL=gemini-3-flash-preview`
 
-Only set the stage overrides when `ANALYSIS_PIPELINE_MODE=staged`.
+This is the currently deployed production shape. If you intentionally switch back to `single`, remove the stage overrides you no longer use.
 
 ## Bootstrap On 8.217.40.70
 

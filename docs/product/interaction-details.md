@@ -8,12 +8,21 @@ The workspace should feel like one working surface with one task thread, not a c
 
 ## 2. Workspace Model
 
-The workspace has one shell:
+The workspace has two interface stages:
 
-- far left: narrow rail for brand, nav, and current user
-- left: current task, upload entry, recent tasks, and parameter navigation
-- middle: evidence canvas
-- right: single task thread
+### Empty state / no active task
+
+- centered upload composer
+- drag-and-drop or click-to-select PDF
+- file selection starts analysis immediately
+- no empty PDF viewer
+- no oversized side-panel upload CTA
+
+### Active task state
+
+- left: weak, collapsible management sidebar
+- center: main task thread and conversation
+- right: PDF evidence panel, expanded by default and collapsible
 
 This repository currently uses this shell only for datasheet work.
 
@@ -59,7 +68,7 @@ For the current datasheet scene the order is:
 
 If the current run exposes useful trust metadata, the task thread may also show:
 
-- current runtime path
+- current processing note
 - staged fast-pass vs full-report progress
 - whether parameter reconciliation is still incomplete
 
@@ -103,7 +112,8 @@ They should appear only after useful content exists and should remain tied to th
 For the current build:
 
 - JSON and HTML can export the current task result
-- CSV should export only confirmed or user-corrected parameters
+- CSV should export the full parameter table
+- CSV should preserve parameter status so downstream review can continue
 - the UI should make reviewed vs. unreviewed output visible before export
 
 Export actions should preserve the distinction between:
@@ -127,7 +137,7 @@ Follow-up should not erase the current trust surface. The user should still be a
 ## 10. Interaction Principles
 
 - one shell
-- one task thread
+- one primary task thread
 - evidence before confidence
 - outputs before chatter
 - datasheet-first scope without product sprawl
