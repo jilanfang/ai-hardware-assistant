@@ -143,6 +143,10 @@ function createUploadedPdf(file: File): UploadedPdf {
   };
 }
 
+function displayPageCount(pageCount: number) {
+  return pageCount > 0 ? String(pageCount) : "?";
+}
+
 function createUploadedPdfFromJob(jobId: string, snapshot: AnalysisJobSnapshot): UploadedPdf | null {
   if (!snapshot.documentMeta || !snapshot.pdfUrl) {
     return null;
@@ -2460,9 +2464,10 @@ export function Workspace({
         </div>
         )}
 
+        {currentPdf ? (
         <div className="composer-card">
-          <label htmlFor={currentPdf && canAskFollowUp ? "follow-up" : uploadId}>{currentPdf && canAskFollowUp ? "继续提问" : "上传 datasheet PDF"}</label>
-          {currentPdf && canAskFollowUp ? (
+          <label htmlFor={canAskFollowUp ? "follow-up" : uploadId}>{canAskFollowUp ? "继续提问" : "上传 datasheet PDF"}</label>
+          {canAskFollowUp ? (
             <>
               <textarea
                 id="follow-up"
@@ -2492,6 +2497,7 @@ export function Workspace({
             </div>
           )}
         </div>
+        ) : null}
       </section>
 
       {currentPdf && isPdfPanelOpen ? (
@@ -2505,7 +2511,7 @@ export function Workspace({
               <div className="canvas-toolbar">
                 <span>{focusedEvidence ? `第 ${focusedEvidence.page} 页` : "第 1 页"}</span>
                 <span>/</span>
-                <span>{currentPdf.pageCount}</span>
+                <span>{displayPageCount(currentPdf.pageCount)}</span>
               </div>
             </div>
             <div className="pdf-stage">

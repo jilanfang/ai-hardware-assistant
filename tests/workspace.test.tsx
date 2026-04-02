@@ -285,10 +285,10 @@ describe("Workspace", () => {
     expect(screen.queryByText("TPS54302")).not.toBeInTheDocument();
     expect(await screen.findByText("选择 PDF 或直接拖入")).toBeInTheDocument();
     expect(screen.getByText("支持单个 datasheet PDF，选中后立即开始分析，不需要再点第二个提交按钮。")).toBeInTheDocument();
-    expect(screen.getByText("拖入 PDF，开始一个新的 Atlas 任务")).toBeInTheDocument();
     expect(screen.queryByLabelText("继续提问")).not.toBeInTheDocument();
     expect(screen.queryByTitle("PDF 预览")).not.toBeInTheDocument();
     expect(screen.getByText("还没有最近任务，上传第一份 datasheet 开始。")).toBeInTheDocument();
+    expect(screen.queryByText("上传 datasheet PDF")).not.toBeInTheDocument();
   });
 
   test("rejects a non-pdf upload before calling the analysis api", async () => {
@@ -442,6 +442,7 @@ describe("Workspace", () => {
     fireEvent.click(within(packageRow as HTMLElement).getByRole("button", { name: "定位到证据" }));
 
     expect(screen.getByTitle("PDF 预览")).toHaveAttribute("src", "/api/analysis/file?jobId=job-1#page=4");
+    expect(screen.queryByText("上传 datasheet PDF")).not.toBeInTheDocument();
   });
 
   test("does not render the runtime path note when completed source attribution is missing llmTarget", async () => {
@@ -822,6 +823,46 @@ describe("Workspace", () => {
     expect(screen.getAllByText("输入电压").length).toBeGreaterThan(0);
     expect(screen.getAllByText("4.75 to 5.25 V").length).toBeGreaterThan(0);
     expect(screen.getByText("7")).toBeInTheDocument();
+    expect(screen.queryByText("第 1 页 / 1")).not.toBeInTheDocument();
+    expect(screen.getByText("上传 datasheet PDF")).toBeInTheDocument();
+  });
+
+  test("shows an unknown total page count while the initial upload page count is still unknown", async () => {
+    fetchMock
+      .mockResolvedValueOnce({
+        ok: true,
+        json: async () => ({ jobs: [] })
+      })
+      .mockResolvedValueOnce({
+        ok: true,
+        json: async () => ({
+          jobId: "job-1",
+          status: "processing",
+          warnings: [],
+          pdfUrl: "/api/analysis/file?jobId=job-1",
+          followUpMessages: []
+        })
+      })
+      .mockResolvedValueOnce({
+        ok: true,
+        json: async () => ({
+          jobId: "job-1",
+          status: "processing",
+          warnings: [],
+          pdfUrl: "/api/analysis/file?jobId=job-1",
+          followUpMessages: []
+        })
+      });
+
+    render(<Workspace pollIntervalMs={1} maxPollAttempts={1} />);
+
+    const file = new File(["pdf"], "tmp-sample.pdf", { type: "application/pdf" });
+    fireEvent.change(screen.getByLabelText("上传数据手册 PDF"), { target: { files: [file] } });
+
+    expect(await screen.findByText("Task Received")).toBeInTheDocument();
+    expect(screen.getByText("当前文档")).toBeInTheDocument();
+    expect(screen.queryByText("0")).not.toBeInTheDocument();
+    expect(screen.getByText("?")).toBeInTheDocument();
     expect(screen.queryByText("第 1 页 / 1")).not.toBeInTheDocument();
   });
 
