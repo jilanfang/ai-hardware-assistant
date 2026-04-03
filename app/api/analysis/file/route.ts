@@ -27,6 +27,7 @@ export async function GET(request: Request) {
     status: 200,
     headers: {
       "content-type": "application/pdf",
+      "content-disposition": `inline; filename="${encodeURIComponent(jobId)}.pdf"`,
       "cache-control": "private, max-age=60"
     }
   });

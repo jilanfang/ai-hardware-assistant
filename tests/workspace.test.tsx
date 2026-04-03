@@ -446,7 +446,9 @@ describe("Workspace", () => {
     expect(packageRow).not.toBeNull();
     fireEvent.click(within(packageRow as HTMLElement).getByRole("button", { name: "定位到证据" }));
 
-    expect(screen.getByTitle("PDF 预览")).toHaveAttribute("src", "/api/analysis/file?jobId=job-1#page=4");
+    const pdfPreview = screen.getByTitle("PDF 预览");
+    expect(pdfPreview.tagName).toBe("EMBED");
+    expect(pdfPreview).toHaveAttribute("src", "/api/analysis/file?jobId=job-1#page=4");
     expect(screen.queryByText("上传 datasheet PDF")).not.toBeInTheDocument();
   });
 

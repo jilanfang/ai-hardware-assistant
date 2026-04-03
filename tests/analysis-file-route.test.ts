@@ -113,6 +113,7 @@ describe("GET /api/analysis/file", () => {
 
     expect(response.status).toBe(200);
     expect(response.headers.get("content-type")).toContain("application/pdf");
+    expect(response.headers.get("content-disposition")).toContain("inline");
     expect(new Uint8Array(await response.arrayBuffer())).toEqual(pdfBuffer);
   });
 });

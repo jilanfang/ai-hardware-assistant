@@ -2539,11 +2539,12 @@ export function Workspace({
             </div>
             <div className="pdf-stage">
               <div className="pdf-sheet">
-                <iframe
+                <embed
                   key={previewUrl(currentPdf, focusedEvidence)}
                   title="PDF 预览"
                   className="pdf-frame"
                   src={previewUrl(currentPdf, focusedEvidence)}
+                  type="application/pdf"
                 />
                 {focusedEvidence ? (
                   <div
