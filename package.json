@@ -9,6 +9,7 @@
     "start": "npm run preflight:prod && next start --hostname 127.0.0.1 --port 3111",
     "users:create": "node scripts/admin-users.mjs create",
     "users:import": "node scripts/admin-users.mjs import",
+    "invites:generate": "node scripts/invite-codes.mjs generate",
     "audit:summary": "node scripts/audit-summary.mjs",
     "lyapi:pdf-smoke": "node scripts/lyapi-pdf-smoke.mjs",
     "benchmark:model": "vite-node --root . scripts/model-benchmark.ts",

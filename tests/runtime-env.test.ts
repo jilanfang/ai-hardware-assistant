@@ -1,7 +1,13 @@
 import { afterEach, describe, expect, test } from "vitest";
 
 import {
+  DEFAULT_SIGNUP_RATE_LIMIT_MAX_ATTEMPTS,
+  DEFAULT_SIGNUP_RATE_LIMIT_WINDOW_MS,
   DEV_SESSION_SECRET,
+  isSelfServiceSignupEnabled,
+  resolveAdminUsernames,
+  resolveSignupRateLimitMaxAttempts,
+  resolveSignupRateLimitWindowMs,
   resolveSessionSecret,
   validateProductionEnvironment
 } from "@/lib/runtime-env";
@@ -17,6 +23,10 @@ afterEach(() => {
   delete process.env.OPENAI_API_KEY;
   delete process.env.GEMINI_API_KEY;
   delete process.env.VECTORENGINE_API_KEY;
+  delete process.env.ATLAS_SELF_SERVICE_SIGNUP_ENABLED;
+  delete process.env.ATLAS_ADMIN_USERNAMES;
+  delete process.env.ATLAS_SIGNUP_RATE_LIMIT_WINDOW_MS;
+  delete process.env.ATLAS_SIGNUP_RATE_LIMIT_MAX_ATTEMPTS;
 });
 
 describe("runtime env", () => {
@@ -66,5 +76,24 @@ describe("runtime env", () => {
       ok: true,
       errors: []
     });
+  });
+
+  test("resolves self-service signup config", () => {
+    process.env.ATLAS_SELF_SERVICE_SIGNUP_ENABLED = "true";
+    process.env.ATLAS_ADMIN_USERNAMES = "atlas01, atlas02";
+    process.env.ATLAS_SIGNUP_RATE_LIMIT_WINDOW_MS = "60000";
+    process.env.ATLAS_SIGNUP_RATE_LIMIT_MAX_ATTEMPTS = "5";
+
+    expect(isSelfServiceSignupEnabled()).toBe(true);
+    expect(resolveAdminUsernames()).toEqual(["atlas01", "atlas02"]);
+    expect(resolveSignupRateLimitWindowMs()).toBe(60000);
+    expect(resolveSignupRateLimitMaxAttempts()).toBe(5);
+  });
+
+  test("falls back to default signup config", () => {
+    expect(isSelfServiceSignupEnabled()).toBe(false);
+    expect(resolveAdminUsernames()).toEqual([]);
+    expect(resolveSignupRateLimitWindowMs()).toBe(DEFAULT_SIGNUP_RATE_LIMIT_WINDOW_MS);
+    expect(resolveSignupRateLimitMaxAttempts()).toBe(DEFAULT_SIGNUP_RATE_LIMIT_MAX_ATTEMPTS);
   });
 });

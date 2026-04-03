@@ -1,17 +1,17 @@
 "use client";
 
 import React from "react";
-import { useRouter, useSearchParams } from "next/navigation";
-import { FormEvent, Suspense, useState } from "react";
+import { useRouter } from "next/navigation";
+import { FormEvent, useState } from "react";
 
-function LoginPageForm() {
+export default function RegisterPage() {
   const router = useRouter();
-  const searchParams = useSearchParams();
   const [username, setUsername] = useState("");
+  const [displayName, setDisplayName] = useState("");
+  const [inviteCode, setInviteCode] = useState("");
   const [password, setPassword] = useState("");
-  const [error, setError] = useState(searchParams.get("error") ? "用户名或密码错误。" : "");
+  const [error, setError] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
-  const returnTo = searchParams.get("returnTo") || "/";
 
   async function handleSubmit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
@@ -19,28 +19,29 @@ function LoginPageForm() {
     setError("");
 
     try {
-      const response = await fetch("/api/auth/login", {
+      const response = await fetch("/api/auth/register", {
         method: "POST",
         headers: {
           "content-type": "application/json"
         },
         body: JSON.stringify({
           username,
-          password,
-          returnTo
+          displayName,
+          inviteCode,
+          password
         })
       });
 
       if (!response.ok) {
         const payload = (await response.json().catch(() => null)) as { error?: string } | null;
-        setError(payload?.error || "登录失败，请稍后重试。");
+        setError(payload?.error || "注册失败，请稍后重试。");
         return;
       }
 
-      router.replace(returnTo);
+      router.replace("/");
       router.refresh();
     } catch {
-      setError("登录失败，请稍后重试。");
+      setError("注册失败，请稍后重试。");
     } finally {
       setIsSubmitting(false);
     }
@@ -52,10 +53,10 @@ function LoginPageForm() {
         <div className="login-hero">
           <div className="login-hero-panel">
             <p className="eyebrow">Pin2pin Atlas</p>
-            <h1>受控内测分析台</h1>
-            <p className="login-lead">围绕 datasheet 形成总结、证据回查、参数确认与追问的统一工作区。</p>
+            <h1>创建账号，直接进入 Atlas</h1>
+            <p className="login-lead">注册完成后会自动登录，直接进入 datasheet 分析工作区。</p>
             <div className="login-hero-points" aria-hidden="true">
-              <span>Summary</span>
+              <span>Upload PDF</span>
               <span>Evidence</span>
               <span>Follow-up</span>
             </div>
@@ -65,8 +66,8 @@ function LoginPageForm() {
         <section className="login-card">
           <div className="login-copy">
             <p className="eyebrow">Pin2pin Atlas</p>
-            <h1>登录</h1>
-            <p>使用你的用户名和密码进入 Atlas。没有账号也可以直接注册。</p>
+            <h1>注册</h1>
+            <p>输入邀请码，创建用户名和密码，注册后会自动进入产品。</p>
           </div>
 
           <form className="login-form" onSubmit={handleSubmit}>
@@ -80,37 +81,46 @@ function LoginPageForm() {
               />
             </label>
             <label>
+              <span>显示名称</span>
+              <input
+                name="displayName"
+                autoComplete="nickname"
+                value={displayName}
+                onChange={(event) => setDisplayName(event.target.value)}
+              />
+            </label>
+            <label>
+              <span>邀请码</span>
+              <input
+                name="inviteCode"
+                autoComplete="off"
+                value={inviteCode}
+                onChange={(event) => setInviteCode(event.target.value)}
+              />
+            </label>
+            <label>
               <span>密码</span>
               <input
                 name="password"
                 type="password"
-                autoComplete="current-password"
+                autoComplete="new-password"
                 value={password}
                 onChange={(event) => setPassword(event.target.value)}
               />
             </label>
-            <input type="hidden" name="returnTo" value={returnTo} />
             {error ? <p className="login-error">{error}</p> : null}
             <button type="submit" disabled={isSubmitting}>
-              {isSubmitting ? "登录中..." : "登录"}
+              {isSubmitting ? "注册中..." : "注册并进入"}
             </button>
           </form>
 
           <p className="login-switch-copy">
-            还没有账号？
+            已有账号？
             {" "}
-            <a href="/register">去注册</a>
+            <a href="/login">去登录</a>
           </p>
         </section>
       </section>
     </main>
-  );
-}
-
-export default function LoginPage() {
-  return (
-    <Suspense fallback={null}>
-      <LoginPageForm />
-    </Suspense>
   );
 }

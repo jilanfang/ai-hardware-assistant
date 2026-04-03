@@ -24,9 +24,11 @@ describe("middleware auth protection", () => {
 
   test("allows health checks and login page without authentication", async () => {
     const loginResponse = await middleware(new Request("http://localhost/login") as never);
+    const registerResponse = await middleware(new Request("http://localhost/register") as never);
     const healthResponse = await middleware(new Request("http://localhost/healthz") as never);
 
     expect(loginResponse.headers.get("x-middleware-next")).toBe("1");
+    expect(registerResponse.headers.get("x-middleware-next")).toBe("1");
     expect(healthResponse.headers.get("x-middleware-next")).toBe("1");
   });
 });

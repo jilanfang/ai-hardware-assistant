@@ -1,8 +1,26 @@
 export const DEFAULT_SESSION_COOKIE_NAME = "atlas_session";
 export const DEV_SESSION_SECRET = "dev-session-secret";
+export const DEFAULT_SIGNUP_RATE_LIMIT_WINDOW_MS = 10 * 60 * 1000;
+export const DEFAULT_SIGNUP_RATE_LIMIT_MAX_ATTEMPTS = 3;
 
 function hasValue(value: string | undefined) {
   return Boolean(value?.trim());
+}
+
+function parseBooleanFlag(value: string | undefined, fallback: boolean) {
+  if (!value?.trim()) {
+    return fallback;
+  }
+
+  const normalized = value.trim().toLowerCase();
+  if (["true", "1", "yes", "on"].includes(normalized)) return true;
+  if (["false", "0", "no", "off"].includes(normalized)) return false;
+  return fallback;
+}
+
+function parsePositiveInteger(value: string | undefined, fallback: number) {
+  const parsed = Number.parseInt(value ?? "", 10);
+  return Number.isFinite(parsed) && parsed > 0 ? parsed : fallback;
 }
 
 function resolveProviderKeyRequirement(providerName: string | null | undefined) {
@@ -62,6 +80,25 @@ export function resolveSessionSecret(env = process.env) {
   }
 
   return DEV_SESSION_SECRET;
+}
+
+export function isSelfServiceSignupEnabled(env = process.env) {
+  return parseBooleanFlag(env.ATLAS_SELF_SERVICE_SIGNUP_ENABLED, false);
+}
+
+export function resolveAdminUsernames(env = process.env) {
+  return (env.ATLAS_ADMIN_USERNAMES ?? "")
+    .split(",")
+    .map((value) => value.trim())
+    .filter(Boolean);
+}
+
+export function resolveSignupRateLimitWindowMs(env = process.env) {
+  return parsePositiveInteger(env.ATLAS_SIGNUP_RATE_LIMIT_WINDOW_MS, DEFAULT_SIGNUP_RATE_LIMIT_WINDOW_MS);
+}
+
+export function resolveSignupRateLimitMaxAttempts(env = process.env) {
+  return parsePositiveInteger(env.ATLAS_SIGNUP_RATE_LIMIT_MAX_ATTEMPTS, DEFAULT_SIGNUP_RATE_LIMIT_MAX_ATTEMPTS);
 }
 
 export function validateProductionEnvironment(env = process.env) {

@@ -8,6 +8,7 @@ import {
   findSessionByToken,
   findUserById,
   findUserByUsername,
+  registerUserWithInvite,
   revokeSessionByTokenHash,
   touchSession,
   updateUserLastLogin,
@@ -94,6 +95,10 @@ export async function authenticateUser(username: string, password: string) {
     return { ok: false as const, reason: "invalid_credentials" as const, user };
   }
 
+  return createAuthenticatedSession(user);
+}
+
+function createAuthenticatedSession(user: AuthUserRecord) {
   const sessionToken = createSessionToken();
   const tokenHash = hashSessionToken(sessionToken);
   const createdAt = nowIso();
@@ -115,6 +120,47 @@ export async function authenticateUser(username: string, password: string) {
     sessionCookie: createSessionCookieValue(sessionToken),
     expiresAt
   };
+}
+
+export async function registerUser(input: {
+  username: string;
+  password: string;
+  displayName?: string;
+  inviteCode?: string;
+}) {
+  const username = input.username.trim();
+  const displayName = input.displayName?.trim() || username;
+  const password = input.password;
+  const inviteCode = input.inviteCode?.trim() || "";
+
+  if (!username) {
+    return { ok: false as const, reason: "missing_username" as const };
+  }
+
+  if (!/^[a-zA-Z0-9_-]{3,32}$/.test(username)) {
+    return { ok: false as const, reason: "invalid_username" as const };
+  }
+
+  if (password.length < 8) {
+    return { ok: false as const, reason: "password_too_short" as const };
+  }
+
+  if (findUserByUsername(username)) {
+    return { ok: false as const, reason: "username_taken" as const };
+  }
+
+  const passwordHash = await hashPassword(password);
+  const result = registerUserWithInvite({
+    username,
+    passwordHash,
+    displayName,
+    inviteCode
+  });
+  if (!result.ok) {
+    return result;
+  }
+
+  return createAuthenticatedSession(result.user);
 }
 
 export function revokeRequestSession(request: Request) {

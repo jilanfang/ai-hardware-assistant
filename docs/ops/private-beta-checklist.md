@@ -26,6 +26,10 @@ Use this together with [docs/ops/atlas-private-beta-deployment.md](/Users/jilanf
   - `ATLAS_DB_PATH`
   - `SESSION_SECRET`
   - `SESSION_COOKIE_NAME`
+  - `ATLAS_SELF_SERVICE_SIGNUP_ENABLED`
+  - `ATLAS_ADMIN_USERNAMES`
+  - `ATLAS_SIGNUP_RATE_LIMIT_WINDOW_MS`
+  - `ATLAS_SIGNUP_RATE_LIMIT_MAX_ATTEMPTS`
   - `LYAPI_API_KEY`
   - `ANALYSIS_LLM_PROVIDER`
   - `ANALYSIS_LLM_MODEL`
@@ -57,17 +61,24 @@ Use this together with [docs/ops/atlas-private-beta-deployment.md](/Users/jilanf
 
 ## 5. Account Provisioning Ready
 
-- [ ] first internal accounts are created with [scripts/admin-users.mjs](/Users/jilanfang/ai-hardware-assistant/scripts/admin-users.mjs)
-- [ ] usernames and initial passwords are exported to CSV
-- [ ] account list is delivered to testers through a secure channel
-- [ ] at least one disabled-account test has been tried
+- [ ] at least one admin account is created with [scripts/admin-users.mjs](/Users/jilanfang/ai-hardware-assistant/scripts/admin-users.mjs)
+- [ ] admin username is included in `ATLAS_ADMIN_USERNAMES`
+- [ ] first 20 invite codes are generated with [scripts/invite-codes.mjs](/Users/jilanfang/ai-hardware-assistant/scripts/invite-codes.mjs) or `/admin`
+- [ ] at least one invite code is delivered to a tester through a secure channel
+- [ ] fallback manual account path with `admin-users.mjs` is still verified if invite flow must be bypassed temporarily
 
 ## 6. Smoke Test Ready
 
 Run one real smoke after deploy:
 
 - [ ] open `/login`
-- [ ] log in with a valid internal account
+- [ ] open `/register`
+- [ ] invalid invite code is rejected
+- [ ] one valid invite code completes a real registration
+- [ ] the used invite code changes from `active` to `used`
+- [ ] non-admin registered user cannot access `/admin`
+- [ ] log in with a valid admin account
+- [ ] `/admin` loads and displays both invite codes and users
 - [ ] upload one real datasheet PDF
 - [ ] see `processing` state
 - [ ] wait for completed or partial result
@@ -103,6 +114,8 @@ ATLAS_DB_PATH=/var/lib/atlas/atlas.db node /srv/atlas/app/scripts/audit-summary.
 Only mark private beta ready when all of these are true:
 
 - [ ] login works
+- [ ] invite-only registration works
+- [ ] `/admin` access control works
 - [ ] one real datasheet flow works end to end
 - [ ] audit data is queryable
 - [ ] backup exists

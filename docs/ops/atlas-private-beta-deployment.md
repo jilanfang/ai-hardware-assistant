@@ -73,6 +73,10 @@ Copy [`.env.example`](/Users/jilanfang/ai-hardware-assistant/.env.example) to th
 - `ATLAS_DB_PATH=/var/lib/atlas/atlas.db`
 - `SESSION_SECRET=<strong-random-secret>`
 - `SESSION_COOKIE_NAME=atlas_session`
+- `ATLAS_SELF_SERVICE_SIGNUP_ENABLED=true`
+- `ATLAS_ADMIN_USERNAMES=atlas01`
+- `ATLAS_SIGNUP_RATE_LIMIT_WINDOW_MS=600000`
+- `ATLAS_SIGNUP_RATE_LIMIT_MAX_ATTEMPTS=3`
 - `LYAPI_API_KEY=<your-lyapi-key>`
 - optional `LYAPI_BASE_URL=https://lyapi.com`
 - optional `VECTORENGINE_API_KEY=<your-vectorengine-key>`
@@ -161,17 +165,54 @@ The preflight command is intentionally strict in production. It fails fast when:
 
 ## Account Provisioning
 
-Create one account:
+Current private-beta mode is:
+
+- username/password login
+- invite-only self-service registration at `/register`
+- admin-only invite/user view at `/admin`
+- admins determined only by `ATLAS_ADMIN_USERNAMES`
+
+Recommended first-time server steps:
+
+1. Create at least one admin account manually:
 
 ```bash
 ATLAS_DB_PATH=/var/lib/atlas/atlas.db node scripts/admin-users.mjs create --username alice --display-name "Alice" --password "TempPass123!"
 ```
 
-Import usernames from a text file and print generated passwords as CSV:
+2. Set `ATLAS_ADMIN_USERNAMES=alice` in `.env.production`.
+
+3. Generate the first 20 single-use invite codes:
+
+```bash
+ATLAS_DB_PATH=/var/lib/atlas/atlas.db node scripts/invite-codes.mjs generate --count 20 --created-by alice
+```
+
+The script prints CSV to stdout:
+
+- `code`
+- `status`
+- `created_by`
+
+Admins can later generate more codes in the browser from `/admin`.
+
+Fallback bulk account import is still available if private-beta needs manual pre-created accounts:
 
 ```bash
 ATLAS_DB_PATH=/var/lib/atlas/atlas.db node scripts/admin-users.mjs import --input /srv/atlas/app/internal-users.txt
 ```
+
+## Admin Operations
+
+After the admin account logs in:
+
+- visit `/admin`
+- generate another batch of 20 invite codes if needed
+- copy a code directly from the table
+- review whether a code is still `active`, already `used`, or manually `disabled`
+- inspect registered usernames and last login timestamps
+
+Non-admin users must not be able to access `/admin`.
 
 ## Audit Summary
 

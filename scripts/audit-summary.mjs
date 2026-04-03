@@ -66,6 +66,8 @@ function getDailyAuditSummary(db, date) {
 
   return {
     activeUsers: activeUsersRow.count,
+    registerSuccessCount: countEvents(db, date, "register_success"),
+    registerFailedCount: countEvents(db, date, "register_failed"),
     loginSuccessCount: countEvents(db, date, "login_success"),
     loginFailedCount: countEvents(db, date, "login_failed"),
     analysisCreatedCount: countEvents(db, date, "analysis_created"),

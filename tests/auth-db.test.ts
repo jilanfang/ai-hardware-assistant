@@ -86,6 +86,8 @@ describe("auth database", () => {
 
     expect(getDailyAuditSummary("2026-03-30")).toEqual({
       activeUsers: 1,
+      registerSuccessCount: 0,
+      registerFailedCount: 0,
       loginSuccessCount: 1,
       loginFailedCount: 0,
       analysisCreatedCount: 1,

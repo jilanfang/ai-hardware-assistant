@@ -6,6 +6,7 @@ import Database from "better-sqlite3";
 import { resolveSessionSecret } from "@/lib/runtime-env";
 
 type UserStatus = "active" | "disabled";
+type InviteCodeStatus = "active" | "used" | "disabled";
 
 export type AuthUserRecord = {
   id: string;
@@ -16,6 +17,8 @@ export type AuthUserRecord = {
   createdAt: string;
   lastLoginAt: string | null;
 };
+
+export type AdminUserRecord = Omit<AuthUserRecord, "passwordHash">;
 
 export type SessionRecord = {
   id: string;
@@ -28,7 +31,20 @@ export type SessionRecord = {
   userAgent: string | null;
 };
 
+export type InviteCodeRecord = {
+  id: string;
+  code: string;
+  status: InviteCodeStatus;
+  createdAt: string;
+  createdBy: string | null;
+  usedAt: string | null;
+  usedByUserId: string | null;
+  usedByUsername: string | null;
+};
+
 export type AuditEventType =
+  | "register_success"
+  | "register_failed"
   | "login_success"
   | "login_failed"
   | "logout"
@@ -57,6 +73,8 @@ type AuditEventRecord = {
 
 type DailyAuditSummary = {
   activeUsers: number;
+  registerSuccessCount: number;
+  registerFailedCount: number;
   loginSuccessCount: number;
   loginFailedCount: number;
   analysisCreatedCount: number;
@@ -116,6 +134,16 @@ function ensureDatabase() {
       user_agent TEXT
     );
 
+    CREATE TABLE IF NOT EXISTS invite_codes (
+      id TEXT PRIMARY KEY,
+      code TEXT NOT NULL UNIQUE,
+      status TEXT NOT NULL,
+      created_at TEXT NOT NULL,
+      created_by TEXT,
+      used_at TEXT,
+      used_by_user_id TEXT
+    );
+
     CREATE TABLE IF NOT EXISTS audit_events (
       id TEXT PRIMARY KEY,
       user_id TEXT,
@@ -130,6 +158,7 @@ function ensureDatabase() {
     );
 
     CREATE INDEX IF NOT EXISTS idx_sessions_token_hash ON sessions(session_token_hash);
+    CREATE INDEX IF NOT EXISTS idx_invite_codes_status ON invite_codes(status);
     CREATE INDEX IF NOT EXISTS idx_audit_events_time ON audit_events(event_time);
     CREATE INDEX IF NOT EXISTS idx_audit_events_user ON audit_events(user_id);
     CREATE INDEX IF NOT EXISTS idx_audit_events_type ON audit_events(event_type);
@@ -153,6 +182,20 @@ function mapUser(row: Record<string, unknown> | undefined): AuthUserRecord | nul
   };
 }
 
+function mapAdminUser(row: Record<string, unknown> | undefined): AdminUserRecord | null {
+  const user = mapUser(row);
+  if (!user) return null;
+
+  return {
+    id: user.id,
+    username: user.username,
+    displayName: user.displayName,
+    status: user.status,
+    createdAt: user.createdAt,
+    lastLoginAt: user.lastLoginAt
+  };
+}
+
 function mapSession(row: Record<string, unknown> | undefined): SessionRecord | null {
   if (!row) return null;
   return {
@@ -164,6 +207,20 @@ function mapSession(row: Record<string, unknown> | undefined): SessionRecord | n
     lastSeenAt: String(row.last_seen_at),
     ip: row.ip ? String(row.ip) : null,
     userAgent: row.user_agent ? String(row.user_agent) : null
+  };
+}
+
+function mapInviteCode(row: Record<string, unknown> | undefined): InviteCodeRecord | null {
+  if (!row) return null;
+  return {
+    id: String(row.id),
+    code: String(row.code),
+    status: String(row.status) as InviteCodeStatus,
+    createdAt: String(row.created_at),
+    createdBy: row.created_by ? String(row.created_by) : null,
+    usedAt: row.used_at ? String(row.used_at) : null,
+    usedByUserId: row.used_by_user_id ? String(row.used_by_user_id) : null,
+    usedByUsername: row.used_by_username ? String(row.used_by_username) : null
   };
 }
 
@@ -195,6 +252,55 @@ export function createUser(input: {
   return findUserByUsername(record.username)!;
 }
 
+export function registerUserWithInvite(input: {
+  username: string;
+  passwordHash: string;
+  displayName: string;
+  inviteCode: string;
+  createdAt?: string;
+}) {
+  const db = ensureDatabase();
+  const createdAt = input.createdAt ?? nowIso();
+  const userId = `user-${Date.now()}-${Math.random().toString(36).slice(2, 8)}`;
+
+  const transaction = db.transaction(() => {
+    const inviteRow = db
+      .prepare("SELECT id FROM invite_codes WHERE code = ? AND status = 'active'")
+      .get(input.inviteCode.trim()) as { id: string } | undefined;
+    if (!inviteRow) {
+      return { ok: false as const, reason: "invalid_invite_code" as const };
+    }
+
+    const existingUser = db
+      .prepare("SELECT id FROM users WHERE username = ?")
+      .get(input.username.trim()) as { id: string } | undefined;
+    if (existingUser) {
+      return { ok: false as const, reason: "username_taken" as const };
+    }
+
+    db.prepare(`
+      INSERT INTO users (id, username, password_hash, display_name, status, created_at, last_login_at)
+      VALUES (?, ?, ?, ?, 'active', ?, NULL)
+    `).run(userId, input.username.trim(), input.passwordHash, input.displayName.trim(), createdAt);
+
+    db.prepare(`
+      UPDATE invite_codes
+      SET status = 'used', used_at = ?, used_by_user_id = ?
+      WHERE id = ?
+    `).run(createdAt, userId, inviteRow.id);
+
+    const row = db
+      .prepare("SELECT * FROM users WHERE id = ?")
+      .get(userId) as Record<string, unknown> | undefined;
+    return {
+      ok: true as const,
+      user: mapUser(row)!
+    };
+  });
+
+  return transaction();
+}
+
 export function findUserByUsername(username: string) {
   const db = ensureDatabase();
   const row = db
@@ -207,6 +313,22 @@ export function findUserById(userId: string) {
   const db = ensureDatabase();
   const row = db.prepare("SELECT * FROM users WHERE id = ?").get(userId) as Record<string, unknown> | undefined;
   return mapUser(row);
+}
+
+export function listUsers() {
+  const db = ensureDatabase();
+  const rows = db
+    .prepare("SELECT * FROM users ORDER BY created_at DESC")
+    .all() as Record<string, unknown>[];
+  return rows.map((row) => mapUser(row)!);
+}
+
+export function listAdminUsers() {
+  const db = ensureDatabase();
+  const rows = db
+    .prepare("SELECT * FROM users ORDER BY created_at DESC")
+    .all() as Record<string, unknown>[];
+  return rows.map((row) => mapAdminUser(row)!);
 }
 
 export function updateUserLastLogin(userId: string, at = nowIso()) {
@@ -278,6 +400,67 @@ export function revokeSessionByTokenHash(tokenHash: string) {
   ensureDatabase().prepare("DELETE FROM sessions WHERE session_token_hash = ?").run(tokenHash);
 }
 
+export function createInviteCode(input: {
+  id?: string;
+  code: string;
+  createdBy?: string | null;
+  createdAt?: string;
+  status?: InviteCodeStatus;
+}) {
+  const db = ensureDatabase();
+  const record = {
+    id: input.id ?? `invite-${Date.now()}-${Math.random().toString(36).slice(2, 8)}`,
+    code: input.code.trim(),
+    status: input.status ?? "active",
+    createdAt: input.createdAt ?? nowIso(),
+    createdBy: input.createdBy ?? null
+  };
+
+  db.prepare(`
+    INSERT INTO invite_codes (id, code, status, created_at, created_by, used_at, used_by_user_id)
+    VALUES (@id, @code, @status, @createdAt, @createdBy, NULL, NULL)
+  `).run(record);
+
+  return findInviteCodeByCode(record.code)!;
+}
+
+export function findInviteCodeByCode(code: string) {
+  const db = ensureDatabase();
+  const row = db
+    .prepare(`
+      SELECT invite_codes.*, users.username as used_by_username
+      FROM invite_codes
+      LEFT JOIN users ON users.id = invite_codes.used_by_user_id
+      WHERE invite_codes.code = ?
+    `)
+    .get(code.trim()) as Record<string, unknown> | undefined;
+  return mapInviteCode(row);
+}
+
+export function listInviteCodes() {
+  const db = ensureDatabase();
+  const rows = db
+    .prepare(`
+      SELECT invite_codes.*, users.username as used_by_username
+      FROM invite_codes
+      LEFT JOIN users ON users.id = invite_codes.used_by_user_id
+      ORDER BY invite_codes.created_at DESC
+    `)
+    .all() as Record<string, unknown>[];
+  return rows.map((row) => mapInviteCode(row)!);
+}
+
+export function markInviteCodeUsed(code: string, userId: string, usedAt = nowIso()) {
+  const db = ensureDatabase();
+  db.prepare(`
+    UPDATE invite_codes
+    SET status = 'used', used_at = ?, used_by_user_id = ?
+    WHERE code = ? AND status = 'active'
+  `).run(usedAt, userId, code.trim());
+
+  return findInviteCodeByCode(code);
+}
+
 export function createAuditEvent(input: {
   id?: string;
   userId?: string | null;
@@ -326,6 +509,8 @@ export function getDailyAuditSummary(date: string): DailyAuditSummary {
 
   return {
     activeUsers: row.count,
+    registerSuccessCount: countEvents(date, "register_success"),
+    registerFailedCount: countEvents(date, "register_failed"),
     loginSuccessCount: countEvents(date, "login_success"),
     loginFailedCount: countEvents(date, "login_failed"),
     analysisCreatedCount: countEvents(date, "analysis_created"),

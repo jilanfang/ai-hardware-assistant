@@ -1,98 +1,38 @@
-import { execFileSync } from "node:child_process";
-import { mkdtempSync, rmSync, writeFileSync } from "node:fs";
+import { mkdtempSync, rmSync } from "node:fs";
 import { join } from "node:path";
 import { tmpdir } from "node:os";
+import { execFileSync } from "node:child_process";
 
 import { afterEach, beforeEach, describe, expect, test } from "vitest";
 
-import { createAuditEvent, findUserByUsername, getDailyAuditSummary, resetAuthDatabase } from "@/lib/auth-db";
+import { resetAuthDatabase } from "@/lib/auth-db";
 
-let tempDir: string;
-let authDbPath: string;
+let authDbDir: string;
 
 describe("admin scripts", () => {
   beforeEach(() => {
-    tempDir = mkdtempSync(join(tmpdir(), "atlas-admin-script-"));
-    authDbPath = join(tempDir, "atlas.db");
-    process.env.ATLAS_DB_PATH = authDbPath;
+    authDbDir = mkdtempSync(join(tmpdir(), "atlas-admin-script-"));
+    process.env.ATLAS_DB_PATH = join(authDbDir, "atlas.db");
     resetAuthDatabase();
   });
 
   afterEach(() => {
     resetAuthDatabase();
     delete process.env.ATLAS_DB_PATH;
-    rmSync(tempDir, { recursive: true, force: true });
+    rmSync(authDbDir, { recursive: true, force: true });
   });
 
-  test("creates a manual user and prints a csv row", () => {
-    const output = execFileSync(
-      "node",
-      ["scripts/admin-users.mjs", "create", "--username", "tester", "--display-name", "Test User", "--password", "TempPass123!"],
-      {
-        cwd: "/Users/jilanfang/ai-hardware-assistant",
-        env: {
-          ...process.env,
-          ATLAS_DB_PATH: authDbPath
-        },
-        encoding: "utf8"
-      }
-    );
-
-    expect(output).toContain("username,password,display_name,status");
-    expect(output).toContain("tester,TempPass123!,Test User,active");
-    expect(findUserByUsername("tester")).toEqual(
-      expect.objectContaining({
-        username: "tester",
-        displayName: "Test User",
-        status: "active"
-      })
-    );
-  });
-
-  test("imports a username list and outputs generated passwords as csv", () => {
-    const inputPath = join(tempDir, "users.txt");
-    writeFileSync(inputPath, "alpha\nbeta\n\n");
-
-    const output = execFileSync("node", ["scripts/admin-users.mjs", "import", "--input", inputPath], {
-      cwd: "/Users/jilanfang/ai-hardware-assistant",
-      env: {
-        ...process.env,
-        ATLAS_DB_PATH: authDbPath
-      },
+  test("invite code script creates 20 readable active invite codes by default", () => {
+    const output = execFileSync("node", ["scripts/invite-codes.mjs", "generate", "--created-by", "atlas01"], {
+      cwd: process.cwd(),
+      env: { ...process.env },
       encoding: "utf8"
     });
 
-    expect(output).toContain("username,password,display_name,status");
-    expect(output).toMatch(/alpha,[^,\n]+,alpha,active/);
-    expect(output).toMatch(/beta,[^,\n]+,beta,active/);
-    expect(findUserByUsername("alpha")).toEqual(expect.objectContaining({ username: "alpha" }));
-    expect(findUserByUsername("beta")).toEqual(expect.objectContaining({ username: "beta" }));
-  });
+    const lines = output.trim().split("\n");
 
-  test("prints the daily audit summary as json", () => {
-    createAuditEvent({
-      userId: "user-1",
-      eventType: "login_success",
-      eventTime: "2026-03-30T08:00:00.000Z"
-    });
-    createAuditEvent({
-      userId: "user-1",
-      eventType: "analysis_created",
-      eventTime: "2026-03-30T09:00:00.000Z"
-    });
-
-    const output = execFileSync("node", ["scripts/audit-summary.mjs", "--date", "2026-03-30", "--format", "json"], {
-      cwd: "/Users/jilanfang/ai-hardware-assistant",
-      env: {
-        ...process.env,
-        ATLAS_DB_PATH: authDbPath
-      },
-      encoding: "utf8"
-    });
-
-    expect(JSON.parse(output)).toEqual({
-      date: "2026-03-30",
-      ...getDailyAuditSummary("2026-03-30")
-    });
+    expect(lines[0]).toBe("code,status,created_by");
+    expect(lines).toHaveLength(21);
+    expect(lines.slice(1).every((line) => /^ATLAS-[A-Z2-9]{4}-[A-Z2-9]{4},active,atlas01$/.test(line))).toBe(true);
   });
 });

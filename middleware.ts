@@ -12,6 +12,7 @@ function hasSessionCookie(request: Request) {
 function isPublicPath(pathname: string) {
   return (
     pathname === "/login" ||
+    pathname === "/register" ||
     pathname === "/healthz" ||
     pathname.startsWith("/_next/") ||
     pathname === "/favicon.ico" ||
@@ -20,7 +21,12 @@ function isPublicPath(pathname: string) {
 }
 
 function isProtectedApiPath(pathname: string) {
-  return pathname === "/api/audit" || pathname === "/api/analysis" || pathname.startsWith("/api/analysis/");
+  return (
+    pathname === "/api/audit" ||
+    pathname === "/api/analysis" ||
+    pathname.startsWith("/api/analysis/") ||
+    pathname.startsWith("/api/admin/")
+  );
 }
 
 export function middleware(request: Request) {

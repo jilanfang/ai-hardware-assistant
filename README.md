@@ -51,7 +51,7 @@ Today it supports:
 - jump back to PDF evidence and page-level highlights
 - keep follow-up Q&A grounded in extracted evidence
 - export current outputs
-- gate the workspace with internal username/password login
+- gate the workspace with username/password login plus invite-only self-service registration
 - record basic audit events for login, analysis, follow-up, parameter writeback, and export
 
 This is the first trust loop we are trying to boil completely.
@@ -95,6 +95,7 @@ This repository currently focuses on:
 - grounded exports
 - category-aware parameter naming
 - internal-test auth and audit plumbing
+- invite-code based private-beta registration and lightweight admin management
 - relay-provider aware model routing with explicit `provider/model` combinations
 - reusable model benchmark tooling for response speed and quality comparison
 
@@ -202,3 +203,18 @@ This checks the minimum production contract:
 - primary `ANALYSIS_LLM_PROVIDER` and `ANALYSIS_LLM_MODEL`
 - the corresponding provider API key
 - writability of the configured SQLite and job-store paths
+
+## Private Beta Access
+
+Atlas now supports invite-only self-service signup.
+
+- `/register`: users can create an account only with a valid single-use invite code
+- `/admin`: only logged-in usernames listed in `ATLAS_ADMIN_USERNAMES` can access the invite/user management page
+- invite codes live in SQLite and are consumed immediately after a successful registration
+
+Operational helpers:
+
+- generate 20 invite codes locally or on the server:
+  - `npm run invites:generate -- --created-by atlas01`
+- create fallback manual accounts if needed:
+  - `npm run users:create -- --username atlas01 --display-name "Atlas Admin" --password "TempPass123!"`
